@@ -1,0 +1,24 @@
+{% extends "base_supplier.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="fas fa-truck me-2"></i>Mark Purchase Order as In Transit</h4>
+        </div>
+        <div class="card-body">
+            <p class="lead">Are you sure you want to mark <strong>PO {{ purchase_order.purchase_order_id }}</strong> as In Transit?</p>
+            <p>This indicates that the shipment has been sent and is on the way.</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check me-1"></i> Yes, Mark as In Transit
+                </button>
+                <a href="{% url 'suppliers:supplier_order_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-1"></i> Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+.dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1rem;
+    }
+
+    .top-graphs {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: space-between;
+        /* background-color: rgb(202, 124, 124); */
+    }
+    .graph-sales-box {
+        width: 100%;
+        height: fit-content;
+        /* background-color: red;   */
+    }
+
+    .graph-sales,
+    .graph-orders,
+    .graph-stock {
+        width: 100%;
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .graph-sales {
+        width: 100%;
+        /* Sales specific styles */
+        border-left: 6px solid #3498db;
+        background-color: red;
+    }
+
+    .graph-orders {
+        flex: 1;
+        /* Orders specific styles */
+        border-left: 6px solid #2ecc71;
+    }
+
+    .graph-stock {
+        width: 100%;
+        /* Stock specific styles */
+        border-left: 6px solid #e67e22;
+    }
+
+    .graph-sales canvas {
+        width: 100%;
+        height: 300px;
+    }
+    .graph-orders canvas {
+        width: 100%;
+        height: 300px;
+    }
+
+    .graph-stock canvas {
+        width: 100%;
+        height: 300px;
+    }

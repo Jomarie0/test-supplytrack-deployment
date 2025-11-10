@@ -1,0 +1,212 @@
+{% load static %}
+<!-- apps/inventory/templates/inventory/partials/update_product_modal.html -->
+<div id="updateProductModal" class="modal" style="display: none;">
+    <div class="modal-content themed-modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Update Product</h2>
+            <button class="close-btn" onclick="closeUpdateModal()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <form method="POST" id="update-product-form" action="">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" id="update-product-id">
+                <input type="hidden" name="variant_id" id="update-variant-id">
+                
+                <h3 style="margin-bottom: 16px; color: #374151; font-size: 1.1rem;">Product Information</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="update-name">Product Name *</label>
+                        <input type="text" id="update-name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="update-category">Category</label>
+                        <select id="update-category" name="category">
+                            <option value="">Select Category</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="update-supplier">Supplier</label>
+                        <select id="update-supplier" name="supplier_profile">
+                            <option value="">Select Supplier</option>
+                            {% for supplier in supplier_profiles %}
+                                <option value="{{ supplier.id }}">{{ supplier.company_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    
+                    <div class="form-group">
+                        <label for="update-unit">Unit</label>
+                        <input type="text" id="update-unit" name="unit">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="update-price">Base Price *</label>
+                        <input type="number" id="update-price" name="price" step="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="update-cost-price">Cost Price</label>
+                        <input type="number" id="update-cost-price" name="cost_price" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="update-stock-quantity">Stock Quantity *</label>
+                        <input type="number" id="update-stock-quantity" name="stock_quantity" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="update-reorder-level">Reorder Level *</label>
+                        <input type="number" id="update-reorder-level" name="reorder_level" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="update-description">Description</label>
+                    <textarea id="update-description" name="description" rows="3"></textarea>
+                </div>
+
+                <!-- Variant Section -->
+                <hr style="margin: 24px 0; border: none; border-top: 2px solid #e5e7eb;">
+                <h3 style="margin-bottom: 16px; color: #374151; font-size: 1.1rem;">Product Variant Details</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="update-variant-size">Size</label>
+                        <input type="text" id="update-variant-size" name="variant_size" placeholder="e.g., Small, Medium, Large">
+                        <span class="help-text">Optional: Leave blank if not applicable</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="update-variant-color">Color</label>
+                        <input type="text" id="update-variant-color" name="variant_color" placeholder="e.g., Red, Blue, Black">
+                        <span class="help-text">Optional: Leave blank if not applicable</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="update-variant-sku">Variant SKU</label>
+                        <input type="text" id="update-variant-sku" name="variant_sku" placeholder="Auto-generated if empty">
+                        <span class="help-text">Optional: Auto-generated from product details</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="update-variant-price">Variant Price</label>
+                        <input type="number" id="update-variant-price" name="variant_price" step="0.01" placeholder="Uses base price if empty">
+                        <span class="help-text">Optional: Defaults to product base price</span>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn-submit">Update Product</button>
+                    <button type="button" class="btn-cancel" onclick="closeUpdateModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Open the Update Product Modal
+    function openUpdateModal() {
+        const modal = document.getElementById('updateProductModal');
+        if (modal) {
+            modal.style.display = 'block';
+            modal.classList.remove('hidden');
+        }
+    }
+
+    // Close the Update Product Modal
+    function closeUpdateModal() {
+        const modal = document.getElementById('updateProductModal');
+        const form = document.getElementById('update-product-form');
+
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.add('hidden');
+        }
+
+        if (form) form.reset(); // Reset all input fields
+    }
+
+    // Optional: populate modal with product data
+    // Call this function with product data before opening the modal
+    function populateUpdateForm(data) {
+        const form = document.getElementById('update-product-form');
+        if (!form) return;
+
+        // Basic product info
+        document.getElementById('update-product-id').value = data.id || '';
+        document.getElementById('update-name').value = data.name || '';
+        document.getElementById('update-category').value = data.category_id || '';
+        document.getElementById('update-supplier').value = data.supplier_profile_id || '';
+        document.getElementById('update-unit').value = data.unit || '';
+        document.getElementById('update-price').value = data.price || '';
+        document.getElementById('update-cost-price').value = data.cost_price || '';
+        document.getElementById('update-stock-quantity').value = data.stock_quantity || '';
+        document.getElementById('update-reorder-level').value = data.reorder_level || '';
+        document.getElementById('update-description').value = data.description || '';
+
+        // Variant info
+        document.getElementById('update-variant-id').value = data.variant_id || '';
+        document.getElementById('update-variant-size').value = data.variant_size || '';
+        document.getElementById('update-variant-color').value = data.variant_color || '';
+        document.getElementById('update-variant-sku').value = data.variant_sku || '';
+        document.getElementById('update-variant-price').value = data.variant_price || '';
+    }
+
+    // Optional: AJAX form submission (if you want async save)
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('update-product-form');
+        if (!form) return; // Exit if the form doesn't exist
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const errorContainer = document.getElementById('updateFormErrors');
+            if (errorContainer) errorContainer.innerHTML = '';
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(result.message || 'Product updated successfully!');
+                    closeUpdateModal();
+                    window.location.reload(); // Optional: reload to update table
+                } else {
+                    if (result.errors && errorContainer) {
+                        result.errors.forEach(err => {
+                            const p = document.createElement('p');
+                            p.textContent = err;
+                            errorContainer.appendChild(p);
+                        });
+                    } else if (errorContainer) {
+                        errorContainer.textContent = result.error || 'Failed to update product.';
+                    }
+                }
+
+            } catch (err) {
+                console.error(err);
+                if (errorContainer) errorContainer.textContent = 'Unexpected error occurred.';
+            }
+        });
+    });
+</script>
+
+    

@@ -1,0 +1,25 @@
+{% extends "base_admin.html" %}
+{% block content %}
+  <h2>{{ category.name }}</h2>
+  <p>{{ breadcrumbs }}</p>
+
+  {% if subcategories %}
+    <h3>Subcategories</h3>
+    <ul>
+      {% for sub in subcategories %}
+        <li><a href="{% url 'orders:category' sub.slug %}">{{ sub.name }}</a></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if products %}
+    <h3>Products</h3>
+    <ul>
+      {% for product in products %}
+        <li>{{ product.name }} — {{ product.price }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No products in this category.</p>
+  {% endif %}
+{% endblock %}

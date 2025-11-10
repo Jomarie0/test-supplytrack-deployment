@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Purchase Order - {{ po_number }}</title>
+    <style>
+        /* Essential CSS for xhtml2pdf compatibility */
+        @page {
+            size: A4 portrait;
+            margin: 2cm;
+        }
+        @font-face {
+            font-family: "DejaVu Sans";
+            src: url("C:/Windows/Fonts/DejaVuSans.ttf"); 
+        }
+
+        body {
+            font-family: "DejaVu Sans", Arial, sans-serif;
+            font-size: 10pt;
+            color: #333;
+        }
+        
+        /* Table styles for layout and items */
+        .full-width-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .header-section td {
+            padding: 5px 0;
+            vertical-align: top;
+        }
+        
+        .item-table th, .item-table td {
+            border-bottom: 1px solid #ddd;
+            padding: 8px 0;
+            text-align: left;
+        }
+        
+        .item-table th {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+        
+        .totals-table {
+            width: 300px;
+            float: right;
+            margin-top: 20px;
+        }
+        
+        .totals-table td {
+            padding: 5px 0;
+            text-align: right;
+        }
+        
+        .totals-table .label {
+            width: 60%;
+            text-align: left;
+        }
+        
+        .totals-table .total-row {
+            border-top: 2px solid #333;
+            font-size: 12pt;
+            font-weight: bold;
+            color: #16a34a;
+        }
+        
+        .notes-box {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 3px solid #667eea;
+        }
+        
+        /* Ensures block elements don't split across pages */
+        .page-safe {
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-safe">
+        
+        <table class="full-width-table header-section">
+            <tr>
+                <td style="width: 50%;">
+                    <h1 style="font-size: 20pt; color: #555; margin: 0;">PURCHASE ORDER</h1>
+                    <p style="margin: 5px 0 0 0;">PO #{{ po_number }}</p>
+                </td>
+                <td style="width: 50%; text-align: right;">
+                    <p style="margin: 0;">Date: {{ order_date|date:"F d, Y" }}</p>
+                    <p style="margin: 5px 0 0 0;">Status: {{ status }}</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 20px;">
+    
+    <table class="full-width-table page-safe">
+        <tr>
+            <td style="width: 50%;">
+                <h3 style="margin: 0 0 10px 0; color: #555;">SUPPLIER</h3>
+                <p style="font-weight: bold; margin: 3px 0;">{{ supplier_name }}</p>
+                <p style="margin: 3px 0;">{{ supplier_address }}</p>
+                {% if supplier_email != 'N/A' %}
+                <p style="margin: 3px 0;">Email: {{ supplier_email }}</p>
+                {% endif %}
+                {% if supplier_phone != 'N/A' %}
+                <p style="margin: 3px 0;">Phone: {{ supplier_phone }}</p>
+                {% endif %}
+            </td>
+            <td style="width: 50%;">
+                <h3 style="margin: 0 0 10px 0; color: #555;">FROM</h3>
+                <p style="font-weight: bold; margin: 3px 0;">Your Company Name</p>
+                <p style="margin: 3px 0;">123 Business Street, City, Philippines</p>
+                <p style="margin: 3px 0;">Contact: +63 (123) 456-7890</p>
+                <p style="margin: 3px 0;">Email: purchasing@yourcompany.com</p>
+            </td>
+        </tr>
+    </table>
+    
+    <table class="full-width-table page-safe">
+        <tr>
+            <td style="width: 50%;">
+                <h3 style="margin: 15px 0 10px 0; color: #555;">DELIVERY INFORMATION</h3>
+                {% if expected_delivery_date %}
+                <p style="margin: 3px 0;">Expected Delivery: {{ expected_delivery_date|date:"F d, Y" }}</p>
+                {% else %}
+                <p style="margin: 3px 0;">Expected Delivery: To be determined</p>
+                {% endif %}
+                <p style="margin: 3px 0;">Payment Method: {{ payment_method }}</p>
+            </td>
+            <td style="width: 50%;">
+                <h3 style="margin: 15px 0 10px 0; color: #555;">CREATED BY</h3>
+                <p style="margin: 3px 0;">Staff: {{ created_by }}</p>
+                <p style="margin: 3px 0;">Date Created: {{ order_date|date:"F d, Y" }}</p>
+            </td>
+        </tr>
+    </table>
+    
+    <div class="page-safe">
+        <h3 style="margin: 30px 0 10px 0; color: #555;">ORDER ITEMS</h3>
+        <table class="full-width-table item-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Product</th>
+                    <th style="width: 25%;">Description</th>
+                    <th style="width: 12%; text-align: center;">Qty</th>
+                    <th style="width: 14%; text-align: right;">Unit Cost</th>
+                    <th style="width: 14%; text-align: right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>
+                        {% if item.product_variant %}
+                            {{ item.product_variant.product.name }}
+                        {% elif item.product %}
+                            {{ item.product.name }}
+                        {% else %}
+                            {{ item.product_name_text }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <small style="color: #666;">
+                            {% if item.description %}
+                                {{ item.description }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </small>
+                    </td>
+                    <td style="text-align: center;">{{ item.quantity_ordered }}</td>
+                    <td style="text-align: right;">
+                        {% if item.unit_cost %}
+                            ₱{{ item.unit_cost|floatformat:2 }}
+                        {% else %}
+                            <span style="color: #999;">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right;">
+                        {% if item.unit_cost %}
+                            ₱{{ item.total_price|floatformat:2 }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div style="clear: both;"></div>
+    
+    <div class="page-safe">
+        <table class="totals-table">
+            <tr>
+                <td class="label">Subtotal:</td>
+                <td>₱{{ subtotal|floatformat:2 }}</td>
+            </tr>
+            {% if tax > 0 %}
+            <tr>
+                <td class="label">Tax (12%):</td>
+                <td>₱{{ tax|floatformat:2 }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td class="label">Tax (0%):</td>
+                <td>₱{{ tax|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+            <tr class="total-row">
+                <td class="label">TOTAL AMOUNT:</td>
+                <td>₱{{ total|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div style="clear: both;"></div>
+    
+    {% if notes %}
+    <div class="notes-box page-safe">
+        <h4 style="margin: 0 0 10px 0; color: #555; font-size: 10pt;">NOTES</h4>
+        <p style="margin: 0; font-size: 9pt;">{{ notes }}</p>
+    </div>
+    {% endif %}
+    
+    <div style="clear: both; padding-top: 40px;">
+        <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 15px;">
+        <p style="text-align: center; font-size: 9pt; color: #666; margin: 5px 0;">
+            <strong>Thank you for your partnership!</strong>
+        </p>
+        <p style="text-align: center; font-size: 8pt; color: #999; margin: 5px 0;">
+            For questions, contact us at purchasing@yourcompany.com or +63 (123) 456-7890
+        </p>
+        <p style="text-align: center; font-size: 8pt; color: #999; margin: 5px 0;">
+            Purchase Order generated on {{ order_date|date:"F d, Y" }}
+        </p>
+    </div>
+
+</body>
+</html>

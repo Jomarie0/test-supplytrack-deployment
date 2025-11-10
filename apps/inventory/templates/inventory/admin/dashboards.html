@@ -1,0 +1,1417 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/dashboard/dashboardv2.css' %}">
+<style>
+    .dashboard-container {
+        padding: 0;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border-left: 3px solid #667eea;
+    }
+    .kpi-delta {
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: #4a5568;
+    }
+    .delta-up { color: #38a169; }
+    .delta-down { color: #e53e3e; }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #1a202c;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: #718096;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        align-items: stretch;
+    }
+
+    /* Wide charts for key metrics */
+    .chart-wide {
+        grid-column: 1 / -1;
+        min-height: 400px;
+    }
+    .chart-half { grid-column: span 1; }
+    /* 2:1 layout on desktop */
+    @media (min-width: 1024px) {
+        .charts-grid { grid-template-columns: repeat(12, 1fr); }
+        .chart-two-thirds { grid-column: span 8; }
+        .chart-one-third { grid-column: span 4; }
+    }
+
+    .chart-container {
+        background: white;
+        padding: 1.25rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        display: flex;
+        flex-direction: column;
+        min-height: 360px;
+    }
+    .chart-container canvas { width: 100%; height: 280px; }
+    .chart-two-thirds canvas { height: 360px; }
+    .chart-one-third canvas { height: 280px; }
+
+    .chart-wide canvas { height: 400px; }
+
+    /* Wide charts with 4:16 aspect ratio */
+    #salesChart { height: 280px; }
+    #stockChart { height: 360px; }
+    #best-seller-chart { height: 280px; }
+
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #2d3748;
+    }
+
+    .forecast-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+
+    .forecast-controls {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        align-items: center;
+    }
+
+    .product-select {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        min-width: 200px;
+    }
+
+    .forecast-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: transform 0.2s;
+    }
+
+    .forecast-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .forecast-result {
+        display: none;
+        background: #f7fafc;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #48bb78;
+        margin-top: 1rem;
+    }
+
+    .restock-warning {
+        background: #fed7d7;
+        border-left-color: #f56565;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 2rem;
+        color: #718096;
+    }
+
+    .recent-orders {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+        /* Status styling for different states */
+    .status-pending {
+        background: #fef5e7; /* Light orange background */
+        color: #c05621; /* Dark orange text */
+        padding: 0.25rem 0.75rem; /* Padding for better visual */
+        border-radius: 0.375rem; /* Rounded corners */
+        font-weight: 600; /* Semi-bold font */
+        display: inline-block; /* Allows padding and margin */
+    }
+    .status-processing {
+        background: #bee3f8; /* Light blue background */
+        color: #2a4365; /* Dark blue text */
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .status-shipped {
+        background: #bae6fd; /* Light sky blue for Shipped */
+        color: #075985; /* Dark sky blue text */
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .status-completed {
+        background: #c6f6d5; /* Light green background */
+        color: #22543d; /* Dark green text */
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .status-canceled { /* Corrected spelling from 'cancelled' */
+        background: #fed7d7; /* Light red background for Canceled */
+        color: #9b2c2c; /* Dark red text for Canceled */
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .status-returned {
+        background: #fefcbf; /* Light yellow for Returned */
+        color: #78350f; /* Dark yellow text */
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .range-btn {
+        background: #e2e8f0;
+        color: #4a5568;
+        padding: 0.375rem 0.75rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .range-btn:hover {
+        background: #cbd5e0;
+    }
+    
+    .range-btn.active-range {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .time-range-controls {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .scope-selector {
+        min-width: 120px;
+        padding: 0.375rem 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        background: white;
+    }
+
+    @media (max-width: 768px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .forecast-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+</style>
+{% endblock %}
+
+<title>
+{% block title %}
+    {% if request.user.role == 'admin' %}
+            Admin | Dashboard
+        {% elif request.user.role == 'manager' %}
+            Manager | Dashboard
+        {% elif request.user.role == 'staff' %}
+            Staff | Dashboard
+        {% elif request.user.role == 'customer' %}
+            Customer | Dashboard
+        {% elif request.user.role == 'supplier' %}
+            Supplier | Dashboard
+        {% elif request.user.role == 'delivery' %}
+            Delivery | Dashboard
+        {% else %}
+            empty
+        {% endif %}
+{% endblock %}
+</title>
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h1>Welcome back, {{ request.user.first_name|default:request.user.username }}!</h1>
+        <p>Here's what's happening with your business today.</p>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="total-products">{{ total_products|default:0 }}</div>
+            <div class="stat-label">Total Products</div>
+        </div>
+        <div class="stat-card" style="cursor: pointer;" onclick="window.location.href='{% url 'inventory:restock_notifications_view' %}'">
+            <div class="stat-value" id="low-stock-count">{{ low_stock_count|default:0 }}</div>
+            <div class="stat-label">Low Stock Items</div>
+            <small style="color: #718096; font-size: 0.7rem;">Click to view notifications</small>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="total-orders">{{ total_orders|default:0 }}</div>
+            <div class="stat-label">Total Orders (All Time)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="orders-in-range">0</div>
+            <div class="stat-label">Orders in Date Range</div>
+            <div class="kpi-delta" id="orders-delta"></div>
+
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="monthly-revenue">₱{{ monthly_revenue|default:0 }}</div>
+            <div class="stat-label">This Month's Total Sales</div>
+            <div class="kpi-delta" id="revenue-delta"></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="average-order-value">₱0</div>
+            <div class="stat-label">Average Order Value</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="deliveries-total">{{delivery_status_counts|default:0}}</div>
+            <div class="stat-label">Deliveries (Shipped/Completed)</div>
+            <div class="kpi-delta" id="deliveries-delta"></div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-grid">
+<!-- Sales Chart (2/3 width on desktop) -->
+<div class="chart-container chart-two-thirds">
+    <h3 class="chart-title">Sales Trend</h3>
+    
+    <!-- Time Range Controls -->
+    <div class="time-range-controls">
+        <button class="range-btn" onclick="setSalesRange('today')">Today</button>
+        <button class="range-btn" onclick="setSalesRange('week')">This Week</button>
+        <button class="range-btn active-range" onclick="setSalesRange('month')">This Month</button>
+        <button class="range-btn" onclick="setSalesRange('year')">This Year</button>
+        <button class="range-btn" onclick="setSalesRange('overall')">Overall</button>
+        
+        <div style="border-left: 2px solid #e2e8f0; height: 24px; margin: 0 0.5rem;"></div>
+        
+        <input id="kpiStart" type="date" class="product-select" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;" />
+        <input id="kpiEnd" type="date" class="product-select" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;" />
+        <button class="forecast-btn" onclick="refreshKPIs()" style="padding: 0.375rem 1rem; font-size: 0.875rem;">Apply</button>
+    </div>
+    
+    <canvas id="salesChart" width="400" height="200"></canvas>
+</div>
+
+<!-- Order Status Chart (1/3 width on desktop) -->
+<div class="chart-container chart-one-third">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <h3 class="chart-title" style="margin:0;">Order Status</h3>
+        <select id="orderScope" class="scope-selector">
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+            <option value="overall">Overall</option>
+            <option value="custom">Custom Range</option>
+        </select>
+    </div>
+    
+    <div id="orderCustomDates" style="display:none; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+        <input id="orderStart" type="date" class="product-select" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;" />
+        <input id="orderEnd" type="date" class="product-select" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;" />
+        <button class="forecast-btn" onclick="refreshOrderStatusChart()" style="padding: 0.375rem 1rem; font-size: 0.875rem;">Apply</button>
+    </div>
+    
+    <canvas id="statusChart" width="300" height="200"></canvas>
+</div>
+
+<!-- Delivery Status Chart (1/3 width on desktop) -->
+<div class="chart-container chart-one-third">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <h3 class="chart-title" style="margin:0;">Delivery Status</h3>
+        <select id="deliveryScope" class="scope-selector">
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+            <option value="overall">Overall</option>
+            <option value="custom">Custom Range</option>
+        </select>
+    </div>
+    
+    <div id="deliveryCustomDates" style="display:none; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+        <input id="deliveryStart" type="date" class="product-select" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;" />
+        <input id="deliveryEnd" type="date" class="product-select" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;" />
+        <button class="forecast-btn" onclick="refreshDeliveryStatusChart()" style="padding: 0.375rem 1rem; font-size: 0.875rem;">Apply</button>
+    </div>
+    
+    <canvas id="deliveryChart" width="300" height="200"></canvas>
+</div>
+        <!-- Current Stock Levels (2/3) and Top 5 Best Sellers (1/3) -->
+        <div class="chart-container chart-two-thirds">
+            <h3 class="chart-title">Current Stock Levels</h3>
+            <canvas id="stockChart" width="400" height="200"></canvas>
+        </div>
+        <div class="chart-container chart-one-third">
+            <h3 class="chart-title">Top 5 Best Sellers</h3>
+            <canvas id="best-seller-chart" width="600" height="400"></canvas>
+        </div>
+    </div>
+    <!-- Demand Forecasting Section -->
+    <div class="forecast-section">
+        <h3 class="chart-title">Product Demand Forecasting</h3>
+        <div class="forecast-controls">
+            <input list="productList" id="productSelect" name="productSelect" placeholder="Select or type a product...">
+            <datalist id="productList">
+                {% for product in product_names %}
+                    <option value="{{ product }}">
+                {% endfor %}
+            </datalist>
+            <p>Past Months:</p>
+            <input id="pastMonths" type="number" min="0" max="36" value="6" class="product-select" placeholder="Past months" />
+            <p>Past Months:</p>
+            <input id="futureMonths" type="number" min="1" max="36" value="6" class="product-select" placeholder="Future months" />
+            <button class="forecast-btn" onclick="generateForecast()">Generate Forecast</button>
+        </div>
+        
+        <div id="forecastResult" class="forecast-result">
+            <div id="loadingMessage" class="loading">Generating forecast...</div>
+            <div id="forecastContent"></div>
+        </div>
+        <div style="margin-top: 1rem;">
+            <canvas id="forecastChart" width="400" height="200" style="display: none;"></canvas>
+        </div>
+    </div>
+        <div class="forecast-section">
+            <div class="chart-header">
+            <h3 class="chart-title">Sales Forecast</h3>
+            <div class="forecast-controls">
+                <p>Past Months:</p>
+                <input id="pastMonthsSales" type="number" min="0" max="36" value="6" class="product-select" placeholder="Past months" />
+                <p>Future Months:</p>
+                <input id="futureMonthsSales" type="number" min="1" max="36" value="6" class="product-select" placeholder="Future months" />
+                <button id="loadForecast" class="forecast-btn">Generate Sales Forecast</button>
+            </div>
+            </div>
+            <canvas id="salesForecastChart"></canvas>
+        </div>
+            <!-- Market Trend Analysis -->
+
+        <div class="forecast-section">
+            <div class="chart-header">
+                <h3 class="chart-title">Market Trend Analysis</h3>
+            <div class="forecast-controls">
+                <label for="trendYear">Select Year:</label>
+                <input type="number" id="trendYear" class="product-select" min="2020" max="2030" value="2025" />
+                <button id="loadMarketTrend" class="forecast-btn">Refresh Trend</button>
+            </div>
+            <canvas id="marketTrendChart" height="120"></canvas>
+        </div>
+
+
+    <!-- End Charts Section -->
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+    // ========== HELPER FUNCTIONS ==========
+    function getDateRange(scope) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        let start, end = today;
+        
+        switch(scope) {
+            case 'today':
+                start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                break;
+            case 'week':
+                // Last 7 days
+                start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                break;
+            case 'month':
+                // FIXED: First day of CURRENT month
+                start = new Date(now.getFullYear(), now.getMonth(), 1);
+                break;
+            case 'year':
+                // FIXED: First day of CURRENT year (January 1)
+                start = new Date(now.getFullYear(), 0, 1);
+                break;
+            case 'overall':
+                // All time (20 years back)
+                start = new Date(now.getFullYear() - 20, 0, 1);
+                break;
+            default:
+                // Default: last 30 days
+                start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+        }
+        
+        return {
+            startISO: formatDateLocal(start),  // ← CHANGED: Use formatDateLocal instead of toISOString
+            endISO: formatDateLocal(end)       // ← CHANGED: Use formatDateLocal instead of toISOString
+        };
+    }
+function formatDateLocal(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+
+function setDefaultDates() {
+    const end = new Date();
+    const start = new Date(end.getFullYear(), end.getMonth(), 1);
+    
+    document.getElementById('kpiStart').value = formatDateLocal(start);
+    document.getElementById('kpiEnd').value = formatDateLocal(end);
+}
+
+
+// ========== MAIN KPI REFRESH ==========
+async function refreshKPIs() {
+    const start = document.getElementById('kpiStart').value;
+    const end = document.getElementById('kpiEnd').value;
+    const url = `/inventory/api/admin-kpis/?start_date=${start}&end_date=${end}`;
+    
+    
+    try {
+        const resp = await fetch(url);
+        const data = await resp.json();
+        
+        if (!resp.ok) {
+            console.error('KPI API Error:', data);
+            return;
+        }
+        
+        // Update revenue value
+        document.getElementById('monthly-revenue').innerText = `₱${Number(data.revenue_total).toFixed(2)}`;
+        
+        // Update revenue label based on date range
+        const revenueLabelEl = document.querySelector('#monthly-revenue').nextElementSibling;
+        if (revenueLabelEl && revenueLabelEl.classList.contains('stat-label')) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            
+            let rangeText = "Total Sales";
+            if (daysDiff <= 1) {
+                rangeText = "Today's Total Sales";
+            } else if (daysDiff <= 7) {
+                rangeText = "This Week's Total Sales";
+            } else if (daysDiff <= 31) {
+                rangeText = "This Month's Total Sales";
+            } else if (daysDiff <= 366) {
+                rangeText = "This Year's Total Sales";
+            } else {
+                rangeText = "Total Sales (All Time)";
+            }
+            
+            revenueLabelEl.textContent = rangeText;
+        }
+        
+        // Update other cards
+        document.getElementById('orders-in-range').innerText = data.orders_total;
+        document.getElementById('average-order-value').innerText = `₱${Number(data.average_order_value).toFixed(2)}`;
+        document.getElementById('deliveries-total').innerText = data.deliveries_total;
+        
+        // Update deltas
+        const revenueDelta = data.revenue_delta_pct;
+        document.getElementById('revenue-delta').innerHTML = revenueDelta === null ? '' : 
+            `<span class="${revenueDelta>=0?'delta-up':'delta-down'}">${revenueDelta>=0?'+':''}${revenueDelta}% vs prev</span>`;
+        
+        const ordersDelta = data.orders_delta_pct;
+        document.getElementById('orders-delta').innerHTML = ordersDelta === null ? '' : 
+            `<span class="${ordersDelta>=0?'delta-up':'delta-down'}">${ordersDelta>=0?'+':''}${ordersDelta}% vs prev</span>`;
+        
+        const deliveriesDelta = data.deliveries_delta_pct;
+        document.getElementById('deliveries-delta').innerHTML = deliveriesDelta === null ? '' : 
+            `<span class="${deliveriesDelta>=0?'delta-up':'delta-down'}">${deliveriesDelta>=0?'+':''}${deliveriesDelta}% vs prev</span>`;
+        
+        // Update sales trend chart
+        salesChart.data.labels = data.sales_trend.labels;
+        salesChart.data.datasets[0].data = data.sales_trend.values;
+        salesChart.update();
+        
+    } catch (error) {
+        console.error('Error refreshing KPIs:', error);
+    }
+}
+
+// ========== SALES RANGE SELECTOR ==========
+function setSalesRange(range) {
+    const dates = getDateRange(range);
+    document.getElementById('kpiStart').value = dates.startISO;
+    document.getElementById('kpiEnd').value = dates.endISO;
+    
+    // Update button styles
+    document.querySelectorAll('.range-btn').forEach(btn => {
+        btn.classList.remove('active-range');
+    });
+    event.target.classList.add('active-range');
+    
+    refreshKPIs();
+}
+
+// ========== SCOPE RESOLVER ==========
+function resolveRangeFromScope(scope, startId, endId) {
+    if (scope === 'custom') {
+        const start = new Date(document.getElementById(startId).value || new Date());
+        const end = new Date(document.getElementById(endId).value || new Date());
+        return {
+            startISO: start.toISOString().slice(0,10),
+            endISO: end.toISOString().slice(0,10)
+        };
+    }
+    return getDateRange(scope);
+}
+
+// ========== ORDER STATUS CHART ==========
+async function refreshOrderStatusChart() {
+    const scope = document.getElementById('orderScope').value;
+    const { startISO, endISO } = resolveRangeFromScope(scope, 'orderStart', 'orderEnd');
+    const url = `/inventory/api/admin-kpis/?start_date=${startISO}&end_date=${endISO}`;
+    
+    try {
+        const resp = await fetch(url);
+        if (!resp.ok) {
+            console.error('Failed to fetch order status data:', resp.status);
+            return;
+        }
+        
+        const data = await resp.json();
+        const orderMap = data.order_status_counts || {};
+        const orderPreferred = ['Pending','Processing','Shipped','Completed','Canceled','Returned'];
+        const orderLabels = orderPreferred.filter(s => Object.prototype.hasOwnProperty.call(orderMap, s));
+        const orderCounts = orderLabels.map(l => orderMap[l]);
+        const orderColors = orderLabels.map(l => statusColorMap[l] || '#a0aec0');
+        
+        // Handle empty data
+        if (orderLabels.length === 0 || orderCounts.every(c => c === 0)) {
+            statusChart.data.labels = ['No Data'];
+            statusChart.data.datasets[0].data = [1];
+            statusChart.data.datasets[0].backgroundColor = ['#cbd5e0'];
+        } else {
+            statusChart.destroy();
+            statusChart = new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: orderLabels,
+                    datasets: [{
+                        data: orderCounts,
+                        backgroundColor: orderColors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                padding: 10,
+                                font: { size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        statusChart.update();
+    } catch (error) {
+        console.error('Error refreshing order status chart:', error);
+    }
+}
+
+// ========== DELIVERY STATUS CHART ==========
+async function refreshDeliveryStatusChart() {
+    const scope = document.getElementById('deliveryScope').value;
+    const { startISO, endISO } = resolveRangeFromScope(scope, 'deliveryStart', 'deliveryEnd');
+    const url = `/inventory/api/admin-kpis/?start_date=${startISO}&end_date=${endISO}`;
+    
+    try {
+        const resp = await fetch(url);
+        if (!resp.ok) {
+            console.error('Failed to fetch delivery status data:', resp.status);
+            return;
+        }
+        
+        const data = await resp.json();
+        
+        const deliveryColorMap = {
+            'pending_dispatch': '#a0aec0',
+            'out_for_delivery': '#63b3ed',
+            'delivered': '#38a169',
+            'failed': '#e53e3e'
+        };
+        
+        const delMap = data.delivery_status_counts || {};
+        const delPreferred = ['pending_dispatch','out_for_delivery','delivered','failed'];
+        const delLabelsRaw = delPreferred.filter(s => Object.prototype.hasOwnProperty.call(delMap, s));
+        const delCounts = delLabelsRaw.map(l => delMap[l]);
+        const delColors = delLabelsRaw.map(l => deliveryColorMap[l] || '#cbd5e0');
+        const delLabels = delLabelsRaw.map(k => k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+        
+        // Handle empty data
+        if (delLabels.length === 0 || delCounts.every(c => c === 0)) {
+            deliveryChart.data.labels = ['No Data'];
+            deliveryChart.data.datasets[0].data = [1];
+            deliveryChart.data.datasets[0].backgroundColor = ['#cbd5e0'];
+        } else {
+            deliveryChart.destroy();
+            deliveryChart = new Chart(document.getElementById('deliveryChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: delLabels,
+                    datasets: [{
+                        data: delCounts,
+                        backgroundColor: delColors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                padding: 10,
+                                font: { size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        deliveryChart.update();
+    } catch (error) {
+        console.error('Error refreshing delivery status chart:', error);
+    }
+}
+
+// ========== RESTOCK NOTIFICATIONS ==========
+async function loadRestockNotificationsCount() {
+    try {
+        const response = await fetch("{% url 'inventory:restock_notifications_api' %}");
+        if (!response.ok) {
+            console.error('Failed to fetch restock notifications');
+            return;
+        }
+        const data = await response.json();
+        const count = data.length || 0;
+        const countEl = document.getElementById('low-stock-count');
+        if (countEl) {
+            countEl.innerText = count;
+            
+            const statCard = countEl.closest('.stat-card');
+            if (statCard && count > 0) {
+                statCard.style.borderLeftColor = '#e53e3e';
+                statCard.style.background = 'linear-gradient(to right, rgba(229, 62, 62, 0.05), white)';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading restock notifications count:', error);
+    }
+}
+
+// ========== CHART DATA & INITIALIZATION ==========
+let salesData = { 
+    labels: [], 
+    datasets: [{ 
+        label: 'Sales', 
+        data: [], 
+        borderColor: 'rgb(102, 126, 234)', 
+        backgroundColor: 'rgba(102, 126, 234, 0.1)', 
+        borderWidth: 3, 
+        fill: true, 
+        tension: 0.4 
+    }] 
+};
+
+const statusColorMap = {
+    'Pending': '#f6ad55',
+    'Processing': '#4299e1',
+    'Shipped': '#2b6cb0',
+    'Completed': '#48bb78',
+    'Canceled': '#e53e3e',
+    'Returned': '#ecc94b'
+};
+
+const stockData = {
+    labels: {{ products_json|safe }},
+    datasets: [{
+        label: 'Stock Quantity',
+        data: {{ stock_quantities_json|safe }},
+        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+        borderColor: 'rgb(102, 126, 234)',
+        borderWidth: 1
+    }]
+};
+
+// Initialize charts
+const salesChart = new Chart(document.getElementById('salesChart'), {
+    type: 'line',
+    data: salesData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+let statusChart = new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: { labels: ['Loading...'], datasets: [{ data: [1], backgroundColor: ['#cbd5e0'], borderWidth: 0 }] },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+
+let deliveryChart = new Chart(document.getElementById('deliveryChart'), {
+    type: 'doughnut',
+    data: { labels: ['Loading...'], datasets: [{ data: [1], backgroundColor: ['#cbd5e0'], borderWidth: 0 }] },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+
+const stockChart = new Chart(document.getElementById('stockChart'), {
+    type: 'bar',
+    data: stockData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+// ========== FORECAST FUNCTIONALITY ==========
+let forecastChart = null;
+
+async function generateForecast() {
+    const productSelect = document.getElementById('productSelect');
+    const resultDiv = document.getElementById('forecastResult');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const chartCanvas = document.getElementById('forecastChart');
+    
+    if (!productSelect.value) {
+        alert('Please select a product first.');
+        return;
+    }
+
+    resultDiv.style.display = 'block';
+    loadingMessage.style.display = 'block';
+    chartCanvas.style.display = 'none';
+    
+    if (forecastChart) {
+        forecastChart.destroy();
+    }
+
+    try {
+        const past = parseInt(document.getElementById('pastMonths').value || '6', 10);
+        const future = parseInt(document.getElementById('futureMonths').value || '6', 10);
+        const url = `/inventory/api/demand_forecast/?product_name=${encodeURIComponent(productSelect.value)}&past_months=${past}&future_months=${future}`;
+        const response = await fetch(url);
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            throw new Error('Unexpected response format');
+        }
+        
+        if (response.ok) {
+            displayForecastResult(data);
+            createForecastChart(data);
+        } else {
+            throw new Error(data.error || 'Failed to generate forecast');
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `<div style="color: #e53e3e; font-weight: 500;">Error: ${error.message}</div>`;
+        loadingMessage.style.display = 'none';
+    }
+}
+
+function displayForecastResult(data) {
+    const resultDiv = document.getElementById('forecastResult');
+    const contentDiv = document.getElementById('forecastContent');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const isRestock = data.restock_needed;
+
+    loadingMessage.style.display = 'none';
+
+    const quantityNeeded = Math.max(0, data.forecasted_quantity - data.current_stock);
+
+    resultDiv.className = `forecast-result ${isRestock ? 'restock-warning' : ''}`;
+    contentDiv.innerHTML = `
+        <h4 style="margin: 0 0 1rem 0; color: ${isRestock ? '#c53030' : '#38a169'};">
+            ${data.product_name} - Forecast Results
+        </h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+            <div>
+                <strong>Current Stock:</strong> ${data.current_stock} units
+            </div>
+            <div>
+                <strong>Forecasted Demand (${data.params ? data.params.future_months : 6} months):</strong> ${data.forecasted_quantity} units
+            </div>
+            <div>
+                <strong>Quantity Needed:</strong> 
+                <span style="color: ${isRestock ? '#c53030' : '#38a169'}; font-weight: 600; font-size: 1.1rem;">
+                    ${quantityNeeded} units
+                </span>
+            </div>
+            <div>
+                <strong>Restock Needed:</strong> 
+                <span style="color: ${isRestock ? '#c53030' : '#38a169'}; font-weight: 600;">
+                    ${isRestock ? 'YES' : 'NO'}
+                </span>
+            </div>
+        </div>
+        ${isRestock ? `
+            <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(229, 62, 62, 0.1); border-radius: 6px; color: #c53030; margin-bottom: 1rem;">
+                <strong>⚠️ Warning:</strong> Forecasted demand exceeds current stock. Consider restocking soon.
+            </div>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <a href="{% url 'inventory:restock_notifications_view' %}" 
+                   class="forecast-btn" 
+                   style="text-decoration: none; display: inline-block;">
+                    <i class="fas fa-bell me-1"></i> View Notifications
+                </a>
+                <a href="{% url 'PO:purchase_order_list' %}" 
+                   class="forecast-btn" 
+                   style="text-decoration: none; display: inline-block; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
+                    <i class="fas fa-shopping-cart me-1"></i> Create Purchase Order
+                </a>
+            </div>
+        ` : ''}
+    `;
+}
+
+function createForecastChart(data) {
+    const chartCanvas = document.getElementById('forecastChart');
+    chartCanvas.style.display = 'block';
+    
+    const actualDataWindowSize = data.params ? data.params.past_months : 6;
+    const actual = data.actual;
+    const actualLastN = actual.slice(-actualDataWindowSize);
+    
+    const actualLabels = actualLastN.map(item => item.label);
+    const actualValues = actualLastN.map(item => item.value);
+    const forecastLabels = data.forecast.map(item => item.label);
+    const forecastValues = data.forecast.map(item => item.value);
+    
+    const allLabels = [...actualLabels, ...forecastLabels];
+    const actualDataForChart = [...actualValues, ...new Array(forecastLabels.length).fill(null)];
+    const forecastDataForChart = [...new Array(actualLabels.length).fill(null), ...forecastValues];
+    
+    if (forecastChart) {
+        forecastChart.destroy();
+    }
+    
+    const chartType = data.chart_type || 'line';
+    
+    forecastChart = new Chart(chartCanvas, {
+        type: chartType,
+        data: {
+            labels: allLabels,
+            datasets: [
+                {
+                    label: 'Actual Sales',
+                    data: actualDataForChart,
+                    borderColor: '#48bb78',
+                    backgroundColor: chartType === 'bar' ? 'rgba(72, 187, 120, 0.6)' : 'rgba(72, 187, 120, 0.1)',
+                    borderWidth: chartType === 'bar' ? 1 : 3,
+                    fill: chartType === 'line' ? false : undefined
+                },
+                {
+                    label: 'Forecasted Demand',
+                    data: forecastDataForChart,
+                    borderColor: '#ed8936',
+                    backgroundColor: chartType === 'bar' ? 'rgba(237, 137, 54, 0.6)' : 'rgba(237, 137, 54, 0.1)',
+                    borderWidth: chartType === 'bar' ? 1 : 3,
+                    borderDash: chartType === 'line' ? [5, 5] : undefined,
+                    fill: chartType === 'line' ? false : undefined
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: {
+                    display: true,
+                    text: 'Sales Forecast'
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Quantity Sold'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Month'
+                    }
+                }
+            }
+        }
+    });
+}
+    document.addEventListener("DOMContentLoaded", function () {
+      const ctx = document.getElementById("salesForecastChart").getContext("2d");
+      let salesForecastChart;
+    
+      function loadSalesForecast() {
+        const pastMonthsSales = parseInt(document.getElementById("pastMonthsSales").value) || 6;
+        const futureMonthsSales = parseInt(document.getElementById("futureMonthsSales").value) || 6;
+    
+        fetch(`/inventory/forecast/sales/?past_months=${pastMonthsSales}&future_months=${futureMonthsSales}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.error) {
+              console.error("Error:", data.error);
+              return;
+            }
+    
+            const labels = [
+              ...data.actual.map((d) => d.label),
+              ...data.forecast.map((d) => d.label),
+            ];
+    
+            const actualValues = data.actual.map((d) => d.value);
+            const forecastValues = new Array(data.actual.length).fill(null).concat(
+              data.forecast.map((d) => d.value)
+            );
+    
+            // Destroy previous chart if exists
+            if (salesForecastChart) salesForecastChart.destroy();
+    
+            // Create chart
+            salesForecastChart = new Chart(ctx, {
+              type: "line",
+              data: {
+                labels: labels,
+                datasets: [
+                  {
+                    label: "Actual Sales",
+                    data: actualValues.concat(new Array(data.forecast.length).fill(null)),
+                    borderColor: "#3b82f6",
+                    backgroundColor: "rgba(59, 130, 246, 0.2)",
+                    borderWidth: 2,
+                    tension: 0.3,
+                  },
+                  {
+                    label: "Forecasted Sales",
+                    data: forecastValues,
+                    borderColor: "#f97316",
+                    borderDash: [6, 4],
+                    backgroundColor: "rgba(249, 115, 22, 0.1)",
+                    borderWidth: 2,
+                    tension: 0.3,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { position: "top" },
+                  title: {
+                    display: true,
+                    text: "Sales Forecast (₱)",
+                    font: { size: 16 },
+                  },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    title: { display: true, text: "Sales Amount" },
+                  },
+                  x: {
+                    title: { display: true, text: "Month" },
+                  },
+                },
+              },
+            });
+          })
+          .catch((err) => console.error("Fetch error:", err));
+      }
+    
+      // Initial load
+      loadSalesForecast();
+    
+      // Bind to button
+      document.getElementById("loadForecast").addEventListener("click", loadSalesForecast);
+    });
+// Market Trend Analysis
+let marketTrendChart = null;
+
+// Reusable function to load and render the chart (no change to this function needed)
+async function loadMarketTrendChart() {
+    const trendYear = document.getElementById("trendYear").value;
+
+    try {
+        // Fetch data
+        const response = await fetch(`/inventory/analytics/market-trend/?year=${trendYear}`);
+        const data = await response.json();
+
+        // Error handling...
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        const months = data.data.map(d => d.month);
+
+        // ... (rest of your categoryDatasets and trendDataset definitions) ...
+        const categoryDatasets = data.categories.map(cat => ({
+            label: cat,
+            data: data.data.map(d => d[cat]),
+            // ✅ 1. LINE COLOR: Use 1.0 alpha for a solid line border
+            borderColor: getColorForCategory(cat, 1.0), 
+            
+            // ✅ 2. FILL COLOR: Use a low alpha (e.g., 0.4) for the stacked area fill
+            backgroundColor: getColorForCategory(cat, 0.0),
+            
+            borderWidth: 2, // Increased line thickness for visibility
+            stack: "categories",
+            yAxisID: "y",
+            fill: false,     // CRUCIAL: Enables the stacked area fill
+            tension: 0.2,   // Optional: Makes the line smoother
+        }));
+        const trendDataset = {
+            label: "Market Trend (Forecast)",
+            data: data.trend.map(d => d.value),
+            borderColor: "red",
+            borderDash: [6, 3],
+            pointBackgroundColor: "red",
+            pointRadius: 4,
+            borderWidth: 3,
+            type: "line",
+            fill: false,
+            tension: 0.4,
+            yAxisID: "y1",
+        };
+
+        if (marketTrendChart) marketTrendChart.destroy();
+
+        // Render chart
+        const ctx = document.getElementById("marketTrendChart");
+        marketTrendChart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: months,
+                datasets: [...categoryDatasets, trendDataset],
+                borderWidth: 2, // You can set a number here
+                
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Market Trend Analysis (${data.year})`,
+                        font: { size: 16 },
+                    },
+                    legend: { position: "bottom" },
+                },
+                scales: {
+                    x: { stacked: true },
+                    y: {
+                        stacked: false,
+                        beginAtZero: true,
+                        title: { display: true, text: "Category Sales" },
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: "right",
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: "Forecasted Trend" },
+                        min: Math.min(...data.trend.map(t => t.value)) - 150,
+                        max: Math.max(...data.trend.map(t => t.value)) + 150,
+                    },
+                },
+            },
+        });
+    } catch (error) {
+        console.error("Error loading market trend:", error);
+    }
+}
+
+function setDefaultYear() {
+    const currentYear = new Date().getFullYear();
+    const trendYearInput = document.getElementById("trendYear");
+    if (trendYearInput) {
+        trendYearInput.value = currentYear;
+    }
+}
+
+// ----------------------------------------------------
+// 🎯 CRITICAL FIX: Run ALL setup logic after DOM is ready
+// ----------------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Set the default year (Input element is guaranteed to exist now)
+    setDefaultYear();
+
+    // 2. Attach the loading function to the button click
+    const loadButton = document.getElementById("loadMarketTrend");
+    if (loadButton) {
+        loadButton.addEventListener("click", loadMarketTrendChart);
+    }
+
+    // 3. Auto-Load the chart once with the default year
+    loadMarketTrendChart();
+});
+/**
+ * Generates a unique, visually distinct color (in HSLA format) for any category.
+ * Uses a prime multiplier to aggressively separate hues of similar category names.
+ *
+ * @param {string} cat - The category string.
+ * @param {number} alpha - The opacity level (e.g., 0.6 for fill, 1.0 for solid border).
+ * @returns {string} The HSLA color string.
+ */
+/**
+ * Generates a highly unique and distinct color (in HSLA format) for any category.
+ * It uses the hash to determine HUE, and slight variations in SATURATION and LIGHTNESS
+ * to ensure maximum visual separation, even for a large number of categories.
+ *
+ * @param {string} cat - The category string.
+ * @param {number} alpha - The opacity level (e.g., 1.0 for solid line).
+ * @returns {string} The HSLA color string.
+ */
+ function getColorForCategory(cat, alpha) {
+    // 1. Create a base hash from the category string
+    const stringHash = cat.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+    
+    // 2. Map the hash to a wide-ranging Hue (0 to 359 degrees)
+    const PRIME_SHIFT = 137; 
+    const shiftedHash = stringHash * PRIME_SHIFT;
+    const hue = Math.abs(shiftedHash) % 360;
+
+    // 3. INTRODUCE VARIATION IN SATURATION AND LIGHTNESS
+    // This is the CRITICAL STEP to break color monotony.
+
+    // Saturation: Base 65% + variation (15% spread). Range: 65% to 80%
+    const saturation = 65 + (Math.abs(stringHash) % 15);
+    
+    // Lightness: Base 40% + variation (20% spread). Range: 40% to 60%
+    // This ensures colors are neither too dark (below 40%) nor too light (above 60%).
+    const lightness = 40 + (Math.abs(stringHash) % 20); 
+    
+    // 4. Return the HSLA color string with the provided alpha
+    return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
+}// top 5 best 
+
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("/inventory/api/best-sellers/")
+        .then(response => response.json())
+        .then(data => {
+            const labels = data.map(item => item.product_name);
+            const quantities = data.map(item => item.total_quantity);
+            const revenues = data.map(item => item.total_revenue);
+
+            const ctx = document.getElementById("best-seller-chart").getContext("2d");
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Quantity Sold",
+                            data: quantities,
+                            backgroundColor: "rgba(54, 162, 235, 0.6)",
+                            borderColor: "rgba(54, 162, 235, 1)",
+                            borderWidth: 1
+                        },
+                        {
+                            label: "Revenue (₱)",
+                            data: revenues,
+                            backgroundColor: "rgba(255, 206, 86, 0.6)",
+                            borderColor: "rgba(255, 206, 86, 1)",
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            enabled: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+});
+
+// ========== MAIN INITIALIZATION ==========
+document.addEventListener('DOMContentLoaded', () => {
+    setDefaultDates();
+    refreshKPIs();
+    loadRestockNotificationsCount();
+    
+    // Set default scope
+    document.getElementById('orderScope').value = 'overall';
+    document.getElementById('deliveryScope').value = 'overall';
+    document.getElementById('orderCustomDates').style.display = 'none';
+    document.getElementById('deliveryCustomDates').style.display = 'none';
+    
+    refreshOrderStatusChart();
+    refreshDeliveryStatusChart();
+    
+    // Event listeners for date changes
+    document.getElementById('kpiStart').addEventListener('change', refreshKPIs);
+    document.getElementById('kpiEnd').addEventListener('change', refreshKPIs);
+    
+    // Scope change handlers
+    document.getElementById('orderScope').addEventListener('change', function() {
+        const customDates = document.getElementById('orderCustomDates');
+        if (this.value === 'custom') {
+            customDates.style.display = 'flex';
+        } else {
+            customDates.style.display = 'none';
+            refreshOrderStatusChart();
+        }
+    });
+    
+    document.getElementById('deliveryScope').addEventListener('change', function() {
+        const customDates = document.getElementById('deliveryCustomDates');
+        if (this.value === 'custom') {
+            customDates.style.display = 'flex';
+        } else {
+            customDates.style.display = 'none';
+            refreshDeliveryStatusChart();
+        }
+    });
+    
+    // Custom date change handlers
+    document.getElementById('orderStart')?.addEventListener('change', () => {
+        if (document.getElementById('orderScope').value === 'custom') refreshOrderStatusChart();
+    });
+    document.getElementById('orderEnd')?.addEventListener('change', () => {
+        if (document.getElementById('orderScope').value === 'custom') refreshOrderStatusChart();
+    });
+    document.getElementById('deliveryStart')?.addEventListener('change', () => {
+        if (document.getElementById('deliveryScope').value === 'custom') refreshDeliveryStatusChart();
+    });
+    document.getElementById('deliveryEnd')?.addEventListener('change', () => {
+        if (document.getElementById('deliveryScope').value === 'custom') refreshDeliveryStatusChart();
+    });
+});
+</script>
+
+{% if messages %}
+<script id="django-messages-json" type="application/json">
+  [
+    {% for message in messages %}
+      {
+        "message": "{{ message|escapejs }}",
+        "tags": "{{ message.tags }}"
+      }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+</script>
+<script src="{% static 'js/messages.js' %}"></script>
+{% endif %}
+
+{% endblock %}

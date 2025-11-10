@@ -1,0 +1,69 @@
+{% extends "base_admin.html" %}
+{% block title %}Order #{{ order_id }}{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="m-0">Order #{{ order_id }}</h5>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'orders:billing_dashboard' %}">Back to Billing</a>
+  </div>
+  <div class="card-body">
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="p-3 border rounded-3">
+          <h6 class="fw-bold">Order Information</h6>
+          <div><strong>Status:</strong> {{ status }}</div>
+          <div><strong>Order Date:</strong> {{ order_date }}</div>
+          <div><strong>Payment Method:</strong> {{ payment_method }}</div>
+          <div><strong>Payment Status:</strong> {{ payment_status|title }}</div>
+          {% if payment_verified_at %}<div><strong>Verified:</strong> {{ payment_verified_at }}</div>{% endif %}
+          <div class="mt-2"><strong>Total:</strong> ₱{{ total_cost|floatformat:2 }}</div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="p-3 border rounded-3">
+          <h6 class="fw-bold">Customer</h6>
+          <div><strong>Name:</strong> {{ customer_name }}</div>
+          <div><strong>Email:</strong> {{ customer_email }}</div>
+          <div><strong>Phone:</strong> {{ shipping_phone }}</div>
+          <div><strong>Address:</strong> {{ shipping_address }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 p-3 border rounded-3">
+      <h6 class="fw-bold">Items</h6>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Product</th>
+              <th style="width: 120px;" class="text-center">Qty</th>
+              <th style="width: 140px;" class="text-end">Price</th>
+              <th style="width: 160px;" class="text-end">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{{ item.product_name }}{% if item.variant and item.variant != "Default" %} ({{ item.variant }}){% endif %}</td>
+              <td class="text-center">{{ item.quantity }}</td>
+              <td class="text-end">₱{{ item.price|floatformat:2 }}</td>
+              <td class="text-end fw-semibold">₱{{ item.total|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% if gcash_reference_image_url %}
+    <div class="mt-4 p-3 border rounded-3">
+      <h6 class="fw-bold">Payment Proof</h6>
+      <a href="{{ gcash_reference_image_url }}" target="_blank">
+        <img src="{{ gcash_reference_image_url }}" alt="GCash Receipt" style="max-width: 100%; max-height: 400px;" />
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

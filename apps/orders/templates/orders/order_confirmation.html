@@ -1,0 +1,168 @@
+{% extends 'base_store.html' %}
+{% load static %}
+
+{% block title %}Order Confirmation - SupplyTrack Store{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/orders/order_confirmation.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+    <div class="confirmation-header">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h1>Order Confirmed!</h1>
+        <p class="thank-you">Thank you for your purchase!</p>
+        <p class="order-id">Order #{{ order.order_id }}</p>
+    </div>
+
+    <div class="confirmation-content">
+        <div class="order-status">
+            <div class="status-badge {% if order.status == 'Delivered' %}status-delivered{% elif order.status == 'Processing' %}status-processing{% elif order.status == 'Shipped' %}status-shipped{% else %}status-pending{% endif %}">
+                <i class="fas fa-circle"></i>
+                {{ order.status }}
+            </div>
+            <div class="status-timeline">
+                <div class="timeline-item {% if order.status == 'Pending' %}completed{% endif %}">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Order Placed</span>
+                </div>
+                <div class="timeline-item {% if order.status == 'Processing' %}completed{% endif %}">
+                    <i class="fas fa-cog"></i>
+                    <span>Processing</span>
+                </div>
+                <div class="timeline-item {% if order.status == 'Shipped' %}completed{% endif %}">
+                    <i class="fas fa-shipping-fast"></i>
+                    <span>Shipped</span>
+                </div>
+                <div class="timeline-item {% if order.status == 'Completed' %}completed{% endif %}">
+                    <i class="fas fa-box"></i>
+                    <span>Delivered</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-details">
+            <div class="details-grid">
+                <div class="detail-section">
+                    <h2><i class="fas fa-info-circle"></i> Order Information</h2>
+                    <div class="detail-content">
+                        <div class="detail-row">
+                            <span class="detail-label">Order Date</span>
+                            <span class="detail-value">{{ order.order_date|date:"F j, Y, P" }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Payment Method</span>
+                            <span class="detail-value">{{ order.payment_method }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Expected Delivery</span>
+                            <span class="detail-value">{{ order.expected_delivery_date|default:"Not specified" }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Delivery Note</span>
+                            <span class="detail-value">{{ delivery_note|default:"Not specified" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h2><i class="fas fa-map-marker-alt"></i> Shipping Information</h2>
+                    <div class="detail-content">
+                        <div class="shipping-address">
+                            <strong>{{ order.get_customer_name }}</strong><br>
+                            {% if order.customer.customer_profile.phone %}
+                                <i class="fas fa-phone"></i> {{ order.customer.customer_profile.phone }}<br>
+                            {% endif %}
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ order.customer.customer_profile.street_address }}<br>
+                            {{ order.customer.customer_profile.city }}, {{ order.customer.customer_profile.province }}<br>
+                            {{ order.customer.customer_profile.zip_code }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-items">
+                <h2><i class="fas fa-box-open"></i> Order Items</h2>
+                <div class="items-list">
+                    {% for item in order_items %}
+                        <div class="order-item">
+                            <div class="item-image">
+                                {% if item.product_variant.product.image %}
+                                    <img src="{{ item.product_variant.product.image.url }}" alt="{{ item.product_variant.product.name }}">
+                                {% else %}
+                                    <img src="{% static 'images/placeholder.png' %}" alt="No image available">
+                                {% endif %}
+                            </div>
+                            <div class="item-details">
+                                <div class="item-info">
+                                    <h3 class="item-name">{{ item.product_variant.product.name }}</h3>
+                                    <div class="item-variants">
+                                        {% if item.product_variant.size or item.product_variant.color %}
+                                            <span class="variant-details">
+                                                {% if item.product_variant.size %}Size: {{ item.product_variant.size }}{% endif %}
+                                                {% if item.product_variant.color %}
+                                                    {% if item.product_variant.size %} | {% endif %}
+                                                    Color: {{ item.product_variant.color }}
+                                                {% endif %}
+                                            </span>
+                                        {% endif %}
+                                        <span class="item-sku">SKU: {{ item.product_variant.sku|default:"N/A" }}</span>
+                                    </div>
+                                </div>
+                                <div class="item-pricing">
+                                    <div class="quantity">Qty: {{ item.quantity }}</div>
+                                    <div class="price">₱{{ item.item_total|floatformat:2 }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="no-items">
+                            <i class="fas fa-box-open"></i>
+                            <p>No items found for this order.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>₱{{ order.get_total_cost|floatformat:2 }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span>Free</span>
+                    </div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span>₱{{ order.get_total_cost|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="next-steps">
+            <h3><i class="fas fa-clipboard-list"></i> Next Steps</h3>
+            <p>1. Your order is now pending for processing</p>
+            <p>2. We will process your order soon</p>
+            <p>3. You'll receive updates via email about your order status</p>
+            <p>4. For Cash on Delivery, please prepare the exact amount</p>
+        </div>
+
+        <div class="confirmation-actions">
+            <a href="{% url 'store:product_list' %}" class="action-btn continue-shopping">
+                <i class="fas fa-store"></i> Continue Shopping
+            </a>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'orders:my_orders' %}" class="action-btn view-orders">
+                    <i class="fas fa-box"></i> View My Orders
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

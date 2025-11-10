@@ -1,0 +1,98 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Mark In Transit - {{ purchase_order.purchase_order_id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Mark as In Transit</h2>
+                    <p class="text-muted mb-0">PO: <span class="badge bg-primary">{{ purchase_order.purchase_order_id }}</span></p>
+                </div>
+                <a href="{% url 'PO:purchase_order_detail' purchase_order.purchase_order_id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to PO
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Info Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <i class="fas fa-shipping-fast"></i> Shipment Information
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Supplier:</strong> {{ purchase_order.supplier_profile.company_name }}</p>
+                    <p><strong>Order Date:</strong> {{ purchase_order.order_date|date:"M d, Y" }}</p>
+                    <p><strong>Expected Delivery:</strong> {{ purchase_order.expected_delivery_date|default:"TBD" }}</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <h4 class="text-primary">Total: ₱{{ purchase_order.total_cost|floatformat:2 }}</h4>
+                    <p class="text-muted mb-0">Current Status: <span class="badge bg-success">{{ purchase_order.get_status_display }}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Preview -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-boxes"></i> Items Being Shipped
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-end">Unit Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in purchase_order.items.all %}
+                        <tr>
+                            <td>{{ item.product_variant.product.name|default:item.product_name_text }}</td>
+                            <td class="text-center">{{ item.quantity_ordered }}</td>
+                            <td class="text-end">₱{{ item.unit_cost|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Form -->
+    <div class="card border-info">
+        <div class="card-header bg-info text-white">
+            <i class="fas fa-check-circle"></i> Confirm Shipment Status
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Action:</strong> This will mark the order as "In Transit" (OTW). 
+                    Use this when the supplier has confirmed shipment has begun.
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-truck"></i> Mark as In Transit
+                    </button>
+                    <a href="{% url 'PO:purchase_order_detail' purchase_order.purchase_order_id %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

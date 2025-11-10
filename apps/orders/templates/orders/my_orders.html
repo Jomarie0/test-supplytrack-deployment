@@ -1,0 +1,106 @@
+{# apps/orders/templates/orders/my_orders.html #}
+{% extends 'base_store.html' %}
+{% load static %}
+
+{% block title %}My Orders - SupplyTrack Store{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/orders/my_orders.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="orders-container">
+    <div class="orders-header">
+        <h1><i class="fas fa-box"></i> My Orders</h1>
+        <a href="{% url 'store:product_list' %}" class="continue-shopping">
+            <i class="fas fa-store"></i> Continue Shopping
+        </a>
+    </div>
+
+    {% if orders %}
+        <div class="orders-list">
+            {% for order in orders %}
+                <div class="order-item">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <span class="order-id">Order #{{ order.order_id }}</span>
+                            <span class="order-date">
+                                <i class="far fa-calendar-alt"></i>
+                                {{ order.order_date|date:"M d, Y" }}
+                            </span>
+                        </div>
+                        <div class="order-status {% if order.status == 'Delivered' %}status-delivered{% elif order.status == 'Processing' %}status-processing{% elif order.status == 'Shipped' %}status-shipped{% else %}status-pending{% endif %}">
+                            <i class="fas fa-circle"></i>
+                            {{ order.status }}
+                        </div>
+                    </div>
+                    
+                    <div class="order-content">
+                        <div class="order-products">
+                            {% for item in order.items.all %}
+                                <div class="product-item">
+                                    <div class="product-image">
+                                        {% if item.product_variant.product.image %}
+                                            <img src="{{ item.product_variant.product.image.url }}" alt="{{ item.product_variant.product.name }}">
+                                        {% else %}
+                                            <img src="{% static 'images/placeholder.png' %}" alt="No image available">
+                                        {% endif %}
+                                    </div>
+                                    <div class="product-details">
+                                        <h3 class="product-name">{{ item.product_variant.product.name }}</h3>
+                                        <div class="product-meta">
+                                            {% if item.product_variant.size %}
+                                                <span class="product-size">Size: {{ item.product_variant.size }}</span>
+                                            {% endif %}
+                                            {% if item.product_variant.color %}
+                                                <span class="product-color">Color: {{ item.product_variant.color }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="product-price">
+                                            <span class="quantity">Qty: {{ item.quantity }}</span>
+                                            <span class="price">₱{{ item.price_at_order|floatformat:2 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="order-summary">
+                            <div class="delivery-info">
+                                <h4><i class="fas fa-shipping-fast"></i> Delivery Details</h4>
+                                <p>{{ order.shipping_address }}</p>
+                            </div>
+                            <div class="total-section">
+                                <span class="total-label">Total Amount</span>
+                                <span class="total-amount">₱{{ order.get_total_cost|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-actions">
+                        <a href="{% url 'orders:order_confirmation' order.id %}" class="btn-view-details">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                        {% if order.status == 'Delivered' %}
+                            <button class="btn-reorder">
+                                <i class="fas fa-redo"></i> Reorder
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-orders">
+            <div class="empty-orders-content">
+                <i class="fas fa-box-open"></i>
+                <h2>No orders yet</h2>
+                <p>Looks like you haven't placed any orders yet. Start shopping to see your orders here!</p>
+                <a href="{% url 'store:product_list' %}" class="start-shopping-btn">
+                    <i class="fas fa-store"></i> Start Shopping
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

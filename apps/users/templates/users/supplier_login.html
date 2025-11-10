@@ -1,0 +1,102 @@
+{% extends 'base_store.html' %}
+{% load static %}
+
+{% block title %}Supplier Login - SupplyTrack{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/users/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-container supplier">
+    <div class="login-card">
+        <div class="login-header">
+            <a href="{% url 'users:login_landing' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Login Options</span>
+            </a>
+            <h1><i class="fas fa-box"></i> Supplier Portal</h1>
+            <p>Access your supplier dashboard</p>
+        </div>
+
+        {% include 'messages.html' %}
+
+        <form method="post" class="login-form">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="help-text">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="field-error">
+                            {% for error in field.errors %}
+                                <i class="fas fa-exclamation-circle"></i> {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <div class="remember-forgot">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember_me">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="{% url 'users:forgot_password' %}" class="forgot-password">Forgot Password?</a>
+                </div>
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login
+                </button>
+            </div>
+        </form>
+
+        <div class="login-footer">
+            <p>Want to become a supplier?</p>
+            <a href="{% url 'users:supplier_register' %}" class="register-link">
+                Apply as Supplier
+            </a>
+            <p class="info-text">
+                <i class="fas fa-info-circle"></i>
+                Your application will be reviewed by our team
+            </p>
+        </div>
+    </div>
+</div>
+{% if redirect_after_login %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const overlay = document.getElementById("loadingOverlay");
+    overlay.classList.add("show");
+
+    setTimeout(() => {
+      window.location.href = "{{ redirect_after_login }}";
+    }, 2000);
+  });
+</script>
+{% else %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const loginForm = document.querySelector("form.login-form");
+    const overlay = document.getElementById("loadingOverlay");
+
+    if (loginForm) {
+      loginForm.addEventListener("submit", function () {
+        overlay.classList.add("show");
+      });
+    }
+  });
+</script>
+{% endif %}
+
+<!-- Fullscreen loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loader-spinner"></div>
+  <div class="loading-text">Logging in, please wait...</div>
+</div>
+{% endblock %} 

@@ -1,0 +1,388 @@
+{% extends "base_supplier.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+  /* Container */
+  .po-details, .order-items, .add-item-form {
+    max-width: 900px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+  }
+
+  /* Purchase order details */
+  .po-details p {
+    margin: 6px 0;
+    font-size: 1rem;
+  }
+  .po-details pre {
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 6px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* Table styling */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  th, td {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  th {
+    background-color: #f4f6f8;
+  }
+  tbody tr:nth-child(even) {
+    background-color: #fbfbfb;
+  }
+
+  /* Form styling */
+  form label {
+    display: block;
+    margin: 12px 0 5px 0;
+    font-weight: 600;
+  }
+  form input[type="text"],
+  form input[type="number"],
+  form textarea {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    resize: vertical;
+  }
+  form input[readonly] {
+    background-color: #eee;
+  }
+
+  form button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+  }
+  form button:hover {
+    background-color: #0056b3;
+  }
+
+  /* Action buttons container */
+  .action-buttons {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px 25px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .action-buttons .btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s ease-in-out;
+    border: none;
+    cursor: pointer;
+  }
+
+  .action-buttons .btn-primary {
+    background-color: #007bff;
+    color: white;
+  }
+
+  .action-buttons .btn-primary:hover {
+    background-color: #0056b3;
+  }
+
+  .action-buttons .btn-success {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .action-buttons .btn-success:hover {
+    background-color: #1e7e34;
+  }
+
+  .action-buttons .btn-warning {
+    background-color: #ffc107;
+    color: #212529;
+  }
+
+  .action-buttons .btn-warning:hover {
+    background-color: #e0a800;
+  }
+
+  .action-buttons .btn-danger {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .action-buttons .btn-danger:hover {
+    background-color: #c82333;
+  }
+
+  .action-buttons .btn-info {
+    background-color: #17a2b8;
+    color: white;
+  }
+
+  .action-buttons .btn-info:hover {
+    background-color: #138496;
+  }
+
+  .action-buttons .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+
+  .action-buttons .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+
+  /* Confirm button fixed at bottom-right (if needed) */
+  #confirm-order-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background-color: #28a745;
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    padding: 15px 25px;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 12px rgba(40, 167, 69, 0.5);
+    z-index: 9999;
+    transition: background-color 0.2s ease-in-out;
+  }
+  #confirm-order-btn:hover {
+    background-color: #1e7e34;
+  }
+</style>
+
+<div class="po-details">
+  <h2>Purchase Order Details</h2>
+  {% if purchase_order.status == purchase_order.STATUS_IN_TRANSIT %}
+<div class="alert alert-info border-l-4 border-blue-500 bg-blue-50 p-4 mb-4">
+    <div class="flex items-center">
+        <i class="fas fa-truck text-blue-600 text-2xl mr-3"></i>
+        <div>
+            <h4 class="font-semibold text-blue-800">Order In Transit</h4>
+            <p class="text-sm text-blue-700">This order is currently on the way to the customer. Expected delivery: {{ purchase_order.expected_delivery_date|default:"TBD" }}</p>
+        </div>
+    </div>
+</div>
+{% elif purchase_order.status == purchase_order.STATUS_PARTIALLY_RECEIVED %}
+<div class="alert alert-warning border-l-4 border-yellow-500 bg-yellow-50 p-4 mb-4">
+    <div class="flex items-center">
+        <i class="fas fa-box-open text-yellow-600 text-2xl mr-3"></i>
+        <div>
+            <h4 class="font-semibold text-yellow-800">Partially Received</h4>
+            <p class="text-sm text-yellow-700">The customer has received some items. Remaining items are pending delivery.</p>
+        </div>
+    </div>
+</div>
+{% elif purchase_order.status == purchase_order.STATUS_RECEIVED %}
+<div class="alert alert-success border-l-4 border-green-500 bg-green-50 p-4 mb-4">
+    <div class="flex items-center">
+        <i class="fas fa-check-circle text-green-600 text-2xl mr-3"></i>
+        <div>
+            <h4 class="font-semibold text-green-800">Order Completed</h4>
+            <p class="text-sm text-green-700">This order has been fully received by the customer. Thank you for your service!</p>
+        </div>
+    </div>
+</div>
+{% elif purchase_order.status == purchase_order.STATUS_REFUND %}
+<div class="alert alert-danger border-l-4 border-red-500 bg-red-50 p-4 mb-4">
+    <div class="flex items-center">
+        <i class="fas fa-undo text-red-600 text-2xl mr-3"></i>
+        <div>
+            <h4 class="font-semibold text-red-800">Refund Requested</h4>
+            <p class="text-sm text-red-700 mb-2">The customer has requested a refund for this order.</p>
+            {% if purchase_order.refund_reason %}
+            <p class="text-sm text-red-700"><strong>Reason:</strong> {{ purchase_order.refund_reason }}</p>
+            {% endif %}
+            {% if purchase_order.refund_amount %}
+            <p class="text-sm text-red-700"><strong>Amount:</strong> ₱{{ purchase_order.refund_amount|floatformat:2 }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% elif purchase_order.status == purchase_order.STATUS_CONFIRMED %}
+<div class="alert alert-info border-l-4 border-blue-500 bg-blue-50 p-4 mb-4">
+    <div class="flex items-center">
+        <i class="fas fa-check-circle text-blue-600 text-2xl mr-3"></i>
+        <div>
+            <h4 class="font-semibold text-blue-800">Order Confirmed</h4>
+            <p class="text-sm text-blue-700">This order has been confirmed. You can now mark it as in transit when you ship the items.</p>
+        </div>
+    </div>
+</div>
+{% elif purchase_order.status == purchase_order.STATUS_REQUEST_PENDING %}
+<div class="alert alert-warning border-l-4 border-yellow-500 bg-yellow-50 p-4 mb-4">
+    <div class="flex items-center">
+        <i class="fas fa-clock text-yellow-600 text-2xl mr-3"></i>
+        <div>
+            <h4 class="font-semibold text-yellow-800">Action Required</h4>
+            <p class="text-sm text-yellow-700">Please submit pricing for this order to proceed.</p>
+        </div>
+    </div>
+</div>
+{% elif purchase_order.status == purchase_order.STATUS_SUPPLIER_PRICED %}
+<div class="alert alert-info border-l-4 border-blue-500 bg-blue-50 p-4 mb-4">
+    <div class="flex items-center">
+        <i class="fas fa-hourglass-half text-blue-600 text-2xl mr-3"></i>
+        <div>
+            <h4 class="font-semibold text-blue-800">Awaiting Confirmation</h4>
+            <p class="text-sm text-blue-700">Your pricing has been submitted. Waiting for staff confirmation.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+  <p><strong>PO ID:</strong> {{ purchase_order.purchase_order_id }}</p>
+  {% comment %} <p><strong>Supplier:</strong> {{ supplier.name }}</p> {% endcomment %}
+  <p><strong>Status:</strong> <span class="badge bg-{% if purchase_order.status == purchase_order.STATUS_RECEIVED %}success{% elif purchase_order.status == purchase_order.STATUS_IN_TRANSIT %}info{% elif purchase_order.status == purchase_order.STATUS_CONFIRMED %}primary{% elif purchase_order.status == purchase_order.STATUS_CANCELLED %}danger{% else %}warning{% endif %}">{{ purchase_order.get_status_display }}</span></p>
+  <p><strong>Order Date:</strong> {{ purchase_order.order_date|date:"Y-m-d H:i" }}</p>
+  <p><strong>Expected Delivery:</strong> {{ purchase_order.expected_delivery_date|default:"—" }}</p>
+  <p><strong>Total Cost:</strong> <span class="text-danger fs-5 fw-bold">₱{{ purchase_order.total_cost|floatformat:2 }}</span></p>
+  <p><strong>Payment Method:</strong> {{ purchase_order.get_payment_method_display|default:"—" }}</p>
+  <p><strong>Payment Due Date:</strong> {{ purchase_order.payment_due_date|default:"—" }}</p>
+  <p><strong>Notes:</strong></p>
+  <pre>{{ purchase_order.notes|default:"No notes" }}</pre>
+</div>
+
+{% comment %} Action Buttons Section {% endcomment %}
+<div class="action-buttons">
+  {% if purchase_order.status == purchase_order.STATUS_REQUEST_PENDING or purchase_order.status == purchase_order.STATUS_SUPPLIER_PRICED %}
+    {% comment %} Price Order Button {% endcomment %}
+    <a href="{% url 'suppliers:supplier_price_order' purchase_order.purchase_order_id %}" class="btn btn-primary">
+      <i class="fas fa-dollar-sign"></i> Submit/Edit Pricing
+    </a>
+    {% comment %} Cancel Order Button {% endcomment %}
+    <a href="{% url 'suppliers:supplier_cancel_order' purchase_order.purchase_order_id %}" class="btn btn-danger">
+      <i class="fas fa-times-circle"></i> Cancel Order
+    </a>
+  {% elif purchase_order.status == purchase_order.STATUS_CONFIRMED %}
+    {% comment %} Mark as In Transit Button {% endcomment %}
+    <a href="{% url 'suppliers:supplier_mark_in_transit' purchase_order.purchase_order_id %}" class="btn btn-info">
+      <i class="fas fa-truck"></i> Mark as In Transit
+    </a>
+  {% elif purchase_order.status == purchase_order.STATUS_IN_TRANSIT %}
+    <span class="btn btn-secondary" style="cursor: default;">
+      <i class="fas fa-truck"></i> Order In Transit
+    </span>
+  {% elif purchase_order.status == purchase_order.STATUS_RECEIVED %}
+    <span class="btn btn-success" style="cursor: default;">
+      <i class="fas fa-check-circle"></i> Order Completed
+    </span>
+  {% elif purchase_order.status == purchase_order.STATUS_CANCELLED %}
+    <span class="btn btn-danger" style="cursor: default;">
+      <i class="fas fa-ban"></i> Order Cancelled
+    </span>
+  {% endif %}
+  
+  {% comment %} Back to Order List Button {% endcomment %}
+  <a href="{% url 'suppliers:supplier_order_list' %}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Back to Order List
+  </a>
+</div>
+
+<div class="order-items">
+  <h3>Order Items</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Product Name</th>
+        <th>Description</th>
+        <th>Quantity Ordered</th>
+        <th>Unit Cost</th>
+        <th>Total Cost</th>
+      </tr>
+    </thead>
+    <tbody id="items-table-body">
+      {% for item in items %}
+      <tr>
+        <td>
+          {% if item.product_variant %}
+              {{ item.product_variant.product.name }}
+              {% if item.product_variant.sku %}
+                  <small class="text-muted">({{ item.product_variant.sku }})</small>
+              {% endif %}
+          {% elif item.product %}
+              {{ item.product.name }}
+          {% else %}
+              {{ item.product_name_text|default:"Custom Item" }}
+          {% endif %}
+        </td>
+        <td>{{ item.description|default:"-" }}</td>
+        <td>{{ item.quantity_ordered }}</td>
+        <td>₱{{ item.unit_cost|floatformat:2|default:"—" }}</td>
+        <td>₱{{ item.total_price|floatformat:2|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;">No items added yet.</td></tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="4" style="text-align:right;">Total Cost:</th>
+        <th id="total-cost">₱{{ purchase_order.total_cost|floatformat:2 }}</th>
+      </tfoot>
+    </table>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const unitCostInput = document.getElementById('unit_cost');
+  const quantityInput = document.getElementById('quantity');
+  const totalCostInput = document.getElementById('total_cost');
+
+  if (unitCostInput && quantityInput && totalCostInput) {
+    function calculateTotalCost() {
+      const unitCost = parseFloat(unitCostInput.value);
+      const quantity = parseInt(quantityInput.value);
+
+      if (!isNaN(unitCost) && !isNaN(quantity)) {
+        totalCostInput.value = (unitCost * quantity).toFixed(2);
+      } else {
+        totalCostInput.value = '';
+      }
+    }
+
+    unitCostInput.addEventListener('input', calculateTotalCost);
+    quantityInput.addEventListener('input', calculateTotalCost);
+  }
+
+  // Confirm order button behavior (if exists)
+  const confirmBtn = document.getElementById('confirm-order-btn');
+  const confirmForm = document.getElementById('confirm-order-form');
+
+  if (confirmBtn && confirmForm) {
+    confirmBtn.addEventListener('click', function () {
+      if (confirm('Are you sure you want to confirm this purchase order?')) {
+        confirmForm.submit();
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

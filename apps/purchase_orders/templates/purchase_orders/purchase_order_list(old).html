@@ -1,0 +1,276 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/orders/orders.css' %}">
+<style>
+  /* Basic styling for form fields to match Django forms */
+  .modal-content form p {
+    margin-bottom: 10px;
+  }
+  .modal-content form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  .modal-content form input[type="text"],
+  .modal-content form input[type="number"],
+  .modal-content form input[type="date"],
+  .modal-content form select,
+  .modal-content form textarea {
+    width: calc(100% - 20px); /* Adjust padding */
+    padding: 8px 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  }
+  .modal-content form .errorlist {
+    color: red;
+    list-style-type: none;
+    padding: 0;
+    margin-top: 5px;
+  }
+  .error-messages {
+    background-color: #fdd;
+    border: 1px solid #f00;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+  }
+  .error-messages ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  .error-messages li {
+    color: #cc0000;
+    font-weight: bold;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="section-title">Purchase Orders</h1>
+
+<div class="orders-layout">
+  <div class="orders-panel">
+
+    <div class="action-buttons">
+      <button class="add-order-btn" onclick="openModal()">Add Purchase Order</button>
+      <button class="update-btn" onclick="populateFormForUpdate()">Update Selected PO</button>
+      <button class="delete-btn" onclick="deleteSelected()">Soft Delete</button>
+      <a href="{% url 'PO:archived_purchase_orders' %}" class="back-button">🗂 View Archived Orders</a>
+    </div>
+
+    <input type="text" class="search-input" placeholder="Search purchase orders..." />
+
+    <div class="table-wrapper">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="select-all"></th>
+            <th>Purchase Order ID</th>
+            <th>Supplier</th>
+            <th>Order Date</th>
+            <th>Expected Delivery</th>
+            <th>Total Cost</th>
+            <th>Notes</th> <!-- New column -->
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for purchase_order in purchase_orders %}
+          <tr>
+            <td><input type="checkbox" class="order-checkbox" data-id="{{ purchase_order.purchase_order_id }}"></td>
+            <td data-field="purchase_order_id">{{ purchase_order.purchase_order_id }}</td>
+            <td data-field="supplier_name">{{ purchase_order.supplier.name }}</td>
+            <td data-field="order_date">{{ purchase_order.order_date|date:"Y-m-d H:i" }}</td>
+            <td data-field="expected_delivery_date">{{ purchase_order.expected_delivery_date|default:"—" }}</td>
+            <td data-field="total_cost">{{ purchase_order.total_cost|floatformat:2 }}</td>
+            <td data-field="notes">{{ purchase_order.notes|default:"TBD" }}</td> <!-- Show notes or dash -->
+            <td data-field="status">{{ purchase_order.get_status_display }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8">No purchase orders found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+
+    <div id="formModal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2>Add / Update Purchase Order</h2>
+        <form method="POST" id="purchase-order-form">
+          {% csrf_token %}
+          <input type="hidden" name="purchase_order_id" id="hidden-purchase-order-id">
+
+          {% if form.errors %}
+            <div class="error-messages">
+              <p>Please correct the following errors:</p>
+              <ul>
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {{ form.as_p }} {# This renders supplier, expected_delivery_date, status, notes #}
+
+          <button type="submit" class="submit-btn">Save</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Open modal
+  window.openModal = function() {
+    document.getElementById('formModal').classList.remove('hidden');
+    // Set default order_date if you want to allow manual input and it's a new PO
+    // If order_date is auto_now_add=True, no need to set here for new POs
+    // If it's default=timezone.now and you want to pre-fill, use this:
+    // if (!document.getElementById('hidden-purchase-order-id').value) {
+    //     const now = new Date();
+    //     const isoDate = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0,16);
+    //     document.getElementById('id_order_date').value = isoDate;
+    // }
+  };
+
+  // Close modal and reset
+  window.closeModal = function() {
+    document.getElementById('formModal').classList.add('hidden');
+    document.getElementById('hidden-purchase-order-id').value = '';
+    document.querySelector('.submit-btn').textContent = 'Save';
+    document.getElementById('purchase-order-form').reset();
+    // Clear any form errors displayed
+    const errorMessagesDiv = document.querySelector('.error-messages');
+    if (errorMessagesDiv) {
+        errorMessagesDiv.innerHTML = ''; // Clear contents
+        errorMessagesDiv.classList.remove('error-messages'); // Remove class for styling
+    }
+  };
+
+  // Populate form for update
+  window.populateFormForUpdate = function() {
+    const sel = document.querySelectorAll('.order-checkbox:checked');
+    if (sel.length !== 1) {
+      alert('Please select exactly one purchase order to update.');
+      return;
+    }
+    const row = sel[0].closest('tr');
+    
+    // Get values using data-field attributes (more robust)
+    const purchase_order = {
+      purchase_order_id: row.querySelector('[data-field="purchase_order_id"]').textContent.trim(),
+      supplier_name: row.querySelector('[data-field="supplier_name"]').textContent.trim(),
+      expected_delivery_date: row.querySelector('[data-field="expected_delivery_date"]').textContent.trim(),
+      status: row.querySelector('[data-field="status"]').textContent.trim(), // This is the display value
+    };
+
+    // Fill hidden ID
+    document.getElementById('hidden-purchase-order-id').value = purchase_order.purchase_order_id;
+    
+    // Set form fields (Django form element IDs)
+    // For ModelChoiceField, set value using the option's text
+    const supplierSelect = document.getElementById('id_supplier');
+    if (supplierSelect) {
+      setSelectByText(supplierSelect, purchase_order.supplier_name);
+    }
+
+    document.getElementById('id_expected_delivery_date').value = purchase_order.expected_delivery_date === '—' ? '' : purchase_order.expected_delivery_date;
+    
+    // For status, find the *value* that matches the display text
+    const statusSelect = document.getElementById('id_status');
+    if (statusSelect) {
+      setSelectByText(statusSelect, purchase_order.status);
+    }
+    
+    document.querySelector('.submit-btn').textContent = 'Update Purchase Order';
+    openModal();
+  };
+
+  // Helper: Set select input option by visible text
+  function setSelectByText(selectElem, text) {
+    for (let option of selectElem.options) {
+      if (option.text.trim() === text) {
+        selectElem.value = option.value;
+        return;
+      }
+    }
+    selectElem.value = ''; // default if not found
+  }
+
+  // Search filter
+  document.querySelector('.search-input').addEventListener('input', function(e) {
+    const kw = e.target.value.toLowerCase();
+    document.querySelectorAll('.orders-table tbody tr').forEach(row => {
+      const poId = row.querySelector('[data-field="purchase_order_id"]').textContent.toLowerCase();
+      const supplierName = row.querySelector('[data-field="supplier_name"]').textContent.toLowerCase();
+      const status = row.querySelector('[data-field="status"]').textContent.toLowerCase();
+
+      row.style.display = (poId.includes(kw) || supplierName.includes(kw) || status.includes(kw)) ? '' : 'none';
+    });
+  });
+
+  // Delete selected purchase orders (Soft Delete)
+  window.deleteSelected = function() {
+    const ids = Array.from(document.querySelectorAll('.order-checkbox:checked'))
+                    .map(cb => cb.dataset.id);
+    if (!ids.length) {
+        alert('Please select at least one purchase order to delete.');
+        return;
+    }
+    if (!confirm('Are you sure you want to soft delete the selected purchase orders?')) {
+        return;
+    }
+
+    fetch("{% url 'PO:delete_purchase_orders' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // CRITICAL: Ensure CSRF token is sent
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify({ ids: ids })
+    })
+    .then(response => {
+        if (!response.ok) {
+            // Handle HTTP errors
+            return response.json().then(err => { throw new Error(err.error || 'Server error'); });
+        }
+        return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        alert(data.message || 'Purchase orders soft-deleted successfully!');
+        location.reload(); // Reload the page to reflect changes
+      } else {
+        alert('Error: ' + (data.error || 'Unknown error occurred.'));
+      }
+    })
+    .catch(error => {
+      console.error('Fetch Error:', error);
+      alert('An error occurred during deletion: ' + error.message);
+    });
+  };
+
+  // Select-all checkbox
+  document.getElementById('select-all').addEventListener('change', function() {
+    document.querySelectorAll('.order-checkbox')
+      .forEach(cb => cb.checked = this.checked);
+  });
+});
+</script>
+{% endblock %}

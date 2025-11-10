@@ -1,0 +1,442 @@
+{% extends 'base_store.html' %}
+{% load static %}
+
+{% block title %}Customer Registration - SupplyTrack{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/users/register.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-card">
+        <!-- Header -->
+        <div class="register-header">
+            <div class="register-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h1>Create Customer Account</h1>
+            <p>Join SupplyTrack and start shopping today</p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Non-field errors -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!-- Registration Form -->
+        <form method="post" action="{% url 'users:customer_register' %}" class="register-form">
+            {% csrf_token %}
+            
+            <!-- Personal Information Section (NEW) -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-user"></i> Personal Information
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                            First Name <span class="required">*</span>
+                        </label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.first_name.errors.0 }}
+                            </span>
+                        {% endif %}
+                        <small class="form-help">Your legal first name</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                            Last Name <span class="required">*</span>
+                        </label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.last_name.errors.0 }}
+                            </span>
+                        {% endif %}
+                        <small class="form-help">Your legal last name</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-user-circle"></i> Account Information
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            Username <span class="required">*</span>
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.username.errors.0 }}
+                            </span>
+                        {% endif %}
+                        <small class="form-help">Choose a unique username</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            Email Address <span class="required">*</span>
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.email.errors.0 }}
+                            </span>
+                        {% endif %}
+                        <small class="form-help">We'll send a verification code here</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-address-book"></i> Contact Information
+                </h3>
+                
+                <div class="form-group">
+                    <label for="{{ form.phone.id_for_label }}" class="form-label">
+                        Phone Number
+                    </label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                        <span class="field-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {{ form.phone.errors.0 }}
+                        </span>
+                    {% endif %}
+                    <small class="form-help">Optional: For order updates</small>
+                </div>
+            </div>
+
+            <!-- Delivery Address Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-map-marker-alt"></i> Delivery Address (Optional)
+                </h3>
+                
+                <p class="section-description">
+                    <i class="fas fa-info-circle"></i>
+                    You can complete this later from your profile settings
+                </p>
+                
+                <div class="form-group">
+                    <label for="{{ form.street_address.id_for_label }}" class="form-label">
+                        Street Address
+                    </label>
+                    {{ form.street_address }}
+                    {% if form.street_address.errors %}
+                        <span class="field-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {{ form.street_address.errors.0 }}
+                        </span>
+                    {% endif %}
+                    <small class="form-help">House/Building number and street name</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.city.id_for_label }}" class="form-label">
+                            City
+                        </label>
+                        {{ form.city }}
+                        {% if form.city.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.city.errors.0 }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.province.id_for_label }}" class="form-label">
+                            Province
+                        </label>
+                        {{ form.province }}
+                        {% if form.province.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.province.errors.0 }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.zip_code.id_for_label }}" class="form-label">
+                        Zip/Postal Code
+                    </label>
+                    {{ form.zip_code }}
+                    {% if form.zip_code.errors %}
+                        <span class="field-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {{ form.zip_code.errors.0 }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Password Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-lock"></i> Create Password
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">
+                            Password <span class="required">*</span>
+                        </label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.password1.errors.0 }}
+                            </span>
+                        {% endif %}
+                        <small class="form-help">At least 8 characters</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">
+                            Confirm Password <span class="required">*</span>
+                        </label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.password2.errors.0 }}
+                            </span>
+                        {% endif %}
+                        <small class="form-help">Re-enter your password</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="terms-section">
+                <p>
+                    By creating an account, you agree to our 
+                    <a href="#" class="link">Terms of Service</a> and 
+                    <a href="#" class="link">Privacy Policy</a>
+                </p>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-user-check"></i> Create Account
+            </button>
+        </form>
+
+        <!-- Login Link -->
+        <div class="login-link-section">
+            <p>Already have an account?</p>
+            <a href="{% url 'users:customer_login' %}" class="btn-link">
+                <i class="fas fa-sign-in-alt"></i> Login Here
+            </a>
+        </div>
+    </div>
+
+    <!-- Back to Home -->
+    <div class="back-link">
+        <a href="{% url 'users:login_landing' %}">
+            <i class="fas fa-arrow-left"></i> Back to Login Options
+        </a>
+    </div>
+</div>
+
+<script>
+    // FIXED: Add null checks to prevent errors
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add 'filled' class to form groups when input has value
+        const formInputs = document.querySelectorAll('.register-form input, .register-form select, .register-form textarea');
+        
+        formInputs.forEach(input => {
+            // Check if input exists and has parent form-group
+            if (!input) return;
+            
+            const formGroup = input.closest('.form-group');
+            if (!formGroup) return;
+            
+            // Check on load
+            if (input.value) {
+                formGroup.classList.add('filled');
+            }
+            
+            // Check on change
+            input.addEventListener('input', function() {
+                if (this.value) {
+                    formGroup.classList.add('filled');
+                } else {
+                    formGroup.classList.remove('filled');
+                }
+            });
+        });
+
+        // Password strength indicator
+        const password1 = document.getElementById('{{ form.password1.id_for_label }}');
+        if (password1) {
+            const strengthIndicator = createStrengthIndicator();
+            if (strengthIndicator) {
+                password1.parentElement.appendChild(strengthIndicator);
+                
+                password1.addEventListener('input', function() {
+                    const strength = checkPasswordStrength(this.value);
+                    updateStrengthIndicator(strengthIndicator, strength);
+                });
+            }
+        }
+
+        // Password match validation
+        const password2 = document.getElementById('{{ form.password2.id_for_label }}');
+        if (password1 && password2) {
+            password2.addEventListener('input', function() {
+                if (this.value && password1.value) {
+                    if (this.value === password1.value) {
+                        this.style.borderColor = '#10b981';
+                    } else {
+                        this.style.borderColor = '#ef4444';
+                    }
+                }
+            });
+        }
+
+        // Form validation before submit
+        const form = document.querySelector('.register-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const requiredFields = form.querySelectorAll('[required]');
+                let isValid = true;
+                let firstInvalidField = null;
+                
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        isValid = false;
+                        field.style.borderColor = '#ef4444';
+                        
+                        if (!firstInvalidField) {
+                            firstInvalidField = field;
+                        }
+                        
+                        // Remove error styling on input
+                        field.addEventListener('input', function() {
+                            this.style.borderColor = '';
+                        }, { once: true });
+                    }
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Please fill in all required fields marked with *');
+                    if (firstInvalidField) {
+                        firstInvalidField.focus();
+                        firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+        }
+    });
+
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+        if (/\d/.test(password)) strength++;
+        if (/[^a-zA-Z\d]/.test(password)) strength++;
+        return strength;
+    }
+
+    function createStrengthIndicator() {
+        const indicator = document.createElement('div');
+        indicator.className = 'password-strength-indicator';
+        indicator.innerHTML = `
+            <div class="strength-bar">
+                <div class="strength-bar-fill"></div>
+            </div>
+            <small class="strength-text">Password strength: <span class="strength-level">Too short</span></small>
+        `;
+        
+        // Add styles dynamically
+        const style = document.createElement('style');
+        style.textContent = `
+            .password-strength-indicator {
+                margin-top: 8px;
+            }
+            .strength-bar {
+                height: 4px;
+                background: #e2e8f0;
+                border-radius: 2px;
+                overflow: hidden;
+                margin-bottom: 4px;
+            }
+            .strength-bar-fill {
+                height: 100%;
+                width: 0%;
+                transition: all 0.3s ease;
+                background: #ef4444;
+            }
+            .strength-text {
+                font-size: 0.75rem;
+                color: #64748b;
+            }
+            .strength-level {
+                font-weight: 600;
+            }
+        `;
+        if (!document.querySelector('#password-strength-styles')) {
+            style.id = 'password-strength-styles';
+            document.head.appendChild(style);
+        }
+        
+        return indicator;
+    }
+
+    function updateStrengthIndicator(indicator, strength) {
+        const fill = indicator.querySelector('.strength-bar-fill');
+        const levelText = indicator.querySelector('.strength-level');
+        
+        const levels = [
+            { width: '0%', color: '#ef4444', text: 'Too short' },
+            { width: '25%', color: '#ef4444', text: 'Weak' },
+            { width: '50%', color: '#f59e0b', text: 'Fair' },
+            { width: '75%', color: '#10b981', text: 'Good' },
+            { width: '100%', color: '#059669', text: 'Strong' }
+        ];
+        
+        const level = levels[strength] || levels[0];
+        fill.style.width = level.width;
+        fill.style.backgroundColor = level.color;
+        levelText.textContent = level.text;
+        levelText.style.color = level.color;
+    }
+</script>
+{% endblock %}

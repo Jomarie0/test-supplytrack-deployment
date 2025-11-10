@@ -1,0 +1,276 @@
+{% extends 'base_store.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - SupplyTrack{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/users/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-card">
+        <!-- Header -->
+        <div class="profile-header">
+            <div class="profile-icon">
+                <i class="fas fa-user-edit"></i>
+            </div>
+            <h1>Edit Your Profile</h1>
+            <p>Update your personal information and shipping address</p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Profile Form -->
+        <form method="post" action="{% url 'users:profile_edit' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="profile-form">
+            {% csrf_token %}
+            
+            <!-- Personal Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-user"></i> Personal Information
+                </h3>
+                
+                <!-- NEW: First Name and Last Name Row -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                            First Name <span class="required">*</span>
+                        </label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <small class="form-error">{{ form.first_name.errors.0 }}</small>
+                        {% else %}
+                            <small class="form-help">Your legal first name</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                            Last Name <span class="required">*</span>
+                        </label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <small class="form-error">{{ form.last_name.errors.0 }}</small>
+                        {% else %}
+                            <small class="form-help">Your legal last name</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input 
+                            type="text" 
+                            class="form-control disabled" 
+                            value="{{ user.username }}" 
+                            disabled
+                        >
+                        <small class="form-help">Username cannot be changed</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        {{ form.email }}
+                        <small class="form-help">Email is verified and cannot be changed</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.phone.id_for_label }}" class="form-label">
+                        Phone Number
+                    </label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                        <small class="form-error">{{ form.phone.errors.0 }}</small>
+                    {% else %}
+                        <small class="form-help">For order updates and delivery coordination</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Shipping Address Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-map-marker-alt"></i> Shipping Address
+                </h3>
+                
+                <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                    <i class="fas fa-info-circle"></i>
+                    This address will be used for all order deliveries. Please ensure accuracy.
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.street_address.id_for_label }}" class="form-label">
+                        Street Address <span class="required">*</span>
+                    </label>
+                    {{ form.street_address }}
+                    {% if form.street_address.errors %}
+                        <small class="form-error">{{ form.street_address.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.city.id_for_label }}" class="form-label">
+                            City <span class="required">*</span>
+                        </label>
+                        {{ form.city }}
+                        {% if form.city.errors %}
+                            <small class="form-error">{{ form.city.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.province.id_for_label }}" class="form-label">
+                            Province <span class="required">*</span>
+                        </label>
+                        {{ form.province }}
+                        {% if form.province.errors %}
+                            <small class="form-error">{{ form.province.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.zip_code.id_for_label }}" class="form-label">
+                            ZIP Code <span class="required">*</span>
+                        </label>
+                        {{ form.zip_code }}
+                        {% if form.zip_code.errors %}
+                            <small class="form-error">{{ form.zip_code.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Address Preview -->
+                <div class="address-preview">
+                    <h4><i class="fas fa-eye"></i> Address Preview</h4>
+                    <p id="address-display">
+                        {% if profile.street_address %}
+                            {{ profile.full_address }}
+                        {% else %}
+                            <em>Complete the form to see your full address</em>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{% if request.GET.next %}{{ request.GET.next }}{% else %}{% url 'store:product_list' %}{% endif %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Live address preview
+document.addEventListener('DOMContentLoaded', function() {
+    const addressFields = {
+        'id_street_address': true,
+        'id_city': true,
+        'id_province': true,
+        'id_zip_code': true
+    };
+    
+    const addressDisplay = document.getElementById('address-display');
+    
+    function updateAddressPreview() {
+        const parts = Object.keys(addressFields)
+            .map(id => {
+                const field = document.getElementById(id);
+                return field ? field.value.trim() : '';
+            })
+            .filter(val => val !== '');
+        
+        if (parts.length > 0) {
+            addressDisplay.innerHTML = parts.join(', ');
+            addressDisplay.style.fontStyle = 'normal';
+        } else {
+            addressDisplay.innerHTML = '<em>Complete the form to see your full address</em>';
+            addressDisplay.style.fontStyle = 'italic';
+        }
+    }
+    
+    // Attach listeners to all address fields
+    Object.keys(addressFields).forEach(id => {
+        const field = document.getElementById(id);
+        if (field) {
+            field.addEventListener('input', updateAddressPreview);
+        }
+    });
+    
+    // Initial preview update
+    updateAddressPreview();
+});
+
+// Phone number formatting (optional - Philippine format)
+const phoneField = document.getElementById('id_phone');
+if (phoneField) {
+    phoneField.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        // Remove leading 63 if present
+        if (value.startsWith('63')) {
+            value = value.substring(2);
+        }
+        
+        // Limit to 10 digits
+        if (value.length > 10) {
+            value = value.substring(0, 10);
+        }
+        
+        // Format as +63 XXX XXX XXXX
+        if (value.length > 0) {
+            let formatted = '+63 ';
+            if (value.length > 0) formatted += value.substring(0, 3);
+            if (value.length > 3) formatted += ' ' + value.substring(3, 6);
+            if (value.length > 6) formatted += ' ' + value.substring(6, 10);
+            e.target.value = formatted.trim();
+        }
+    });
+}
+
+// Form validation enhancement
+const form = document.querySelector('.profile-form');
+if (form) {
+    form.addEventListener('submit', function(e) {
+        const requiredFields = form.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('error');
+                
+                // Remove error class on input
+                field.addEventListener('input', function() {
+                    this.classList.remove('error');
+                }, { once: true });
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Please fill in all required fields marked with *');
+        }
+    });
+}
+</script>
+{% endblock %}

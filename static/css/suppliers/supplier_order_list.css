@@ -1,0 +1,30 @@
+/* --- Supplier Purchase Order Page --- */
+h2.text-primary {
+    color: #0056b3 !important;
+    letter-spacing: 0.5px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8fafc;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.badge {
+    font-weight: 500;
+}
+
+.card {
+    background-color: #ffffff;
+}
+
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}

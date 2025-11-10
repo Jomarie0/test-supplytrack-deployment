@@ -1,0 +1,32 @@
+<!-- templates/orders/manual_order_management/partials/_manual_order_list.html -->
+
+<h3>Existing Manual Orders</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Status</th>
+            <th>Total Cost</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>{{ order.manual_order_id }}</td>
+            <td>{{ order.get_customer_display }}</td>
+            <td>{{ order.status }}</td>
+            <td>{{ order.get_total_cost }}</td>
+            <td>
+                <a href="{% url 'orders:manual_order_details_api' order.id %}" class="btn btn-info btn-sm">View</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No manual orders yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

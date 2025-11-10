@@ -1,0 +1,632 @@
+product_name,quantity,unit_price,order_date,expected_delivery,status,customer_username
+Distilled Water 1L,30,25.00,2020-01-03 10:22:45,2020-01-05,Completed,hospitaladmin
+Toilet Paper 2-ply,20,25.00,2020-01-04 09:15:30,2020-01-07,Completed,clinicstaff
+Tide Powder Detergent 1kg,10,90.00,2020-01-05 08:45:00,2020-01-08,Completed,phclinic
+Nescafé 3-in-1 Original,10,180.00,2020-01-06 12:00:00,2020-01-09,Completed,cityhospital
+Safeguard Soap Bar 135g,15,30.00,2020-01-07 10:30:00,2020-01-10,Completed,ruralclinic
+Plastic Trash Bags (Large),8,120.00,2020-01-08 14:15:00,2020-01-11,Completed,healthcenter1
+Bear Brand Powdered Milk 1kg,8,320.00,2020-01-11 11:20:00,2020-01-14,Completed,healthcenter2
+Distilled Water 1L,40,25.00,2020-02-02 09:15:30,2020-02-04,Completed,hospitaladmin
+Toilet Paper 2-ply,25,25.00,2020-02-03 10:00:00,2020-02-06,Completed,clinicstaff
+Tide Powder Detergent 1kg,12,90.00,2020-02-04 11:20:00,2020-02-07,Pending,phclinic
+Nescafé 3-in-1 Original,15,180.00,2020-02-05 12:10:00,2020-02-08,Completed,cityhospital
+Safeguard Soap Bar 135g,20,30.00,2020-02-06 13:45:00,2020-02-09,Completed,ruralclinic
+Plastic Trash Bags (Large),10,120.00,2020-02-07 14:30:00,2020-02-10,Pending,healthcenter1
+Bear Brand Powdered Milk 1kg,12,320.00,2020-02-08 15:20:00,2020-02-11,Completed,healthcenter2
+Alcohol 70%,30,45.00,2020-02-10 08:55:00,2020-02-12,Completed,phclinic
+Surgical Mask,200,5.00,2020-03-02 09:00:00,2020-03-04,Completed,hospitaladmin
+Alcohol 70%,50,45.00,2020-03-02 10:15:00,2020-03-05,Completed,clinicstaff
+Distilled Water 1L,50,25.00,2020-03-03 08:45:00,2020-03-06,Completed,phclinic
+Toilet Paper 2-ply,30,25.00,2020-03-03 09:20:00,2020-03-07,Completed,cityhospital
+N95 Respirators,100,50.00,2020-03-04 11:00:00,2020-03-08,Pending,ruralclinic
+Safeguard Soap Bar 135g,40,30.00,2020-03-05 12:30:00,2020-03-09,Completed,healthcenter1
+Disposable Gloves,60,25.00,2020-03-05 13:00:00,2020-03-10,Completed,healthcenter2
+Face Shield,50,30.00,2020-03-06 14:10:00,2020-03-11,Pending,phclinic
+Downy Fabric Softener 800ml,20,70.00,2020-03-06 15:30:00,2020-03-12,Completed,clinicstaff
+Bandage Roll,30,18.00,2020-03-07 10:00:00,2020-03-13,Completed,hospitaladmin
+Nescafé 3-in-1 Original,20,180.00,2020-03-08 09:45:00,2020-03-14,Completed,cityhospital
+Vitamin C Supplements (Effervescent),50,150.00,2020-03-09 11:20:00,2020-03-15,Pending,ruralclinic
+Rice 50kg sack,5,2800.00,2020-03-10 08:00:00,2020-03-16,Cancelled,healthcenter1
+Gas Tank (LPG 11kg),3,950.00,2020-03-10 09:00:00,2020-03-17,Completed,healthcenter2
+Sugar (Brown) 1kg,30,50.00,2020-03-11 14:00:00,2020-03-18,Completed,phclinic
+Surgical Mask,300,5.00,2020-04-01 08:30:00,2020-04-04,Completed,hospitaladmin
+N95 Respirators,150,50.00,2020-04-01 09:00:00,2020-04-05,Pending,clinicstaff
+Alcohol 70%,100,45.00,2020-04-02 10:15:00,2020-04-06,Completed,phclinic
+Safeguard Soap Bar 135g,60,30.00,2020-04-02 11:00:00,2020-04-07,Completed,cityhospital
+Disposable Gloves,80,25.00,2020-04-03 14:00:00,2020-04-08,Completed,healthcenter1
+Face Shield,70,30.00,2020-04-03 15:00:00,2020-04-09,Pending,ruralclinic
+Vitamin C Supplements (Effervescent),80,150.00,2020-04-04 09:30:00,2020-04-10,Completed,hospitaladmin
+Bandage Roll,50,18.00,2020-04-04 13:20:00,2020-04-11,Completed,clinicstaff
+Zonrox Bleach 1L,100,40.00,2020-04-05 08:45:00,2020-04-12,Completed,phclinic
+Distilled Water 1L,100,25.00,2020-04-05 09:10:00,2020-04-12,Completed,cityhospital
+Rice 50kg sack,10,2800.00,2020-04-06 10:00:00,2020-04-14,Cancelled,healthcenter2
+Tide Powder Detergent 1kg,40,90.00,2020-04-06 11:30:00,2020-04-15,Completed,ruralclinic
+Toilet Paper 2-ply,50,25.00,2020-04-07 09:15:00,2020-04-16,Completed,hospitaladmin
+Nescafé 3-in-1 Original,30,180.00,2020-04-07 10:00:00,2020-04-17,Completed,clinicstaff
+Gas Tank (LPG 11kg),5,950.00,2020-04-08 13:00:00,2020-04-18,Pending,phclinic
+Medical Gowns,60,120.00,2020-04-08 14:00:00,2020-04-19,Completed,cityhospital
+Disposable Gloves,30,25.00,2020-04-09 10:30:00,2020-04-20,Cancelled,healthcenter1
+Alcohol Stove Burner,2,450.00,2020-04-09 11:45:00,2020-04-21,Completed,ruralclinic
+Surgical Mask,250,5.00,2020-05-02 09:00:00,2020-05-06,Completed,hospitaladmin
+N95 Respirators,120,50.00,2020-05-02 10:15:00,2020-05-07,Completed,clinicstaff
+Alcohol 70%,90,45.00,2020-05-03 11:30:00,2020-05-08,Pending,phclinic
+Safeguard Soap Bar 135g,55,30.00,2020-05-03 14:00:00,2020-05-09,Completed,cityhospital
+Disposable Gloves,70,25.00,2020-05-04 09:45:00,2020-05-10,Completed,healthcenter1
+Face Shield,50,30.00,2020-05-04 13:00:00,2020-05-11,Pending,ruralclinic
+Vitamin C Supplements (Effervescent),70,150.00,2020-05-05 10:00:00,2020-05-12,Completed,hospitaladmin
+Bandage Roll,40,18.00,2020-05-05 15:00:00,2020-05-13,Completed,clinicstaff
+Zonrox Bleach 1L,90,40.00,2020-05-06 09:15:00,2020-05-14,Completed,phclinic
+Distilled Water 1L,90,25.00,2020-05-06 11:00:00,2020-05-15,Completed,cityhospital
+Rice 50kg sack,8,2800.00,2020-05-07 10:30:00,2020-05-16,Cancelled,healthcenter2
+Tide Powder Detergent 1kg,35,90.00,2020-05-07 13:20:00,2020-05-17,Completed,ruralclinic
+Toilet Paper 2-ply,45,25.00,2020-05-08 09:50:00,2020-05-18,Completed,hospitaladmin
+Nescafé 3-in-1 Original,25,180.00,2020-05-08 11:15:00,2020-05-19,Completed,clinicstaff
+Surgical Mask,150,5.00,2020-06-03 09:30:00,2020-06-06,Completed,hospitaladmin
+N95 Respirators,90,50.00,2020-06-03 11:00:00,2020-06-08,Pending,clinicstaff
+Alcohol 70%,70,45.00,2020-06-04 10:45:00,2020-06-09,Completed,phclinic
+Safeguard Soap Bar 135g,40,30.00,2020-06-04 14:00:00,2020-06-10,Completed,cityhospital
+Disposable Gloves,50,25.00,2020-06-05 09:15:00,2020-06-11,Completed,healthcenter1
+Face Shield,35,30.00,2020-06-05 13:20:00,2020-06-12,Pending,ruralclinic
+Vitamin C Supplements (Effervescent),55,150.00,2020-06-06 10:30:00,2020-06-13,Completed,hospitaladmin
+Bandage Roll,30,18.00,2020-06-06 15:10:00,2020-06-14,Completed,clinicstaff
+Zonrox Bleach 1L,60,40.00,2020-06-07 09:00:00,2020-06-15,Completed,phclinic
+Distilled Water 1L,70,25.00,2020-06-07 11:25:00,2020-06-16,Completed,cityhospital
+N95 Respirators,110,50.00,2020-07-02 08:40:00,2020-07-06,Completed,hospitaladmin
+Surgical Mask,180,5.00,2020-07-02 10:10:00,2020-07-07,Completed,clinicstaff
+Alcohol 70%,90,45.00,2020-07-03 09:00:00,2020-07-08,Pending,phclinic
+Disposable Gloves,70,25.00,2020-07-03 14:20:00,2020-07-09,Completed,ruralclinic
+Face Shield,50,30.00,2020-07-04 11:30:00,2020-07-10,Completed,cityhospital
+Vitamin C Supplements (Effervescent),60,150.00,2020-07-05 10:15:00,2020-07-11,Completed,healthcenter1
+Bandage Roll,40,18.00,2020-07-05 15:45:00,2020-07-12,Completed,hospitaladmin
+Safeguard Soap Bar 135g,50,30.00,2020-07-06 09:40:00,2020-07-13,Pending,clinicstaff
+Zonrox Bleach 1L,70,40.00,2020-07-06 12:00:00,2020-07-14,Completed,phclinic
+Distilled Water 1L,80,25.00,2020-07-07 08:55:00,2020-07-15,Completed,ruralclinic
+Rice 50kg sack,4,2800.00,2020-07-07 13:30:00,2020-07-16,Cancelled,cityhospital
+
+Surgical Mask,150,5.00,2020-08-02 09:10:00,2020-08-06,Completed,hospitaladmin
+N95 Respirators,90,50.00,2020-08-02 11:30:00,2020-08-07,Completed,clinicstaff
+Alcohol 70%,80,45.00,2020-08-03 10:15:00,2020-08-08,Pending,phclinic
+Disposable Gloves,60,25.00,2020-08-03 15:40:00,2020-08-09,Completed,ruralclinic
+Vitamin C Supplements (Effervescent),50,150.00,2020-08-04 12:10:00,2020-08-10,Completed,cityhospital
+Bandage Roll,35,18.00,2020-08-05 08:45:00,2020-08-11,Completed,hospitaladmin
+Safeguard Soap Bar 135g,40,30.00,2020-08-05 13:25:00,2020-08-12,Pending,clinicstaff
+Zonrox Bleach 1L,60,40.00,2020-08-06 09:50:00,2020-08-13,Completed,phclinic
+Distilled Water 1L,75,25.00,2020-08-07 14:30:00,2020-08-14,Cancelled,ruralclinic
+Rice 50kg sack,3,2800.00,2020-08-07 16:00:00,2020-08-15,Completed,cityhospital
+
+N95 Respirators,70,50.00,2020-09-01 10:05:00,2020-09-05,Completed,hospitaladmin
+Surgical Mask,120,5.00,2020-09-02 09:20:00,2020-09-06,Pending,clinicstaff
+Alcohol 70%,50,45.00,2020-09-03 11:15:00,2020-09-07,Completed,phclinic
+Disposable Gloves,40,25.00,2020-09-04 13:00:00,2020-09-08,Completed,ruralclinic
+Bandage Roll,30,18.00,2020-09-05 15:10:00,2020-09-09,Cancelled,cityhospital
+Safeguard Soap Bar 135g,35,30.00,2020-09-06 14:45:00,2020-09-10,Completed,hospitaladmin
+Zonrox Bleach 1L,45,40.00,2020-09-07 09:30:00,2020-09-11,Pending,clinicstaff
+Distilled Water 1L,60,25.00,2020-09-08 08:20:00,2020-09-12,Completed,phclinic
+Rice 50kg sack,2,2800.00,2020-09-09 10:40:00,2020-09-13,Completed,ruralclinic
+
+Surgical Mask,80,5.00,2020-10-01 10:00:00,2020-10-04,Completed,hospitaladmin
+N95 Respirators,60,50.00,2020-10-02 09:30:00,2020-10-05,Pending,clinicstaff
+Alcohol 70%,40,45.00,2020-10-03 11:15:00,2020-10-06,Completed,phclinic
+Disposable Gloves,50,25.00,2020-10-04 14:00:00,2020-10-07,Cancelled,ruralclinic
+Bandage Roll,25,18.00,2020-10-05 13:30:00,2020-10-08,Completed,cityhospital
+Safeguard Soap Bar 135g,30,30.00,2020-10-06 10:15:00,2020-10-09,Pending,hospitaladmin
+Zonrox Bleach 1L,40,40.00,2020-10-07 09:45:00,2020-10-10,Completed,clinicstaff
+Distilled Water 1L,50,25.00,2020-10-08 08:20:00,2020-10-11,Completed,phclinic
+
+N95 Respirators,70,50.00,2020-11-01 09:00:00,2020-11-04,Completed,hospitaladmin
+Surgical Mask,100,5.00,2020-11-02 10:30:00,2020-11-05,Pending,cityhospital
+Alcohol 70%,50,45.00,2020-11-03 14:00:00,2020-11-06,Completed,ruralclinic
+Disposable Gloves,60,25.00,2020-11-04 13:20:00,2020-11-07,Completed,clinicstaff
+Vitamin C Supplements (Effervescent),40,150.00,2020-11-05 11:00:00,2020-11-08,Cancelled,phclinic
+Bandage Roll,35,18.00,2020-11-06 08:45:00,2020-11-09,Completed,hospitaladmin
+Toilet Paper 2-ply,50,25.00,2020-11-07 09:15:00,2020-11-10,Completed,cityhospital
+Safeguard Soap Bar 135g,45,30.00,2020-11-08 10:00:00,2020-11-11,Pending,ruralclinic
+Zonrox Bleach 1L,40,40.00,2020-11-09 15:30:00,2020-11-12,Completed,clinicstaff
+Rice 50kg sack,3,2800.00,2020-11-10 12:10:00,2020-11-13,Completed,phclinic
+
+N95 Respirators,80,50.00,2020-12-01 09:15:00,2020-12-04,Completed,hospitaladmin
+Surgical Mask,120,5.00,2020-12-02 11:00:00,2020-12-05,Pending,cityhospital
+Alcohol 70%,60,45.00,2020-12-03 13:30:00,2020-12-06,Completed,ruralclinic
+Disposable Gloves,70,25.00,2020-12-04 10:45:00,2020-12-07,Completed,clinicstaff
+Vitamin C Supplements (Effervescent),50,150.00,2020-12-05 09:00:00,2020-12-08,Cancelled,phclinic
+Bandage Roll,40,18.00,2020-12-06 14:15:00,2020-12-09,Completed,hospitaladmin
+Toilet Paper 2-ply,55,25.00,2020-12-07 16:00:00,2020-12-10,Completed,cityhospital
+Safeguard Soap Bar 135g,50,30.00,2020-12-08 12:30:00,2020-12-11,Pending,ruralclinic
+Zonrox Bleach 1L,45,40.00,2020-12-09 08:15:00,2020-12-12,Completed,clinicstaff
+Rice 50kg sack,4,2800.00,2020-12-10 11:45:00,2020-12-13,Completed,phclinic
+
+Surgical Mask,40,5.00,2021-01-03 09:30:00,2021-01-06,Completed,hospitaladmin
+N95 Respirators,20,50.00,2021-01-05 11:00:00,2021-01-08,Completed,cityhospital
+Alcohol 70%,30,45.00,2021-01-06 14:20:00,2021-01-09,Pending,ruralclinic
+Disposable Gloves,20,25.00,2021-01-07 10:15:00,2021-01-10,Completed,clinicstaff
+Vitamin C Supplements (Effervescent),45,150.00,2021-01-08 08:50:00,2021-01-11,Completed,hospitaladmin
+Bandage Roll,35,18.00,2021-01-09 13:40:00,2021-01-12,Completed,cityhospital
+Safeguard Soap Bar 135g,40,30.00,2021-01-10 09:10:00,2021-01-13,Pending,ruralclinic
+Rice 50kg sack,3,2800.00,2021-01-11 15:00:00,2021-01-14,Completed,clinicstaff
+Toilet Paper 2-ply,45,25.00,2021-01-12 12:25:00,2021-01-15,Completed,hospitaladmin
+
+N95 Respirators,50,55.00,2021-01-15 09:00:00,2021-01-18,Completed,hospitaladmin
+Surgical Mask,100,6.00,2021-01-15 10:30:00,2021-01-19,Completed,cityhospital
+Alcohol 70%,150,48.00,2021-01-16 08:45:00,2021-01-20,Completed,clinicstaff
+Vaccine Storage Boxes,20,850.00,2021-01-18 11:00:00,2021-01-22,Completed,phclinic
+Disposable Gloves,100,28.00,2021-01-20 14:30:00,2021-01-24,Completed,ruralclinic
+Face Shield,80,35.00,2021-01-22 09:15:00,2021-01-26,Completed,healthcenter1
+Medical Gowns,40,130.00,2021-01-25 13:20:00,2021-01-29,Completed,healthcenter2
+Vitamin C Supplements (Effervescent),200,165.00,2021-01-28 10:45:00,2021-02-01,Completed,hospitaladmin
+
+Surgical Mask,350,6.00,2021-02-02 09:30:00,2021-02-05,Completed,cityhospital
+N95 Respirators,200,55.00,2021-02-03 11:15:00,2021-02-07,Completed,clinicstaff
+Alcohol 70%,120,48.00,2021-02-05 08:20:00,2021-02-09,Completed,phclinic
+Disposable Gloves,150,28.00,2021-02-08 14:00:00,2021-02-12,Completed,ruralclinic
+Antiseptic Wipes,100,85.00,2021-02-10 10:30:00,2021-02-14,Completed,healthcenter1
+Thermometers (Digital),25,480.00,2021-02-12 13:45:00,2021-02-16,Completed,healthcenter2
+Hand Sanitizer Gel 250ml,180,65.00,2021-02-15 09:00:00,2021-02-19,Completed,hospitaladmin
+Distilled Water 1L,200,27.00,2021-02-18 11:20:00,2021-02-22,Completed,cityhospital
+
+Surgical Mask,150,6.50,2021-03-01 08:30:00,2021-03-05,Completed,hospitaladmin
+N95 Respirators,100,58.00,2021-03-02 10:00:00,2021-03-06,Completed,cityhospital
+Medical Gowns,50,135.00,2021-03-03 09:15:00,2021-03-07,Completed,clinicstaff
+Alcohol 70%,50,50.00,2021-03-05 14:30:00,2021-03-09,Completed,phclinic
+Disposable Gloves,100,30.00,2021-03-08 11:45:00,2021-03-12,Completed,ruralclinic
+Face Shield,70,38.00,2021-03-10 13:20:00,2021-03-14,Completed,healthcenter1
+Vitamin C Supplements (Effervescent),20,170.00,2021-03-12 10:15:00,2021-03-16,Completed,healthcenter2
+UV Sterilizer Boxes,2,3800.00,2021-03-15 09:00:00,2021-03-19,Completed,hospitaladmin
+
+Oxygen Tank (Small, Portable),15,3000.00,2021-04-02 08:45:00,2021-04-06,Completed,hospitaladmin
+Surgical Mask,400,6.50,2021-04-05 10:30:00,2021-04-09,Completed,cityhospital
+N95 Respirators,250,58.00,2021-04-08 09:15:00,2021-04-12,Completed,clinicstaff
+Saline Solution 500ml (NaCl 0.9%),200,48.00,2021-04-10 14:00,2021-04-14,Completed,phclinic
+Disposable Gloves,200,30.00,2021-04-12 11:20:00,2021-04-16,Completed,ruralclinic
+Medical Gowns,180,135.00,2021-04-15 13:45,2021-04-19,Completed,healthcenter1
+Alcohol 70%,150,50.00,2021-04-18 10:00:00,2021-04-22,Completed,healthcenter2
+Syringe 5ml,2000,3.50,2021-04-20 09:30:00,2021-04-24,Completed,hospitaladmin
+
+Surgical Mask,380,6.50,2021-05-03 08:20:00,2021-05-07,Completed,cityhospital
+N95 Respirators,220,58.00,2021-05-05 10:45:00,2021-05-09,Completed,clinicstaff
+Hand Sanitizer Gel 250ml,200,68.00,2021-05-08 14:15:00,2021-05-12,Completed,phclinic
+Disposable Gloves,180,30.00,2021-05-10 09:00:00,2021-05-14,Completed,ruralclinic
+Bandage Roll,80,20.00,2021-05-12 11:30:00,2021-05-16,Completed,healthcenter1
+Paracetamol 500mg tablets,150,130.00,2021-05-15 13:20:00,2021-05-19,Completed,healthcenter2
+Ibuprofen 200mg tablets,120,140.00,2021-05-18 10:15:00,2021-05-22,Completed,hospitaladmin
+Distilled Water 1L,250,28.00,2021-05-20 14:30:00,2021-05-24,Completed,cityhospital
+
+Surgical Mask,300,6.00,2021-06-02 09:45:00,2021-06-06,Completed,clinicstaff
+N95 Respirators,180,55.00,2021-06-05 11:00:00,2021-06-09,Completed,phclinic
+Alcohol 70%,120,48.00,2021-06-08 08:30:00,2021-06-12,Completed,ruralclinic
+Medical Gowns,150,132.00,2021-06-10 14:15:00,2021-06-14,Completed,healthcenter1
+Disposable Gloves,160,29.00,2021-06-12 10:20:00,2021-06-16,Completed,healthcenter2
+Antiseptic Wipes,80,82.00,2021-06-15 13:40:00,2021-06-19,Completed,hospitaladmin
+Toilet Paper 2-ply,100,27.00,2021-06-18 09:15:00,2021-06-22,Completed,cityhospital
+Rice 50kg sack,8,3000.00,2021-06-20 15:00:00,2021-06-24,Completed,clinicstaff
+
+Surgical Mask,450,7.00,2021-07-02 08:00:00,2021-07-06,Completed,hospitaladmin
+N95 Respirators,280,60.00,2021-07-05 10:30:00,2021-07-09,Completed,cityhospital
+Oxygen Tank (Small, Portable),20,3100.00,2021-07-08 09:15:00,2021-07-12,Completed,clinicstaff
+Medical Gowns,200,140.00,2021-07-10 14:45:00,2021-07-14,Completed,phclinic
+Disposable Gloves,250,32.00,2021-07-12 11:00:00,2021-07-16,Completed,ruralclinic
+Face Shield,120,40.00,2021-07-15 13:30:00,2021-07-19,Completed,healthcenter1
+Alcohol 70%,180,52.00,2021-07-18 10:45:00,2021-07-22,Completed,healthcenter2
+IV Drip Set,100,130.00,2021-07-20 09:20:00,2021-07-24,Completed,hospitaladmin
+
+Surgical Mask,400,7.00,2021-08-02 08:30:00,2021-08-06,Completed,cityhospital
+N95 Respirators,250,60.00,2021-08-05 10:15:00,2021-08-09,Completed,clinicstaff
+Medical Gowns,180,140.00,2021-08-08 14:00:00,2021-08-12,Completed,phclinic
+Saline Solution 500ml (NaCl 0.9%),150,50.00,2021-08-10 11:30:00,2021-08-14,Completed,ruralclinic
+Disposable Gloves,200,32.00,2021-08-12 09:45:00,2021-08-16,Completed,healthcenter1
+Vitamin C Supplements (Effervescent),150,175.00,2021-08-15 13:15:00,2021-08-19,Completed,healthcenter2
+Hand Sanitizer Gel 250ml,160,70.00,2021-08-18 10:00:00,2021-08-22,Completed,hospitaladmin
+Thermometers (Digital),30,500.00,2021-08-20 14:20:00,2021-08-24,Completed,cityhospital
+
+Surgical Mask,350,6.50,2021-09-02 09:00:00,2021-09-06,Completed,clinicstaff
+N95 Respirators,200,58.00,2021-09-05 11:45:00,2021-09-09,Completed,phclinic
+Alcohol 70%,140,50.00,2021-09-08 08:20:00,2021-09-12,Completed,ruralclinic
+Medical Gowns,160,138.00,2021-09-10 14:30:00,2021-09-14,Completed,healthcenter1
+Disposable Gloves,180,31.00,2021-09-12 10:15:00,2021-09-16,Completed,healthcenter2
+Bandage Roll,60,21.00,2021-09-15 13:00:00,2021-09-19,Completed,hospitaladmin
+Distilled Water 1L,180,29.00,2021-09-18 09:30:00,2021-09-22,Completed,cityhospital
+Toilet Paper 2-ply,80,28.00,2021-09-20 15:15:00,2021-09-24,Completed,clinicstaff
+
+// Q4 2021 - Booster campaigns
+Surgical Mask,300,6.00,2021-10-02 08:45:00,2021-10-06,Completed,phclinic
+N95 Respirators,180,55.00,2021-10-05 10:30:00,2021-10-09,Completed,ruralclinic
+Syringe 5ml,1500,3.50,2021-10-08 09:15:00,2021-10-12,Completed,healthcenter1
+Medical Gowns,140,135.00,2021-10-10 14:00:00,2021-10-14,Completed,healthcenter2
+Disposable Gloves,160,30.00,2021-10-12 11:20:00,2021-10-16,Completed,hospitaladmin
+Alcohol 70%,120,48.00,2021-10-15 13:45:00,2021-10-19,Completed,cityhospital
+Antiseptic Wipes,70,80.00,2021-10-18 10:00:00,2021-10-22,Completed,clinicstaff
+Rice 50kg sack,6,3100.00,2021-10-20 14:30:00,2021-10-24,Completed,phclinic
+
+Surgical Mask,320,6.00,2021-11-02 09:20:00,2021-11-06,Completed,ruralclinic
+N95 Respirators,200,55.00,2021-11-05 11:00:00,2021-11-09,Completed,healthcenter1
+Medical Gowns,150,135.00,2021-11-08 08:30:00,2021-11-12,Completed,healthcenter2
+Disposable Gloves,170,30.00,2021-11-10 14:15:00,2021-11-14,Completed,hospitaladmin
+Hand Sanitizer Gel 250ml,140,68.00,2021-11-12 10:45:00,2021-11-16,Completed,cityhospital
+Paracetamol 500mg tablets,130,132.00,2021-11-15 13:30:00,2021-11-19,Completed,clinicstaff
+Vitamin C Supplements (Effervescent),120,170.00,2021-11-18 09:10:00,2021-11-22,Completed,phclinic
+Distilled Water 1L,160,29.00,2021-11-20 15:00:00,2021-11-24,Completed,ruralclinic
+
+Surgical Mask,280,5.50,2021-12-02 08:15:00,2021-12-06,Completed,healthcenter1
+N95 Respirators,180,52.00,2021-12-05 10:30:00,2021-12-09,Completed,healthcenter2
+Alcohol 70%,110,46.00,2021-12-08 09:45:00,2021-12-12,Completed,hospitaladmin
+Medical Gowns,130,132.00,2021-12-10 14:20:00,2021-12-14,Completed,cityhospital
+Disposable Gloves,150,29.00,2021-12-12 11:15:00,2021-12-16,Completed,clinicstaff
+Toilet Paper 2-ply,90,28.00,2021-12-15 13:40:00,2021-12-19,Completed,phclinic
+Gas Tank (LPG 11kg),8,1050.00,2021-12-18 10:00:00,2021-12-22,Completed,ruralclinic
+Rice 50kg sack,10,3200.00,2021-12-20 14:45:00,2021-12-24,Completed,healthcenter1
+
+Surgical Mask,200,8.00,2022-01-03 09:30:00,2022-01-07,Completed,hospitaladmin
+N95 Respirators,120,65.00,2022-01-05 11:15:00,2022-01-09,Completed,cityhospital
+Alcohol 70%,100,55.00,2022-01-08 08:45:00,2022-01-12,Pending,clinicstaff
+Disposable Gloves,140,35.00,2022-01-10 14:30:00,2022-01-14,Completed,phclinic
+Hand Sanitizer Gel 250ml,120,75.00,2022-01-12 10:20:00,2022-01-16,Completed,ruralclinic
+Distilled Water 1L,200,32.00,2022-01-15 13:00:00,2022-01-19,Completed,healthcenter1
+Toilet Paper 2-ply,100,32.00,2022-01-18 09:15,2022-01-22,Completed,healthcenter2
+Rice 50kg sack,12,3500.00,2022-01-20 15:30:00,2022-01-24,Completed,hospitaladmin
+
+Surgical Mask,180,8.50,2022-02-02 08:20:00,2022-02-06,Completed,cityhospital
+N95 Respirators,100,68.00,2022-02-05 10:45:00,2022-02-09,Completed,clinicstaff
+Medical Gowns,80,150.00,2022-02-08 09:30:00,2022-02-12,Pending,phclinic
+Disposable Gloves,120,38.00,2022-02-10 14:15:00,2022-02-14,Completed,ruralclinic
+Paracetamol 500mg tablets,100,145.00,2022-02-12 11:00:00,2022-02-16,Completed,healthcenter1
+Antiseptic Wipes,60,95.00,2022-02-15 13:20:00,2022-02-19,Completed,healthcenter2
+Gas Tank (LPG 11kg),6,1150.00,2022-02-18 10:30:00,2022-02-22,Completed,hospitaladmin
+Sugar (Brown) 1kg,50,65.00,2022-02-20 14:45:00,2022-02-24,Completed,cityhospital
+
+// March 2022 - Two years post-COVID, supply chain issues
+Surgical Mask,150,9.00,2022-03-02 09:00:00,2022-03-08,Delayed,clinicstaff
+N95 Respirators,80,70.00,2022-03-05 11:30:00,2022-03-11,Completed,phclinic
+Alcohol 70%,90,58.00,2022-03-08 08:15:00,2022-03-14,Pending,ruralclinic
+Disposable Gloves,100,40.00,2022-03-10 14:00:00,2022-03-16,Completed,healthcenter1
+Vitamin C Supplements (Effervescent),80,190.00,2022-03-12 10:45:00,2022-03-18,Completed,healthcenter2
+Distilled Water 1L,180,35.00,2022-03-15 13:30:00,2022-03-21,Delayed,hospitaladmin
+Tide Powder Detergent 1kg,60,110.00,2022-03-18 09:20:00,2022-03-24,Completed,cityhospital
+Nescafé 3-in-1 Original,40,220.00,2022-03-20 15:00:00,2022-03-26,Completed,clinicstaff
+
+Surgical Mask,120,10.00,2022-04-02 08:30:00,2022-04-08,Delayed,phclinic
+N95 Respirators,60,75.00,2022-04-05 10:15:00,2022-04-11,Completed,ruralclinic
+Medical Gowns,50,165.00,2022-04-08 09:45:00,2022-04-14,Pending,healthcenter1
+Disposable Gloves,80,42.00,2022-04-10 14:20:00,2022-04-16,Completed,healthcenter2
+Rice 50kg sack,8,4200.00,2022-04-12 11:00:00,2022-04-18,Delayed,hospitaladmin
+Alcohol 70%,70,62.00,2022-04-15 13:15:00,2022-04-21,Completed,cityhospital
+Toilet Paper 2-ply,80,38.00,2022-04-18 10:30:00,2022-04-24,Cancelled,clinicstaff
+Hand Sanitizer Gel 250ml,90,85.00,2022-04-20 14:45:00,2022-04-26,Completed,phclinic
+
+Surgical Mask,100,10.50,2022-05-03 09:15:00,2022-05-09,Completed,ruralclinic
+N95 Respirators,50,78.00,2022-05-05 11:30:00,2022-05-11,Delayed,healthcenter1
+Disposable Gloves,70,45.00,2022-05-08 08:00:00,2022-05-14,Completed,healthcenter2
+Bandage Roll,40,28.00,2022-05-10 14:30:00,2022-05-16,Completed,hospitaladmin
+Paracetamol 500mg tablets,80,155.00,2022-05-12 10:15,2022-05-18,Pending,cityhospital
+Distilled Water 1L,150,38.00,2022-05-15 13:00:00,2022-05-21,Delayed,clinicstaff
+Gas Tank (LPG 11kg),4,1350.00,2022-05-18 09:30,2022-05-24,Completed,phclinic
+Canola Oil 1L,30,140.00,2022-05-20 15:15:00,2022-05-26,Completed,ruralclinic
+
+Surgical Mask,90,11.00,2022-06-02 08:45:00,2022-06-08,Completed,healthcenter1
+N95 Respirators,40,80.00,2022-06-05 10:00:00,2022-06-11,Completed,healthcenter2
+Alcohol 70%,60,65.00,2022-06-08 09:20:00,2022-06-14,Completed,hospitaladmin
+Medical Gowns,35,170.00,2022-06-10 14:15:00,2022-06-16,Pending,cityhospital
+Disposable Gloves,60,48.00,2022-06-12 11:45,2022-06-18,Completed,clinicstaff
+Antiseptic Wipes,45,105.00,2022-06-15 13:30:00,2022-06-21,Completed,phclinic
+Toilet Paper 2-ply,70,42.00,2022-06-18 10:10:00,2022-06-24,Delayed,ruralclinic
+Sugar (Brown) 1kg,40,75.00,2022-06-20 14:50:00,2022-06-26,Completed,healthcenter1
+
+// Q3 2022 - Gradual stabilization begins
+Surgical Mask,80,9.50,2022-07-02 09:00:00,2022-07-06,Completed,healthcenter2
+N95 Respirators,35,72.00,2022-07-05 11:15:00,2022-07-09,Completed,hospitaladmin
+Disposable Gloves,55,43.00,2022-07-08 08:30:00,2022-07-12,Completed,cityhospital
+Alcohol 70%,50,60.00,2022-07-10 14:00:00,2022-07-14,Completed,clinicstaff
+Hand Sanitizer Gel 250ml,70,80.00,2022-07-12 10:20:00,2022-07-16,Completed,phclinic
+Distilled Water 1L,120,36.00,2022-07-15 13:45:00,2022-07-19,Completed,ruralclinic
+Rice 50kg sack,6,4000.00,2022-07-18 09:15:00,2022-07-22,Completed,healthcenter1
+Nescafé 3-in-1 Original,30,210.00,2022-07-20 15:30:00,2022-07-24,Completed,healthcenter2
+
+Surgical Mask,70,9.00,2022-08-02 08:15:00,2022-08-06,Completed,hospitaladmin
+N95 Respirators,30,68.00,2022-08-05 10:30:00,2022-08-09,Completed,cityhospital
+Medical Gowns,25,160.00,2022-08-08 09:45:00,2022-08-12,Completed,clinicstaff
+Disposable Gloves,50,40.00,2022-08-10 14:15:00,2022-08-14,Completed,phclinic
+Vitamin C Supplements (Effervescent),60,180.00,2022-08-12 11:00:00,2022-08-16,Completed,ruralclinic
+Paracetamol 500mg tablets,70,150.00,2022-08-15 13:20:00,2022-08-19,Completed,healthcenter1
+Toilet Paper 2-ply,60,38.00,2022-08-18 10:45:00,2022-08-22,Completed,healthcenter2
+Gas Tank (LPG 11kg),3,1250.00,2022-08-20 14:30:00,2022-08-24,Completed,hospitaladmin
+
+Surgical Mask,60,8.50,2022-09-02 09:20:00,2022-09-06,Completed,cityhospital
+N95 Respirators,25,65.00,2022-09-05 11:45:00,2022-09-09,Completed,clinicstaff
+Alcohol 70%,45,55.00,2022-09-08 08:00:00,2022-09-12,Completed,phclinic
+Disposable Gloves,45,38.00,2022-09-10 14:30:00,2022-09-14,Completed,ruralclinic
+Bandage Roll,30,25.00,2022-09-12 10:15:00,2022-09-16,Completed,healthcenter1
+Distilled Water 1L,100,34.00,2022-09-15 13:00:00,2022-09-19,Completed,healthcenter2
+Tide Powder Detergent 1kg,40,105.00,2022-09-18 09:30:00,2022-09-22,Completed,hospitaladmin
+Sugar (Brown) 1kg,35,70.00,2022-09-20 15:15:00,2022-09-24,Completed,cityhospital
+
+Surgical Mask,50,8.00,2022-10-02 08:45:00,2022-10-06,Completed,clinicstaff
+N95 Respirators,20,62.00,2022-10-05 10:00:00,2022-10-09,Completed,phclinic
+Medical Gowns,18,155.00,2022-10-08 09:15:00,2022-10-12,Completed,ruralclinic
+Disposable Gloves,40,36.00,2022-10-10 14:00:00,2022-10-14,Completed,healthcenter1
+Hand Sanitizer Gel 250ml,50,75.00,2022-10-12 11:30:00,2022-10-16,Completed,healthcenter2
+Toilet Paper 2-ply,80,35.00,2022-10-15 13:45:00,2022-10-19,Completed,hospitaladmin
+Rice 50kg sack,8,3800.00,2022-10-18 10:20:00,2022-10-22,Completed,cityhospital
+Canola Oil 1L,25,135.00,2022-10-20 14:15:00,2022-10-24,Completed,clinicstaff
+
+Surgical Mask,45,7.50,2022-11-02 09:30:00,2022-11-06,Completed,phclinic
+N95 Respirators,18,60.00,2022-11-05 11:00:00,2022-11-09,Completed,ruralclinic
+Alcohol 70%,40,52.00,2022-11-08 08:30:00,2022-11-12,Completed,healthcenter1
+Disposable Gloves,35,34.00,2022-11-10 14:20:00,2022-11-14,Completed,healthcenter2
+Antiseptic Wipes,30,95.00,2022-11-12 10:45:00,2022-11-16,Completed,hospitaladmin
+Distilled Water 1L,90,32.00,2022-11-15 13:15:00,2022-11-19,Completed,cityhospital
+Nescafé 3-in-1 Original,25,200.00,2022-11-18 09:00:00,2022-11-22,Completed,clinicstaff
+Gas Tank (LPG 11kg),4,1200.00,2022-11-20 15:30:00,2022-11-24,Completed,phclinic
+
+Surgical Mask,40,7.00,2022-12-02 08:20:00,2022-12-06,Completed,ruralclinic
+N95 Respirators,15,58.00,2022-12-05 10:30:00,2022-12-09,Completed,healthcenter1
+
+Surgical Mask,35,6.80,2023-01-03 09:00:00,2023-01-07,Completed,healthcenter1
+N95 Respirators,12,56.00,2023-01-05 11:15:00,2023-01-09,Completed,healthcenter2
+Alcohol 70%,30,48.00,2023-01-08 08:45:00,2023-01-12,Pending,hospitaladmin
+Disposable Gloves,25,30.00,2023-01-10 14:30:00,2023-01-14,Completed,cityhospital
+Hand Sanitizer Gel 250ml,40,70.00,2023-01-12 10:20:00,2023-01-16,Completed,clinicstaff
+Distilled Water 1L,80,30.00,2023-01-15 13:00:00,2023-01-19,Completed,phclinic
+Toilet Paper 2-ply,60,28.00,2023-01-18 09:15:00,2023-01-22,Completed,ruralclinic
+Rice 50kg sack,5,3400.00,2023-01-20 15:30:00,2023-01-24,Completed,healthcenter1
+Tide Powder Detergent 1kg,30,100.00,2023-01-23 11:00:00,2023-01-27,Completed,healthcenter2
+Nescafé 3-in-1 Original,20,190.00,2023-01-25 14:00:00,2023-01-29,Completed,hospitaladmin
+Safeguard Soap Bar 135g,25,30.00,2023-01-28 09:45:00,2023-02-01,Completed,cityhospital
+Bandage Roll,20,22.00,2023-01-30 12:10:00,2023-02-03,Completed,clinicstaff
+Surgical Mask,30,6.50,2023-02-02 08:30:00,2023-02-06,Completed,phclinic
+N95 Respirators,10,55.00,2023-02-05 10:45:00,2023-02-09,Completed,ruralclinic
+Medical Gowns,15,150.00,2023-02-08 09:30:00,2023-02-12,Pending,healthcenter1
+Disposable Gloves,20,28.00,2023-02-10 14:15:00,2023-02-14,Completed,healthcenter2
+Paracetamol 500mg tablets,50,140.00,2023-02-12 11:00:00,2023-02-16,Completed,hospitaladmin
+Antiseptic Wipes,25,90.00,2023-02-15 13:20:00,2023-02-19,Completed,cityhospital
+Gas Tank (LPG 11kg),3,1200.00,2023-02-18 10:30:00,2023-02-22,Completed,clinicstaff
+Sugar (Brown) 1kg,30,68.00,2023-02-20 14:45:00,2023-02-24,Completed,phclinic
+Zonrox Bleach 1L,35,42.00,2023-02-22 09:50:00,2023-02-26,Completed,ruralclinic
+Alcohol 70%,28,48.00,2023-02-25 10:00:00,2023-02-29,Completed,healthcenter1
+Surgical Mask,25,6.00,2023-03-02 09:00:00,2023-03-06,Completed,healthcenter2
+N95 Respirators,8,50.00,2023-03-05 11:30:00,2023-03-09,Completed,hospitaladmin
+Disposable Gloves,18,25.00,2023-03-08 08:15:00,2023-03-12,Pending,cityhospital
+Vitamin C Supplements (Effervescent),35,160.00,2023-03-10 14:00:00,2023-03-14,Completed,clinicstaff
+Distilled Water 1L,70,29.00,2023-03-12 10:45:00,2023-03-16,Completed,phclinic
+Toilet Paper 2-ply,50,27.00,2023-03-15 13:30:00,2023-03-19,Delayed,ruralclinic
+Nescafé 3-in-1 Original,15,185.00,2023-03-18 09:20:00,2023-03-22,Completed,healthcenter1
+Canola Oil 1L,20,130.00,2023-03-20 15:00:00,2023-03-24,Completed,healthcenter2
+Syringe 5ml,500,3.20,2023-03-23 11:00:00,2023-03-27,Completed,hospitaladmin
+Hand Sanitizer Gel 250ml,30,65.00,2023-03-25 14:00:00,2023-03-29,Completed,cityhospital
+Surgical Mask,20,5.80,2023-04-02 08:30:00,2023-04-06,Completed,clinicstaff
+N95 Respirators,7,48.00,2023-04-05 10:15:00,2023-04-09,Completed,phclinic
+Medical Gowns,12,145.00,2023-04-08 09:45:00,2023-04-12,Pending,ruralclinic
+Disposable Gloves,15,26.00,2023-04-10 14:20:00,2023-04-14,Completed,healthcenter1
+Rice 50kg sack,4,3300.00,2023-04-12 11:00:00,2023-04-16,Delayed,healthcenter2
+Alcohol 70%,25,46.00,2023-04-15 13:15:00,2023-04-19,Completed,hospitaladmin
+Bandage Roll,15,20.00,2023-04-18 10:30:00,2023-04-22,Cancelled,cityhospital
+Antiseptic Wipes,20,88.00,2023-04-20 14:45:00,2023-04-24,Completed,clinicstaff
+Zonrox Bleach 1L,25,40.00,2023-04-22 09:50:00,2023-04-26,Completed,phclinic
+Paracetamol 500mg tablets,40,135.00,2023-04-25 10:00:00,2023-04-29,Completed,ruralclinic
+Surgical Mask,18,5.50,2023-05-03 09:15:00,2023-05-07,Completed,healthcenter1
+N95 Respirators,6,45.00,2023-05-05 11:30:00,2023-05-09,Delayed,healthcenter2
+Disposable Gloves,12,25.00,2023-05-08 08:00:00,2023-05-12,Completed,hospitaladmin
+Distilled Water 1L,60,28.00,2023-05-10 14:30:00,2023-05-14,Completed,cityhospital
+Gas Tank (LPG 11kg),2,1180.00,2023-05-12 10:15:00,2023-05-16,Pending,clinicstaff
+Toilet Paper 2-ply,45,26.00,2023-05-15 13:00:00,2023-05-19,Delayed,phclinic
+Nescafé 3-in-1 Original,12,180.00,2023-05-18 09:30:00,2023-05-22,Completed,ruralclinic
+Sugar (Brown) 1kg,25,65.00,2023-05-20 15:15:00,2023-05-24,Completed,healthcenter1
+Medical Gowns,10,140.00,2023-05-23 11:00:00,2023-05-27,Completed,healthcenter2
+Vitamin C Supplements (Effervescent),30,155.00,2023-05-25 14:00:00,2023-05-29,Completed,hospitaladmin
+Surgical Mask,15,5.20,2023-06-02 08:45:00,2023-06-06,Completed,cityhospital
+Alcohol 70%,22,45.00,2023-06-05 10:00:00,2023-06-09,Completed,clinicstaff
+Disposable Gloves,10,24.00,2023-06-08 09:20:00,2023-06-12,Pending,phclinic
+Bandage Roll,10,18.00,2023-06-10 14:15:00,2023-06-14,Completed,ruralclinic
+Antiseptic Wipes,18,85.00,2023-06-12 11:45:00,2023-06-16,Completed,healthcenter1
+Canola Oil 1L,15,128.00,2023-06-15 13:30:00,2023-06-19,Delayed,healthcenter2
+Rice 50kg sack,3,3200.00,2023-06-18 10:10:00,2023-06-22,Completed,hospitaladmin
+Toilet Paper 2-ply,40,25.00,2023-06-20 14:50:00,2023-06-24,Completed,cityhospital
+Surgical Mask,12,5.00,2023-07-02 09:00:00,2023-07-06,Completed,clinicstaff
+Alcohol 70%,20,44.00,2023-07-05 11:15:00,2023-07-09,Completed,phclinic
+Disposable Gloves,8,22.00,2023-07-08 08:30:00,2023-07-12,Completed,ruralclinic
+Hand Sanitizer Gel 250ml,25,60.00,2023-07-10 14:00:00,2023-07-14,Completed,healthcenter1
+Distilled Water 1L,50,27.00,2023-07-12 10:20:00,2023-07-16,Completed,healthcenter2
+Nescafé 3-in-1 Original,10,175.00,2023-07-15 13:45:00,2023-07-19,Completed,hospitaladmin
+Safeguard Soap Bar 135g,15,28.00,2023-07-18 09:15:00,2023-07-22,Completed,cityhospital
+Tide Powder Detergent 1kg,20,95.00,2023-07-20 15:30:00,2023-07-24,Completed,clinicstaff
+Surgical Mask,10,4.80,2023-08-02 08:15:00,2023-08-06,Completed,phclinic
+Alcohol 70%,18,42.00,2023-08-05 10:30:00,2023-08-09,Completed,ruralclinic
+Disposable Gloves,7,20.00,2023-08-08 09:45:00,2023-08-12,Completed,healthcenter1
+Vitamin C Supplements (Effervescent),25,150.00,2023-08-10 14:15:00,2023-08-14,Completed,healthcenter2
+Paracetamol 500mg tablets,30,130.00,2023-08-12 11:00:00,2023-08-16,Completed,hospitaladmin
+Toilet Paper 2-ply,35,24.00,2023-08-15 13:20:00,2023-08-19,Completed,cityhospital
+Gas Tank (LPG 11kg),2,1150.00,2023-08-18 10:45:00,2023-08-22,Completed,clinicstaff
+Sugar (Brown) 1kg,20,62.00,2023-08-20 14:30:00,2023-08-24,Completed,phclinic
+Surgical Mask,10,4.50,2023-09-02 09:20:00,2023-09-06,Completed,ruralclinic
+Alcohol 70%,15,40.00,2023-09-05 11:45:00,2023-09-09,Completed,healthcenter1
+Disposable Gloves,6,18.00,2023-09-08 08:00:00,2023-09-12,Completed,healthcenter2
+Bandage Roll,8,16.00,2023-09-10 14:30:00,2023-09-14,Completed,hospitaladmin
+Distilled Water 1L,45,26.00,2023-09-12 10:15:00,2023-09-16,Completed,cityhospital
+Rice 50kg sack,2,3100.00,2023-09-15 13:00:00,2023-09-19,Completed,clinicstaff
+Tide Powder Detergent 1kg,18,92.00,2023-09-18 09:30:00,2023-09-22,Completed,phclinic
+Canola Oil 1L,10,125.00,2023-09-20 15:15:00,2023-09-24,Completed,ruralclinic
+Surgical Mask,25,5.00,2023-10-02 08:45:00,2023-10-06,Completed,healthcenter1
+Alcohol 70%,30,45.00,2023-10-05 10:00:00,2023-10-09,Completed,healthcenter2
+Disposable Gloves,15,25.00,2023-10-08 09:15:00,2023-10-12,Completed,hospitaladmin
+Hand Sanitizer Gel 250ml,40,68.00,2023-10-10 14:00:00,2023-10-14,Completed,cityhospital
+Toilet Paper 2-ply,50,28.00,2023-10-12 11:30:00,2023-10-16,Completed,clinicstaff
+Rice 50kg sack,4,3300.00,2023-10-15 13:45:00,2023-10-19,Completed,phclinic
+Nescafé 3-in-1 Original,20,180.00,2023-10-18 10:20:00,2023-10-22,Completed,ruralclinic
+Safeguard Soap Bar 135g,25,30.00,2023-10-20 14:15:00,2023-10-24,Completed,healthcenter1
+Surgical Mask,30,5.20,2023-11-02 09:30:00,2023-11-06,Completed,healthcenter2
+Alcohol 70%,35,46.00,2023-11-05 11:00:00,2023-11-09,Completed,hospitaladmin
+Disposable Gloves,18,26.00,2023-11-08 08:30:00,2023-11-12,Completed,cityhospital
+Antiseptic Wipes,25,90.00,2023-11-10 14:20:00,2023-11-14,Completed,clinicstaff
+Distilled Water 1L,70,30.00,2023-11-12 10:45:00,2023-11-16,Completed,phclinic
+Gas Tank (LPG 11kg),3,1250.00,2023-11-15 13:15:00,2023-11-19,Completed,ruralclinic
+Vitamin C Supplements (Effervescent),35,165.00,2023-11-18 09:00:00,2023-11-22,Completed,healthcenter1
+Sugar (Brown) 1kg,30,68.00,2023-11-20 15:30:00,2023-11-24,Completed,healthcenter2
+Surgical Mask,40,5.50,2023-12-02 08:20:00,2023-12-06,Completed,hospitaladmin
+Alcohol 70%,45,48.00,2023-12-05 10:30:00,2023-12-09,Completed,cityhospital
+Disposable Gloves,25,28.00,2023-12-08 09:15:00,2023-12-12,Completed,clinicstaff
+Medical Gowns,15,150.00,2023-12-10 14:00:00,2023-12-14,Completed,phclinic
+Paracetamol 500mg tablets,50,140.00,2023-12-12 11:30:00,2023-12-16,Completed,ruralclinic
+Toilet Paper 2-ply,80,30.00,2023-12-15 13:45:00,2023-12-19,Completed,healthcenter1
+Rice 50kg sack,8,3500.00,2023-12-18 10:20:00,2023-12-22,Completed,healthcenter2
+Nescafé 3-in-1 Original,30,195.00,2023-12-20 14:15:00,2023-12-24,Completed,hospitaladmin
+Bandage Roll,25,22.00,2023-12-23 09:00:00,2023-12-27,Completed,cityhospital
+Zonrox Bleach 1L,35,42.00,2023-12-26 11:00:00,2023-12-30,Completed,clinicstaff
+
+Surgical Mask,30,5.00,2024-01-03 09:00:00,2024-01-07,Completed,phclinic
+Alcohol 70%,40,46.00,2024-01-05 11:15:00,2024-01-09,Completed,ruralclinic
+Disposable Gloves,20,27.00,2024-01-08 08:45:00,2024-01-12,Pending,healthcenter1
+Hand Sanitizer Gel 250ml,35,68.00,2024-01-10 14:30:00,2024-01-14,Completed,healthcenter2
+Distilled Water 1L,65,29.00,2024-01-12 10:20:00,2024-01-16,Completed,hospitaladmin
+Toilet Paper 2-ply,55,29.00,2024-01-15 13:00:00,2024-01-19,Completed,cityhospital
+Rice 50kg sack,6,3450.00,2024-01-18 09:15:00,2024-01-22,Completed,clinicstaff
+Tide Powder Detergent 1kg,28,98.00,2024-01-20 15:30:00,2024-01-24,Completed,phclinic
+Nescafé 3-in-1 Original,18,188.00,2024-01-23 11:00:00,2024-01-27,Completed,ruralclinic
+Safeguard Soap Bar 135g,22,31.00,2024-01-25 14:00:00,2024-01-29,Completed,healthcenter1
+Vitamin C Supplements (Effervescent),30,160.00,2024-01-28 09:45:00,2024-02-01,Completed,healthcenter2
+Surgical Mask,28,4.80,2024-02-02 08:30:00,2024-02-06,Completed,hospitaladmin
+Alcohol 70%,38,45.00,2024-02-05 10:45:00,2024-02-09,Completed,cityhospital
+Medical Gowns,12,148.00,2024-02-08 09:30:00,2024-02-12,Pending,clinicstaff
+Disposable Gloves,18,26.00,2024-02-10 14:15:00,2024-02-14,Completed,phclinic
+Paracetamol 500mg tablets,45,138.00,2024-02-12 11:00:00,2024-02-16,Completed,ruralclinic
+Antiseptic Wipes,22,88.00,2024-02-15 13:20:00,2024-02-19,Completed,healthcenter1
+Gas Tank (LPG 11kg),2,1220.00,2024-02-18 10:30:00,2024-02-22,Completed,healthcenter2
+Sugar (Brown) 1kg,28,65.00,2024-02-20 14:45:00,2024-02-24,Completed,hospitaladmin
+Zonrox Bleach 1L,32,41.00,2024-02-23 09:50:00,2024-02-27,Completed,cityhospital
+Bandage Roll,20,21.00,2024-02-26 10:00:00,2024-03-01,Completed,clinicstaff
+Surgical Mask,25,4.70,2024-03-02 09:00:00,2024-03-06,Completed,phclinic
+Alcohol 70%,35,44.00,2024-03-05 11:30:00,2024-03-09,Completed,ruralclinic
+Disposable Gloves,15,25.00,2024-03-08 08:15:00,2024-03-12,Pending,healthcenter1
+Distilled Water 1L,60,28.00,2024-03-10 14:00:00,2024-03-14,Completed,healthcenter2
+Toilet Paper 2-ply,50,28.00,2024-03-12 10:45:00,2024-03-16,Delayed,hospitaladmin
+Nescafé 3-in-1 Original,15,180.00,2024-03-15 13:30:00,2024-03-19,Completed,cityhospital
+Canola Oil 1L,18,130.00,2024-03-18 09:20:00,2024-03-22,Completed,clinicstaff
+Syringe 5ml,400,3.10,2024-03-20 15:00:00,2024-03-24,Completed,phclinic
+Hand Sanitizer Gel 250ml,28,65.00,2024-03-23 11:00:00,2024-03-27,Completed,ruralclinic
+Vitamin C Supplements (Effervescent),32,158.00,2024-03-26 14:00:00,2024-03-30,Completed,healthcenter1
+Surgical Mask,20,4.50,2024-04-02 08:30:00,2024-04-06,Completed,healthcenter2
+Alcohol 70%,30,42.00,2024-04-05 10:15:00,2024-04-09,Completed,hospitaladmin
+Medical Gowns,10,145.00,2024-04-08 09:45:00,2024-04-12,Pending,cityhospital
+Disposable Gloves,12,24.00,2024-04-10 14:20:00,2024-04-14,Completed,clinicstaff
+Rice 50kg sack,5,3350.00,2024-04-12 11:00:00,2024-04-16,Delayed,phclinic
+Bandage Roll,12,19.00,2024-04-15 13:15:00,2024-04-19,Cancelled,ruralclinic
+Antiseptic Wipes,18,85.00,2024-04-18 10:30:00,2024-04-22,Completed,healthcenter1
+Paracetamol 500mg tablets,35,135.00,2024-04-20 14:45:00,2024-04-24,Completed,healthcenter2
+Zonrox Bleach 1L,28,39.00,2024-04-23 09:50:00,2024-04-27,Completed,hospitaladmin
+Sugar (Brown) 1kg,25,60.00,2024-04-26 10:00:00,2024-04-30,Completed,cityhospital
+Surgical Mask,18,4.30,2024-05-03 09:15:00,2024-05-07,Completed,clinicstaff
+Alcohol 70%,28,40.00,2024-05-05 11:30:00,2024-05-09,Delayed,phclinic
+Disposable Gloves,10,23.00,2024-05-08 08:00:00,2024-05-12,Completed,ruralclinic
+Distilled Water 1L,55,27.00,2024-05-10 14:30:00,2024-05-14,Completed,healthcenter1
+Gas Tank (LPG 11kg),2,1200.00,2024-05-12 10:15:00,2024-05-16,Pending,healthcenter2
+Toilet Paper 2-ply,40,27.00,2024-05-15 13:00:00,2024-05-19,Delayed,hospitaladmin
+Nescafé 3-in-1 Original,12,175.00,2024-05-18 09:30:00,2024-05-22,Completed,cityhospital
+Canola Oil 1L,15,128.00,2024-05-20 15:15:00,2024-05-24,Completed,clinicstaff
+Medical Gowns,8,140.00,2024-05-23 11:00:00,2024-05-27,Completed,phclinic
+Vitamin C Supplements (Effervescent),28,150.00,2024-05-26 14:00:00,2024-05-30,Completed,ruralclinic
+Surgical Mask,15,4.00,2024-06-02 08:45:00,2024-06-06,Completed,healthcenter1
+Alcohol 70%,25,38.00,2024-06-05 10:00:00,2024-06-09,Completed,healthcenter2
+Disposable Gloves,8,22.00,2024-06-08 09:20:00,2024-06-12,Pending,hospitaladmin
+Bandage Roll,10,18.00,2024-06-10 14:15:00,2024-06-14,Completed,cityhospital
+Antiseptic Wipes,15,82.00,2024-06-12 11:45:00,2024-06-16,Completed,clinicstaff
+Rice 50kg sack,3,3250.00,2024-06-15 13:30:00,2024-06-19,Delayed,phclinic
+Toilet Paper 2-ply,35,26.00,2024-06-18 10:10:00,2024-06-22,Completed,ruralclinic
+Sugar (Brown) 1kg,20,60.00,2024-06-20 14:50:00,2024-06-24,Completed,healthcenter1
+Surgical Mask,12,3.80,2024-07-02 09:00:00,2024-07-06,Completed,healthcenter2
+Alcohol 70%,20,37.00,2024-07-05 11:15:00,2024-07-09,Completed,hospitaladmin
+Disposable Gloves,7,21.00,2024-07-08 08:30:00,2024-07-12,Completed,cityhospital
+Hand Sanitizer Gel 250ml,22,60.00,2024-07-10 14:00:00,2024-07-14,Completed,clinicstaff
+Distilled Water 1L,50,26.00,2024-07-12 10:20:00,2024-07-16,Completed,phclinic
+Nescafé 3-in-1 Original,10,170.00,2024-07-15 13:45:00,2024-07-19,Completed,ruralclinic
+Safeguard Soap Bar 135g,15,28.00,2024-07-18 09:15:00,2024-07-22,Completed,healthcenter1
+Tide Powder Detergent 1kg,18,90.00,2024-07-20 15:30:00,2024-07-24,Completed,healthcenter2
+Surgical Mask,10,3.50,2024-08-02 08:15:00,2024-08-06,Completed,hospitaladmin
+Alcohol 70%,18,36.00,2024-08-05 10:30:00,2024-08-09,Completed,cityhospital
+Disposable Gloves,6,20.00,2024-08-08 09:45:00,2024-08-12,Completed,clinicstaff
+Vitamin C Supplements (Effervescent),20,145.00,2024-08-10 14:15:00,2024-08-14,Completed,phclinic
+Paracetamol 500mg tablets,25,130.00,2024-08-12 11:00:00,2024-08-16,Completed,ruralclinic
+Toilet Paper 2-ply,30,25.00,2024-08-15 13:20:00,2024-08-19,Completed,healthcenter1
+Gas Tank (LPG 11kg),2,1180.00,2024-08-18 10:45:00,2024-08-22,Completed,healthcenter2
+Sugar (Brown) 1kg,18,58.00,2024-08-20 14:30:00,2024-08-24,Completed,hospitaladmin
+Surgical Mask,8,3.20,2024-09-02 09:20:00,2024-09-06,Completed,cityhospital
+Alcohol 70%,15,35.00,2024-09-05 11:45:00,2024-09-09,Completed,clinicstaff
+Disposable Gloves,5,19.00,2024-09-08 08:00:00,2024-09-12,Completed,phclinic
+Bandage Roll,6,15.00,2024-09-10 14:30:00,2024-09-14,Completed,ruralclinic
+Distilled Water 1L,40,25.00,2024-09-12 10:15:00,2024-09-16,Completed,healthcenter1
+Rice 50kg sack,2,3200.00,2024-09-15 13:00:00,2024-09-19,Completed,healthcenter2
+Tide Powder Detergent 1kg,15,88.00,2024-09-18 09:30:00,2024-09-22,Completed,hospitaladmin
+Canola Oil 1L,8,120.00,2024-09-20 15:15:00,2024-09-24,Completed,cityhospital
+Surgical Mask,20,4.00,2024-10-02 08:45:00,2024-10-06,Completed,clinicstaff
+Alcohol 70%,25,38.00,2024-10-05 10:00:00,2024-10-09,Completed,phclinic
+Disposable Gloves,12,22.00,2024-10-08 09:15:00,2024-10-12,Completed,ruralclinic
+Hand Sanitizer Gel 250ml,30,62.00,2024-10-10 14:00:00,2024-10-14,Completed,healthcenter1
+Toilet Paper 2-ply,45,28.00,2024-10-12 11:30:00,2024-10-16,Completed,healthcenter2
+Rice 50kg sack,4,3300.00,2024-10-15 13:45:00,2024-10-19,Completed,hospitaladmin
+Nescafé 3-in-1 Original,18,175.00,2024-10-18 10:20:00,2024-10-22,Completed,cityhospital
+Safeguard Soap Bar 135g,20,29.00,2024-10-20 14:15:00,2024-10-24,Completed,clinicstaff
+Surgical Mask,25,4.20,2024-11-02 09:30:00,2024-11-06,Completed,phclinic
+Alcohol 70%,30,39.00,2024-11-05 11:00:00,2024-11-09,Completed,ruralclinic
+Disposable Gloves,15,23.00,2024-11-08 08:30:00,2024-11-12,Completed,healthcenter1
+Antiseptic Wipes,20,80.00,2024-11-10 14:20:00,2024-11-14,Completed,healthcenter2
+Distilled Water 1L,60,28.00,2024-11-12 10:45:00,2024-11-16,Completed,hospitaladmin
+Gas Tank (LPG 11kg),3,1200.00,2024-11-15 13:15:00,2024-11-19,Completed,cityhospital
+Vitamin C Supplements (Effervescent),30,155.00,2024-11-18 09:00:00,2024-11-22,Completed,clinicstaff
+Sugar (Brown) 1kg,25,62.00,2024-11-20 15:30:00,2024-11-24,Completed,phclinic
+Surgical Mask,30,4.50,2024-12-02 08:20:00,2024-12-06,Completed,ruralclinic
+Alcohol 70%,35,40.00,2024-12-05 10:30:00,2024-12-09,Completed,healthcenter1
+Disposable Gloves,20,25.00,2024-12-08 09:15:00,2024-12-12,Completed,healthcenter2
+Medical Gowns,12,145.00,2024-12-10 14:00:00,2024-12-14,Completed,hospitaladmin
+Paracetamol 500mg tablets,40,135.00,2024-12-12 11:30:00,2024-12-16,Completed,cityhospital
+Toilet Paper 2-ply,70,29.00,2024-12-15 13:45:00,2024-12-19,Completed,clinicstaff
+Rice 50kg sack,7,3400.00,2024-12-18 10:20:00,2024-12-22,Completed,phclinic
+Nescafé 3-in-1 Original,25,185.00,2024-12-20 14:15:00,2024-12-24,Completed,ruralclinic
+Bandage Roll,20,21.00,2024-12-23 09:00:00,2024-12-27,Completed,healthcenter1
+Zonrox Bleach 1L,30,40.00,2024-12-26 11:00:00,2024-12-30,Completed,healthcenter2
+
+Surgical Mask,25,4.00,2025-01-03 09:00:00,2025-01-07,Completed,hospitaladmin
+Alcohol 70%,30,38.00,2025-01-05 11:15:00,2025-01-09,Completed,cityhospital
+Disposable Gloves,15,24.00,2025-01-08 08:45:00,2025-01-12,Pending,clinicstaff
+Hand Sanitizer Gel 250ml,28,60.00,2025-01-10 14:30:00,2025-01-14,Completed,phclinic
+Distilled Water 1L,55,27.00,2025-01-12 10:20:00,2025-01-16,Completed,ruralclinic
+Toilet Paper 2-ply,50,28.00,2025-01-15 13:00:00,2025-01-19,Completed,healthcenter1
+Rice 50kg sack,5,3350.00,2025-01-18 09:15:00,2025-01-22,Completed,healthcenter2
+Tide Powder Detergent 1kg,25,95.00,2025-01-20 15:30:00,2025-01-24,Completed,hospitaladmin
+Nescafé 3-in-1 Original,15,180.00,2025-01-23 11:00:00,2025-01-27,Completed,cityhospital
+Safeguard Soap Bar 135g,20,30.00,2025-01-25 14:00:00,2025-01-29,Completed,clinicstaff
+Vitamin C Supplements (Effervescent),25,150.00,2025-01-28 09:45:00,2025-02-01,Completed,phclinic
+Surgical Mask,20,3.80,2025-02-03 08:30:00,2025-02-07,Completed,ruralclinic
+Alcohol 70%,25,37.00,2025-02-06 10:45:00,2025-02-10,Completed,healthcenter1
+Medical Gowns,10,140.00,2025-02-09 09:30:00,2025-02-13,Pending,healthcenter2
+Disposable Gloves,12,23.00,2025-02-11 14:15:00,2025-02-15,Completed,hospitaladmin
+Paracetamol 500mg tablets,35,130.00,2025-02-13 11:00:00,2025-02-17,Completed,cityhospital
+Antiseptic Wipes,18,80.00,2025-02-16 13:20:00,2025-02-20,Completed,clinicstaff
+Gas Tank (LPG 11kg),2,1180.00,2025-02-19 10:30:00,2025-02-23,Completed,phclinic
+Sugar (Brown) 1kg,20,60.00,2025-02-22 14:45:00,2025-02-26,Completed,ruralclinic
+Zonrox Bleach 1L,28,39.00,2025-02-25 09:50:00,2025-02-29,Completed,healthcenter1
+Bandage Roll,15,20.00,2025-02-28 10:00:00,2025-03-04,Completed,healthcenter2
+Surgical Mask,18,3.50,2025-03-03 09:00:00,2025-03-07,Completed,hospitaladmin
+Alcohol 70%,22,36.00,2025-03-06 11:30:00,2025-03-10,Completed,cityhospital
+Disposable Gloves,10,22.00,2025-03-09 08:15:00,2025-03-13,Pending,clinicstaff
+Distilled Water 1L,45,26.00,2025-03-11 14:00:00,2025-03-15,Completed,phclinic
+Toilet Paper 2-ply,40,27.00,2025-03-14 10:45:00,2025-03-18,Delayed,ruralclinic
+Nescafé 3-in-1 Original,12,175.00,2025-03-17 13:30:00,2025-03-21,Completed,healthcenter1
+Canola Oil 1L,15,125.00,2025-03-20 09:20:00,2025-03-24,Completed,healthcenter2
+Syringe 5ml,350,3.00,2025-03-23 15:00:00,2025-03-27,Completed,hospitaladmin
+Hand Sanitizer Gel 250ml,25,60.00,2025-03-26 11:00:00,2025-03-30,Completed,cityhospital
+Vitamin C Supplements (Effervescent),28,150.00,2025-03-29 14:00:00,2025-04-02,Completed,clinicstaff
+Surgical Mask,15,3.20,2025-04-03 08:30:00,2025-04-07,Completed,phclinic
+Alcohol 70%,20,35.00,2025-04-06 10:15:00,2025-04-10,Completed,ruralclinic
+Medical Gowns,8,138.00,2025-04-09 09:45:00,2025-04-13,Pending,healthcenter1
+Disposable Gloves,10,21.00,2025-04-12 14:20:00,2025-04-16,Completed,healthcenter2
+Rice 50kg sack,4,3300.00,2025-04-15 11:00:00,2025-04-19,Delayed,hospitaladmin
+Bandage Roll,10,18.00,2025-04-18 13:15:00,2025-04-22,Cancelled,cityhospital
+Antiseptic Wipes,15,78.00,2025-04-21 10:30:00,2025-04-25,Completed,clinicstaff
+Paracetamol 500mg tablets,30,128.00,2025-04-24 14:45:00,2025-04-28,Completed,phclinic
+Zonrox Bleach 1L,25,38.00,2025-04-27 09:50:00,2025-05-01,Completed,ruralclinic
+Sugar (Brown) 1kg,20,58.00,2025-04-30 10:00:00,2025-05-04,Completed,healthcenter1
+Surgical Mask,12,3.00,2025-05-03 09:15:00,2025-05-07,Completed,healthcenter2
+Alcohol 70%,18,34.00,2025-05-06 11:30:00,2025-05-10,Delayed,hospitaladmin
+Disposable Gloves,8,20.00,2025-05-09 08:00:00,2025-05-13,Completed,cityhospital
+Distilled Water 1L,40,25.00,2025-05-12 14:30:00,2025-05-16,Completed,clinicstaff
+Gas Tank (LPG 11kg),2,1150.00,2025-05-15 10:15:00,2025-05-19,Pending,phclinic
+Toilet Paper 2-ply,35,26.00,2025-05-18 13:00:00,2025-05-22,Delayed,ruralclinic
+Nescafé 3-in-1 Original,10,170.00,2025-05-21 09:30:00,2025-05-25,Completed,healthcenter1
+Canola Oil 1L,12,120.00,2025-05-24 15:15:00,2025-05-28,Completed,healthcenter2
+Medical Gowns,6,135.00,2025-05-27 11:00:00,2025-05-31,Completed,hospitaladmin
+Vitamin C Supplements (Effervescent),20,145.00,2025-05-29 14:00:00,2025-06-02,Completed,cityhospital

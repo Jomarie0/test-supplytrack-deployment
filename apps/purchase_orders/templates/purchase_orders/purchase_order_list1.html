@@ -1,0 +1,976 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/orders/orders.css' %}">
+<style>
+    .purchase-orders-container {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        min-height: 100vh;
+    }
+
+    .orders-header {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+        color: white;
+        padding: 32px;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .orders-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+        border-radius: 16px 16px 0 0;
+        pointer-events: none;
+    }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .kpi-card {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        border: 1px solid #e2e8f0;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        gap: 14px;
+        min-height: 110px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .kpi-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(102,126,234,0.04), rgba(118,75,162,0.04));
+        pointer-events: none;
+    }
+
+    .kpi-icon-badge {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #ffffff;
+        font-size: 20px;
+        box-shadow: 0 6px 14px rgba(102,126,234,0.3);
+    }
+
+    .kpi-meta {
+        display: grid;
+        gap: 6px;
+    }
+
+    .kpi-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+        line-height: 1;
+    }
+
+    .kpi-label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .kpi-subtext {
+        color: #94a3b8;
+        font-size: 12px;
+    }
+
+    .purchase-orders-panel {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    .panel-header {
+        background: #f8fafc;
+        padding: 20px 24px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #4a5568;
+    }
+
+    .btn-secondary:hover {
+        background: #cbd5e0;
+    }
+
+    .btn-danger {
+        background: #e53e3e;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c53030;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .orders-table thead {
+        background: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .orders-table th {
+        padding: 16px 24px;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+    }
+
+    .orders-table td {
+        padding: 20px 24px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+        border: none;
+    }
+
+    .orders-table tbody tr {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .orders-table tbody tr:hover {
+        background: #f8fafc;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+    }
+
+    .status-draft {
+        background: #f7fafc;
+        color: #4a5568;
+    }
+
+    .status-pending {
+        background: #fef5e7;
+        color: #c05621;
+    }
+
+    .status-ordered {
+        background: #bee3f8;
+        color: #2a4365;
+    }
+
+    .status-partially_received {
+        background: #bae6fd;
+        color: #075985;
+    }
+
+    .status-received {
+        background: #c6f6d5;
+        color: #22543d;
+    }
+
+    .status-cancelled {
+        background: #fed7d7;
+        color: #9b2c2c;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        background: white;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 16px;
+        max-width: 900px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        position: relative;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        padding: 24px 32px;
+        border-radius: 16px 16px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 28px;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+    }
+
+    .close-btn:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .modal-body {
+        padding: 32px;
+    }
+
+    .readonly-field {
+        background-color: #f7fafc;
+        border: 1px solid #e2e8f0;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        white-space: pre-wrap;
+        font-family: monospace;
+        font-size: 0.9rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #4a5568;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .error-messages {
+        background: #fed7d7;
+        color: #9b2c2c;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .error-messages ul {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .purchase-orders-container {
+            padding: 1rem;
+        }
+
+        .kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .purchase-orders-table {
+            font-size: 0.8rem;
+        }
+
+        .purchase-orders-table th,
+        .purchase-orders-table td {
+            padding: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="purchase-orders-container">
+    <!-- Purchase Orders Header -->
+    <div class="orders-header">
+        <h1>📦 Purchase Orders Management</h1>
+        <p>Manage and track all purchase orders with suppliers</p>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon-badge">📊</div>
+            <div class="kpi-meta">
+                <div class="kpi-value" id="kpi-total">0</div>
+                <div class="kpi-label">Total Purchase Orders</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon-badge">📝</div>
+            <div class="kpi-meta">
+                <div class="kpi-value" id="kpi-draft">0</div>
+                <div class="kpi-label">Draft</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon-badge">⏳</div>
+            <div class="kpi-meta">
+                <div class="kpi-value" id="kpi-pending">0</div>
+                <div class="kpi-label">Pending</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon-badge">🧾</div>
+            <div class="kpi-meta">
+                <div class="kpi-value" id="kpi-ordered">0</div>
+                <div class="kpi-label">Ordered</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon-badge">📦</div>
+            <div class="kpi-meta">
+                <div class="kpi-value" id="kpi-partially_received">0</div>
+                <div class="kpi-label">Partially Received</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon-badge">✅</div>
+            <div class="kpi-meta">
+                <div class="kpi-value" id="kpi-received">0</div>
+                <div class="kpi-label">Received</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon-badge">❌</div>
+            <div class="kpi-meta">
+                <div class="kpi-value" id="kpi-cancelled">0</div>
+                <div class="kpi-label">Cancelled</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon-badge">🏢</div>
+            <div class="kpi-meta">
+                <div class="kpi-value" id="kpi-active-suppliers">0</div>
+                <div class="kpi-label">Active Suppliers</div>
+                <div class="kpi-subtext" id="kpi-active-suppliers-sub"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Orders Panel -->
+    <div class="purchase-orders-panel">
+            <div class="panel-header">
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="add-order-btn" onclick="openAddModal()">
+                    ➕ Add Purchase Order
+                </button>
+                <button class="btn btn-secondary" id="update-btn" disabled onclick="populateFormForUpdate()">
+                    ✏️ Update Selected PO
+                </button>
+                <button class="btn btn-danger" id="delete-btn" disabled>
+                    🗑️ Soft Delete
+                </button>
+                <a href="{% url 'PO:archived_purchase_orders' %}" class="btn btn-secondary">
+                    🗂️ View Archived Orders
+                </a>
+            </div>
+                <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom: 1rem;">
+                    <div class="status-tabs" style="display:flex; gap:8px; background:#f1f5f9; padding:4px; border-radius:8px;">
+                        <button class="status-tab active" data-status="all" style="padding:8px 12px; border:none; background:white; border-radius:6px; font-weight:600;">All</button>
+                        <button class="status-tab" data-status="draft" style="padding:8px 12px; border:none; background:transparent; border-radius:6px; font-weight:600; color:#64748b;">Draft</button>
+                        <button class="status-tab" data-status="pending" style="padding:8px 12px; border:none; background:transparent; border-radius:6px; font-weight:600; color:#64748b;">Pending</button>
+                        <button class="status-tab" data-status="ordered" style="padding:8px 12px; border:none; background:transparent; border-radius:6px; font-weight:600; color:#64748b;">Ordered</button>
+                        <button class="status-tab" data-status="partially_received" style="padding:8px 12px; border:none; background:transparent; border-radius:6px; font-weight:600; color:#64748b;">Partially Received</button>
+                        <button class="status-tab" data-status="received" style="padding:8px 12px; border:none; background:transparent; border-radius:6px; font-weight:600; color:#64748b;">Received</button>
+                        <button class="status-tab" data-status="cancelled" style="padding:8px 12px; border:none; background:transparent; border-radius:6px; font-weight:600; color:#64748b;">Cancelled</button>
+                    </div>
+                </div>
+            <input type="text" class="search-input" placeholder="🔍 Search purchase orders by ID, supplier, or status..." />
+        </div>
+
+        <div class="table-wrapper">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="select-all"></th>
+                        <th>Purchase Order ID</th>
+                        <th>Supplier</th>
+                        <th>Order Date</th>
+                        <th>Expected Delivery</th>
+                        <th>Total Cost</th>
+                        <th>Details</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase_order in purchase_orders %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="order-checkbox" data-id="{{ purchase_order.purchase_order_id }}">
+                        </td>
+                        <td><strong>{{ purchase_order.purchase_order_id }}</strong></td>
+                        <td>{{ purchase_order.supplier_profile.company_name|default:"No Supplier" }}</td>
+                        <td>{{ purchase_order.order_date|date:"Y-m-d H:i" }}</td>
+                        <td>{{ purchase_order.expected_delivery_date|default:"—" }}</td>
+                        <td><strong>₱{{ purchase_order.total_cost|floatformat:2 }}</strong></td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="openDetailsModal('{{ purchase_order.purchase_order_id }}')">
+                                👁️ View Details
+                            </button>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ purchase_order.status }}">
+                                {{ purchase_order.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align:center; padding: 2rem; color: #718096;">
+                            📭 No purchase orders found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Purchase Order Notifications -->
+    <div class="purchase-orders-panel" style="margin-top: 1.5rem;">
+        <div class="panel-header">
+            <h3 style="margin:0;">Recent Purchase Order Notifications</h3>
+        </div>
+        <div style="padding: 16px 24px;">
+            <ul id="poNotifs" style="list-style: none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;"></ul>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Modal for Purchase Order Details -->
+    <div id="detailsModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Purchase Order Details</h2>
+          <button class="close-btn" id="modalCloseBtn">&times;</button>
+        </div>
+        <div class="modal-body" id="modalContent">
+          <p><strong>PO ID:</strong> <span id="modalPoId"></span></p>
+          <p><strong>Supplier:</strong> <span id="modalSupplier"></span></p>
+          <p><strong>Order Date:</strong> <span id="modalOrderDate"></span></p>
+          <p><strong>Expected Delivery:</strong> <span id="modalExpectedDelivery"></span></p>
+          <p><strong>Notes:</strong></p>
+          <pre id="modalNotes" class="readonly-field"></pre>
+
+          <h3>Order Items</h3>
+          <table id="modalItemsTable" style="width:100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="border:1px solid #ddd; padding:8px;">Product Name</th>
+                <th style="border:1px solid #ddd; padding:8px;">Description</th>
+                <th style="border:1px solid #ddd; padding:8px;">Quantity</th>
+                <th style="border:1px solid #ddd; padding:8px;">Unit Cost</th>
+                <th style="border:1px solid #ddd; padding:8px;">Total Cost</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <p style="text-align:right; font-weight:bold; margin-top:10px;">Total Cost: <span id="modalTotalCost"></span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for Add/Update PO -->
+    <div id="formModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="formModalTitle">Add Purchase Order</h2>
+          <button class="close-btn" id="formModalCloseBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form method="POST" id="purchase-order-form">
+            {% csrf_token %}
+            <input type="hidden" name="purchase_order_id" id="hidden-purchase-order-id">
+
+            <div id="formErrors" class="error-messages" style="display:none;"></div>
+
+            {{ form.as_p }}
+
+            <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:12px;">
+              <button type="button" class="btn btn-secondary" id="formCancelBtn">Cancel</button>
+              <button type="submit" class="btn btn-primary submit-btn">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('detailsModal');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+  const modalPoId = document.getElementById('modalPoId');
+  const modalSupplier = document.getElementById('modalSupplier');
+  const modalOrderDate = document.getElementById('modalOrderDate');
+  const modalExpectedDelivery = document.getElementById('modalExpectedDelivery');
+  const modalNotes = document.getElementById('modalNotes');
+  const modalItemsTableBody = document.querySelector('#modalItemsTable tbody');
+  const modalTotalCost = document.getElementById('modalTotalCost');
+
+  const formModal = document.getElementById('formModal');
+  const formModalCloseBtn = document.getElementById('formModalCloseBtn');
+  const formModalTitle = document.getElementById('formModalTitle');
+  const purchaseOrderForm = document.getElementById('purchase-order-form');
+  const hiddenPurchaseOrderId = document.getElementById('hidden-purchase-order-id');
+  const formErrorsDiv = document.getElementById('formErrors');
+  const formCancelBtn = document.getElementById('formCancelBtn');
+
+  const selectAllCheckbox = document.getElementById('select-all');
+  const orderCheckboxes = document.querySelectorAll('.order-checkbox');
+  const updateBtn = document.getElementById('update-btn');
+  const deleteBtn = document.getElementById('delete-btn');
+
+  // Open details modal and load PO details via API
+  window.openDetailsModal = function(poId) {
+    fetch(`/purchase_orders/api/details/${poId}/`)
+      .then(response => response.json())
+      .then(data => {
+        modalPoId.textContent = data.purchase_order_id;
+        modalSupplier.textContent = data.supplier_name;
+        modalOrderDate.textContent = data.order_date;
+        modalExpectedDelivery.textContent = data.expected_delivery_date || '—';
+        modalNotes.textContent = data.notes || '—';
+
+        modalItemsTableBody.innerHTML = '';
+        data.items.forEach(item => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td style="border:1px solid #ddd; padding:8px;">${item.product_name}</td>
+            <td style="border:1px solid #ddd; padding:8px;">${item.description || '-'}</td>
+            <td style="border:1px solid #ddd; padding:8px;">${item.quantity_ordered}</td>
+            <td style="border:1px solid #ddd; padding:8px;">${parseFloat(item.unit_cost).toFixed(2)}</td>
+            <td style="border:1px solid #ddd; padding:8px;">${parseFloat(item.total_price).toFixed(2)}</td>
+          `;
+          modalItemsTableBody.appendChild(row);
+        });
+
+        modalTotalCost.textContent = parseFloat(data.total_cost).toFixed(2);
+
+        modal.style.display = "block";
+      })
+      .catch(err => {
+        alert('Error fetching purchase order details.');
+        console.error(err);
+      });
+  }
+
+  // Compute KPIs from the table on load
+  function computeKpis() {
+    const rows = Array.from(document.querySelectorAll('.orders-table tbody tr'));
+    const counts = {
+      total: 0,
+      draft: 0,
+      pending: 0,
+      ordered: 0,
+      partially_received: 0,
+      received: 0,
+      cancelled: 0,
+      suppliers: new Set(),
+    };
+
+    rows.forEach(row => {
+      const statusBadge = row.querySelector('.status-badge');
+      const supplierCell = row.querySelector('td:nth-child(3)');
+      if (!statusBadge || !supplierCell) return;
+
+      const statusText = statusBadge.textContent.trim().toLowerCase().replace(/\s+/g, '_');
+      const supplierName = supplierCell.textContent.trim();
+
+      counts.total += 1;
+      if (counts.hasOwnProperty(statusText)) {
+        counts[statusText] += 1;
+      }
+      if (supplierName && supplierName.toLowerCase() !== 'no supplier') {
+        counts.suppliers.add(supplierName);
+      }
+    });
+
+    const byId = id => document.getElementById(id);
+    const safeSet = (id, value) => { const el = byId(id); if (el) el.textContent = value; };
+
+    safeSet('kpi-total', counts.total);
+    safeSet('kpi-draft', counts.draft);
+    safeSet('kpi-pending', counts.pending);
+    safeSet('kpi-ordered', counts.ordered);
+    safeSet('kpi-partially_received', counts.partially_received);
+    safeSet('kpi-received', counts.received);
+    safeSet('kpi-cancelled', counts.cancelled);
+    safeSet('kpi-active-suppliers', counts.suppliers.size);
+    const sub = byId('kpi-active-suppliers-sub');
+    if (sub) sub.textContent = counts.suppliers.size > 0 ? 'Unique suppliers with POs' : '';
+  }
+
+  // Close modals handlers
+  modalCloseBtn.addEventListener('click', () => {
+    modal.style.display = "none";
+  });
+  formModalCloseBtn.addEventListener('click', () => {
+    formModal.style.display = "none";
+    resetFormModal();
+  });
+
+  window.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+    if (event.target === formModal) {
+      formModal.style.display = "none";
+      resetFormModal();
+    }
+  });
+
+  // Cancel button closes modal
+  if (formCancelBtn) {
+    formCancelBtn.addEventListener('click', () => {
+      formModal.style.display = 'none';
+      resetFormModal();
+    });
+  }
+
+  // Attach view details buttons event listeners
+  document.querySelectorAll('.view-details-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const poId = btn.getAttribute('data-po-id');
+      openDetailsModal(poId);
+    });
+  });
+
+  // Select All checkbox behavior
+  selectAllCheckbox.addEventListener('change', () => {
+    const checked = selectAllCheckbox.checked;
+    document.querySelectorAll('.order-checkbox').forEach(cb => {
+      cb.checked = checked;
+    });
+    toggleActionButtons();
+  });
+
+  // Individual checkbox change behavior
+  document.querySelectorAll('.order-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => {
+      // Update Select All checkbox state
+      const allChecked = Array.from(document.querySelectorAll('.order-checkbox')).every(cb => cb.checked);
+      selectAllCheckbox.checked = allChecked;
+
+      toggleActionButtons();
+    });
+  });
+
+  // Enable/disable Update and Delete buttons
+  function toggleActionButtons() {
+    const checkedBoxes = Array.from(document.querySelectorAll('.order-checkbox:checked'));
+    updateBtn.disabled = checkedBoxes.length !== 1;
+    deleteBtn.disabled = checkedBoxes.length === 0;
+  }
+
+  // Populate form modal for update
+  window.populateFormForUpdate = function() {
+    const checkedBoxes = Array.from(document.querySelectorAll('.order-checkbox:checked'));
+    if (checkedBoxes.length !== 1) {
+      alert('Please select exactly one purchase order to update.');
+      return;
+    }
+
+    const row = checkedBoxes[0].closest('tr');
+    const poId = row.querySelector('td:nth-child(2)').textContent.trim();
+
+    // Fill hidden input
+    hiddenPurchaseOrderId.value = poId;
+
+    // Fetch purchase order details to pre-fill the form (optional: or fill from table if you have all data)
+    fetch(`/purchase_orders/api/details/${poId}/`)
+      .then(response => response.json())
+      .then(data => {
+        formModalTitle.textContent = 'Update Purchase Order';
+
+        // Fill form fields (assuming your form has fields with IDs)
+        if (document.getElementById('id_supplier')) {
+          // Set supplier select by matching text
+          const supplierSelect = document.getElementById('id_supplier');
+          for (let option of supplierSelect.options) {
+            if (option.text.trim() === data.supplier_name) {
+              supplierSelect.value = option.value;
+              break;
+            }
+          }
+        }
+
+        if (document.getElementById('id_expected_delivery_date')) {
+          document.getElementById('id_expected_delivery_date').value = data.expected_delivery_date || '';
+        }
+
+        if (document.getElementById('id_status')) {
+          const statusSelect = document.getElementById('id_status');
+          for (let option of statusSelect.options) {
+            if (option.text.trim() === data.status_display) {
+              statusSelect.value = option.value;
+              break;
+            }
+          }
+        }
+
+        if (document.getElementById('id_notes')) {
+          document.getElementById('id_notes').value = data.notes || '';
+        }
+
+        formModal.style.display = 'block';
+      })
+      .catch(err => {
+        alert('Error fetching purchase order details for update.');
+        console.error(err);
+      });
+  };
+
+  // Reset form modal
+  function resetFormModal() {
+    purchaseOrderForm.reset();
+    hiddenPurchaseOrderId.value = '';
+    formModalTitle.textContent = 'Add Purchase Order';
+    formErrorsDiv.style.display = 'none';
+    formErrorsDiv.innerHTML = '';
+  }
+
+  // Handle form submission with fetch + show errors inline (optional enhancement)
+  purchaseOrderForm.addEventListener('submit', function(e) {
+    // Let it submit normally for now, or preventDefault and do AJAX here if preferred.
+  });
+
+  // Delete button click event
+  deleteBtn.addEventListener('click', () => {
+    const checkedBoxes = Array.from(document.querySelectorAll('.order-checkbox:checked'));
+    if (checkedBoxes.length === 0) {
+      alert('Please select at least one purchase order to delete.');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to soft delete ${checkedBoxes.length} selected purchase order(s)?`)) {
+      return;
+    }
+
+    const idsToDelete = checkedBoxes.map(cb => cb.dataset.id);
+
+    fetch("{% url 'PO:delete_purchase_orders' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      },
+      body: JSON.stringify({ ids: idsToDelete }),
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => { throw new Error(err.error || 'Server error'); });
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        alert(data.message || 'Purchase orders soft-deleted successfully!');
+        location.reload();
+      } else {
+        alert('Error: ' + (data.error || 'Unknown error occurred.'));
+      }
+    })
+    .catch(error => {
+      console.error('Fetch Error:', error);
+      alert('An error occurred during deletion: ' + error.message);
+    });
+  });
+
+  // Search filter
+  document.querySelector('.search-input').addEventListener('input', e => {
+    const kw = e.target.value.toLowerCase();
+    document.querySelectorAll('.orders-table tbody tr').forEach(row => {
+      const poIdCell = row.querySelector('td:nth-child(2)');
+      const supplierCell = row.querySelector('td:nth-child(3)');
+      const statusCell = row.querySelector('td:nth-child(8)');
+      const poId = poIdCell ? poIdCell.textContent.toLowerCase() : '';
+      const supplierName = supplierCell ? supplierCell.textContent.toLowerCase() : '';
+      const status = statusCell ? statusCell.textContent.toLowerCase() : '';
+
+      row.style.display = (poId.includes(kw) || supplierName.includes(kw) || status.includes(kw)) ? '' : 'none';
+    });
+  });
+
+  // Status tab filtering
+  document.querySelectorAll('.status-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const status = tab.dataset.status; // 'all' or status key
+      document.querySelectorAll('.orders-table tbody tr').forEach(row => {
+        const badge = row.querySelector('.status-badge');
+        const rowStatus = badge ? badge.textContent.trim().toLowerCase().replace(/\s+/g, '_') : '';
+        if (status === 'all' || rowStatus === status) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Initial KPI computation after DOM built
+  computeKpis();
+
+  // Load recent purchase order notifications
+  function loadPoNotifications() {
+    fetch('/purchase_orders/api/notifications/?limit=10')
+      .then(r => r.json())
+      .then(list => {
+        const ul = document.getElementById('poNotifs');
+        ul.innerHTML = '';
+        if (!Array.isArray(list) || list.length === 0) {
+          ul.innerHTML = '<li style="color:#718096">No notifications.</li>';
+          return;
+        }
+        list.forEach(n => {
+          const li = document.createElement('li');
+          const overdue = n.overdue ? 'background:#fee2e2; color:#991b1b;' : '';
+          li.style.cssText = `padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; ${overdue}`;
+          const due = n.payment_due_date ? ` • Due: ${n.payment_due_date}` : '';
+          li.textContent = `${n.message} • ${n.supplier_name || 'Supplier N/A'} • Status: ${n.status}${due}`;
+          ul.appendChild(li);
+        });
+      })
+      .catch(err => console.error('PO notif load error', err));
+  }
+  loadPoNotifications();
+
+  // Add order button: open form modal for add
+  window.openAddModal = function() {
+    resetFormModal();
+    formModal.style.display = 'block';
+  };
+
+});
+</script>
+{% endblock %}

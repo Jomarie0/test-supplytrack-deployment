@@ -1,0 +1,157 @@
+{% extends 'base_store.html' %}
+{% load static %}
+
+{% block title %}Verify Email - SupplyTrack{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/users/verify_email.css' %}">
+<style>
+    /* ===== Loading Overlay ===== */
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.85);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        font-family: 'Poppins', sans-serif;
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .loading-spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3b82f6;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+        margin-top: 15px;
+        font-size: 1.1rem;
+        color: #374151;
+        font-weight: 500;
+    }
+
+    /* Subtle fade for button when loading */
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="verify-email-container">
+    <div class="verify-card">
+        <div class="verify-header">
+            <div class="verify-icon">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
+            <h1>Verify Your Email</h1>
+            <p class="email-display">
+                We've sent a verification code to<br>
+                <strong>{{ user.email }}</strong>
+            </p>
+            <p class="help-text">Enter the 6-digit code to activate your account</p>
+        </div>
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'users:verify_email' %}" id="verifyForm" class="verify-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="code" class="form-label">Verification Code</label>
+                <input 
+                    type="text" 
+                    name="code" 
+                    id="code"
+                    maxlength="6"
+                    pattern="[0-9]{6}"
+                    required
+                    class="code-input"
+                    placeholder="000000"
+                    autofocus
+                >
+                <small class="form-help">Code expires in 3 minutes</small>
+            </div>
+
+            <button type="submit" id="verifyBtn" class="btn btn-primary btn-block">
+                <i class="fas fa-check-circle"></i> Verify Email Address
+            </button>
+        </form>
+
+        <div class="resend-section">
+            <p class="resend-text">Didn't receive the code?</p>
+            <form method="post" action="{% url 'users:resend_code' %}" class="resend-form">
+                {% csrf_token %}
+                <button type="submit" class="btn-link">
+                    <i class="fas fa-redo"></i> Resend Verification Code
+                </button>
+            </form>
+        </div>
+
+        <div class="help-box">
+            <p><strong>Can't find the email?</strong></p>
+            <p>Check your spam/junk folder. If you still need help, contact support.</p>
+        </div>
+    </div>
+
+    <div class="back-link">
+        <a href="{% url 'users:login_landing' %}">
+            <i class="fas fa-arrow-left"></i> Back to Login
+        </a>
+    </div>
+</div>
+
+<!-- ===== Loading Overlay ===== -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Verifying your code...</div>
+</div>
+
+<script>
+    const codeInput = document.getElementById('code');
+    const form = document.getElementById('verifyForm');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // Input behavior
+    codeInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        this.style.borderColor = this.value.length === 6 ? '#10b981' : '';
+    });
+
+    // Show loading overlay on submit
+    form.addEventListener('submit', function(e) {
+        loadingOverlay.style.display = 'flex';
+        verifyBtn.disabled = true;
+    });
+
+    // Focus input when loaded
+    window.addEventListener('load', () => codeInput.focus());
+</script>
+{% endblock %}

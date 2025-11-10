@@ -1,0 +1,1322 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/delivery/delivery.css' %}">
+<style>
+    * { box-sizing: border-box; }
+    
+    /* Main Container */
+    .delivery-module {
+        background: #f8fafc;
+        min-height: 100vh;
+        padding: 0;
+    }
+
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 32px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+    }
+    
+    .page-header h1 {
+        color: white;
+        margin: 0 0 8px 0;
+        font-size: 32px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .page-header p {
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0;
+        font-size: 16px;
+    }
+
+    /* Action Bar */
+    .action-bar {
+        background: white;
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    
+    .action-group {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    /* KPI Cards */
+    .kpi-section {
+        margin-bottom: 24px;
+    }
+    
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+    }
+    
+    .kpi-card {
+        background: white;
+        padding: 24px;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    
+    .kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+    
+    .kpi-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, #667eea15, #764ba215);
+    }
+    
+    .kpi-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+    
+    .kpi-label {
+        color: #64748b;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+    
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+    
+    .btn-icon {
+        padding: 10px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        color: #475569;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-icon:hover {
+        background: #e2e8f0;
+    }
+
+    /* Tabs */
+    .tabs-container {
+        background: white;
+        border-radius: 16px;
+        padding: 8px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+    }
+    
+    .tab-button {
+        padding: 12px 24px;
+        border: none;
+        background: transparent;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    
+    .tab-button.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .tab-button:hover:not(.active) {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    /* Table Container */
+    .delivery-category-content {
+        display: none;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+    
+    .delivery-category-content.active {
+        display: block;
+    }
+    
+    .category-header {
+        padding: 24px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .category-header h3 {
+        margin: 0;
+        color: #1e293b;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    /* Table */
+    .table-wrapper {
+        overflow-x: auto;
+        height: 500px;
+        max-height: 100vh; /* adjust as needed */
+        overflow-y: auto; 
+    }
+    
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        max-height: 420px; /* adjust as needed */
+        overflow-y: auto;    /* scroll the whole table inside this container */
+
+    }
+    
+    .orders-table thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #f8fafc;
+        border-bottom: 2px solid #f1f5f9;
+    }
+    
+    .orders-table th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        padding: 16px 20px;
+        text-align: left;
+        font-weight: 600;
+        color: #64748b;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .orders-table td {
+        padding: 20px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+    
+    .orders-table tbody tr {
+        transition: all 0.2s;
+    }
+    
+    .orders-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-out-for-delivery {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .status-delivered {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-failed {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* Product List */
+    .product-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .product-item {
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .product-item:last-child {
+        border-bottom: none;
+    }
+    
+    .product-name {
+        font-weight: 600;
+        color: #1e293b;
+        display: block;
+        margin-bottom: 4px;
+    }
+    
+    .product-details {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.2s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .modal-content {
+        background: white;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 20px;
+        max-width: 600px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .modal-header {
+        padding: 24px 32px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-header h2 {
+        margin: 0;
+        color: #1e293b;
+        font-size: 24px;
+        font-weight: 700;
+    }
+    
+    .close-button {
+        background: #f1f5f9;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        font-size: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .close-button:hover {
+        background: #e2e8f0;
+    }
+    
+    .modal-body {
+        padding: 32px;
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 14px;
+    }
+    
+    .form-group input[type="file"],
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    
+    .form-group input[type="file"]:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        {% comment %} border-color: #667eea; {% endcomment %}
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-hint {
+        color: #64748b;
+        font-size: 13px;
+        margin-top: 6px;
+        display: block;
+    }
+    
+    .form-error {
+        color: #ef4444;
+        font-size: 13px;
+        margin-top: 6px;
+        display: block;
+    }
+
+    /* Image Preview */
+    .image-preview {
+        margin-top: 12px;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .image-preview img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    /* Messages */
+    .messages {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 2000;
+        max-width: 400px;
+    }
+    
+    .message-item {
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .message-item.success {
+        background: #d1fae5;
+        color: #065f46;
+        border-left: 4px solid #10b981;
+    }
+    
+    .message-item.error {
+        background: #fee2e2;
+        color: #991b1b;
+        border-left: 4px solid #ef4444;
+    }
+    
+    .message-item.warning {
+        background: #fef3c7;
+        color: #92400e;
+        border-left: 4px solid #f59e0b;
+    }
+    
+    .message-item.info {
+        background: #dbeafe;
+        color: #1e40af;
+        border-left: 4px solid #3b82f6;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 24px;
+        }
+        
+        .action-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .action-group {
+            width: 100%;
+        }
+        
+        .action-group .btn {
+            flex: 1;
+        }
+        
+        .kpi-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+        
+        .tabs-container {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+    }
+
+    /* Checkbox Styling */
+    input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        {% comment %} accent-color: #667eea; {% endcomment %}
+    }
+
+    /* Action Buttons Container */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    
+    .delivery-status-dropdown {
+        padding: 8px 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .delivery-status-dropdown:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+        color: #64748b;
+    }
+    
+    .empty-state-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+    
+    .empty-state-text {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .empty-state-hint {
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delivery-module">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>
+            <span>🚚</span>
+            Delivery Management
+        </h1>
+        <p>Track and manage all your deliveries in one place</p>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <div class="action-group">
+            <button id="addDeliveryBtn" class="btn btn-primary">
+                <span>➕</span> Add Delivery
+            </button>
+            <button id="archiveSelectedBtn" class="btn btn-secondary">
+                <span>🗂️</span> Archive Selected
+            </button>
+            {% if request.user.role == 'admin' %}
+                <a href="{% url 'delivery:archive_list' %}" class="btn btn-secondary">
+                    <span>📁</span> View Archive
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- KPI Section -->
+    <div class="kpi-section">
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon">📦</div>
+                <div class="kpi-value" id="kpi-total">0</div>
+                <div class="kpi-label">Total Deliveries</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">⏳</div>
+                <div class="kpi-value" id="kpi-pending_dispatch">0</div>
+                <div class="kpi-label">Pending Dispatch</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">🚚</div>
+                <div class="kpi-value" id="kpi-out_for_delivery">0</div>
+                <div class="kpi-label">Out for Delivery</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">✅</div>
+                <div class="kpi-value" id="kpi-delivered">0</div>
+                <div class="kpi-label">Delivered</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">❌</div>
+                <div class="kpi-value" id="kpi-failed">0</div>
+                <div class="kpi-label">Failed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-container">
+        <button class="tab-button active" data-status="all">All Deliveries</button>
+        <button class="tab-button" data-status="pending_dispatch">Pending Dispatch</button>
+        <button class="tab-button" data-status="out_for_delivery">Out for Delivery</button>
+        <button class="tab-button" data-status="delivered">Delivered</button>
+        <button class="tab-button" data-status="failed">Failed</button>
+    </div>
+
+    <!-- Delivery Tables -->
+    <div id="all" class="delivery-category-content active">
+        <div class="category-header">
+            <h3>All Deliveries</h3>
+        </div>
+        <div class="table-wrapper">
+            <table class="orders-table" id="all-deliveries-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"><input type="checkbox" class="select-all-checkbox" data-tab-id="all"></th>
+                        <th>ID</th>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Products</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Delivered At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="pending_dispatch" class="delivery-category-content">
+        <div class="category-header">
+            <h3>Pending Dispatch</h3>
+        </div>
+        <div class="table-wrapper">
+            <table class="orders-table" id="pending_dispatch-deliveries-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"><input type="checkbox" class="select-all-checkbox"></th>
+                        <th>ID</th>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Products</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Delivered At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="out_for_delivery" class="delivery-category-content">
+        <div class="category-header">
+            <h3>Out for Delivery</h3>
+        </div>
+        <div class="table-wrapper">
+            <table class="orders-table" id="out_for_delivery-deliveries-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"><input type="checkbox" class="select-all-checkbox"></th>
+                        <th>ID</th>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Products</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Delivered At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="delivered" class="delivery-category-content">
+        <div class="category-header">
+            <h3>Delivered</h3>
+        </div>
+        <div class="table-wrapper">
+            <table class="orders-table" id="delivered-deliveries-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"><input type="checkbox" class="select-all-checkbox"></th>
+                        <th>ID</th>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Products</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Delivered At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="failed" class="delivery-category-content">
+        <div class="category-header">
+            <h3>Failed Deliveries</h3>
+        </div>
+        <div class="table-wrapper">
+            <table class="orders-table" id="failed-deliveries-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"><input type="checkbox" class="select-all-checkbox"></th>
+                        <th>ID</th>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Products</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Delivered At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Delivery Modal -->
+<div id="addDeliveryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add New Delivery</h2>
+            <button class="close-button">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addDeliveryForm" method="post" action="{% url 'delivery:add_delivery' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="order">Order</label>
+                    <select id="order" name="order" required>
+                        <option value="" disabled selected>Select an Order</option>
+                        {% for order in all_orders %}
+                            <option value="{{ order.id }}">
+                                Order #{{ order.order_id }} - {{ order.customer.username|default:"N/A" }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="delivery_status">Delivery Status</label>
+                    <select id="delivery_status" name="delivery_status" required>
+                        <option value="pending_dispatch" selected>Pending Dispatch</option>
+                        <option value="out_for_delivery">Out for Delivery</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary close-button">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Delivery</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Proof Modal -->
+<div id="uploadProofModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Upload Proof of Delivery</h2>
+            <button class="close-button" id="closeUploadModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="uploadProofForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="uploadDeliveryId" name="delivery_id">
+                
+                <div class="form-group">
+                    <label for="id_proof_of_delivery_image">Photo Proof *</label>
+                    <input type="file" name="proof_of_delivery_image" id="id_proof_of_delivery_image" accept="image/*" required>
+                    <span class="form-hint">Attach photo proof (required to mark as Delivered)</span>
+                    <span class="form-error" id="imageError" style="display: none;">Please select an image file</span>
+                    <div id="imagePreview" class="image-preview" style="display: none;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_delivery_note">Delivery Note (Optional)</label>
+                    <textarea name="delivery_note" id="id_delivery_note" rows="3" placeholder="E.g., Left with neighbor, signed by receptionist..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_new_status">Final Delivery Status</label>
+                    <select name="new_status" id="id_new_status">
+                        <option value="delivered">Delivered</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" id="cancelUploadBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload & Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Messages -->
+{% comment %} {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="message-item {{ message.tags }}">
+                <span>
+                    {% if message.tags == 'success' %}✓
+                    {% elif message.tags == 'error' %}✗
+                    {% elif message.tags == 'warning' %}⚠
+                    {% else %}ℹ{% endif %}
+                </span>
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %} {% endcomment %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addDeliveryBtn = document.getElementById('addDeliveryBtn');
+    const archiveSelectedBtn = document.getElementById('archiveSelectedBtn');
+    const addDeliveryModal = document.getElementById('addDeliveryModal');
+    const uploadProofModal = document.getElementById('uploadProofModal');
+    const closeButtons = document.querySelectorAll('.close-button');
+    const tabButtons = document.querySelectorAll('.tab-button');
+
+    // Parse deliveries data
+    const allDeliveriesData = (function(){
+        try {
+            const jsonStr = '{{ deliveries_json|escapejs }}';
+            return JSON.parse(jsonStr) || [];
+        } catch (err) {
+            console.error('Failed to parse deliveries_json:', err);
+            return [];
+        }
+    })();
+
+    // Modal functionality
+    addDeliveryBtn.addEventListener('click', () => {
+        addDeliveryModal.style.display = 'block';
+    });
+
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            addDeliveryModal.style.display = 'none';
+            uploadProofModal.style.display = 'none';
+            document.getElementById('addDeliveryForm')?.reset();
+            document.getElementById('uploadProofForm')?.reset();
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('imageError').style.display = 'none';
+        });
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target === addDeliveryModal || event.target === uploadProofModal) {
+            addDeliveryModal.style.display = 'none';
+            uploadProofModal.style.display = 'none';
+        }
+    });
+
+    // Tab functionality
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.delivery-category-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            this.classList.add('active');
+            const targetStatus = this.dataset.status;
+            document.getElementById(targetStatus).classList.add('active');
+            
+            renderDeliveries(targetStatus);
+        });
+    });
+
+    // Image preview functionality
+    document.getElementById('id_proof_of_delivery_image').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('imagePreview');
+        const error = document.getElementById('imageError');
+        
+        if (file) {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+                error.style.display = 'none';
+            } else {
+                error.style.display = 'block';
+                preview.style.display = 'none';
+                e.target.value = '';
+            }
+        } else {
+            preview.style.display = 'none';
+        }
+    });
+
+    // Upload proof form validation
+    document.getElementById('uploadProofForm').addEventListener('submit', function(e) {
+        const fileInput = document.getElementById('id_proof_of_delivery_image');
+        const newStatus = document.getElementById('id_new_status').value;
+        const error = document.getElementById('imageError');
+        
+        // If marking as delivered, image is required
+        if (newStatus === 'delivered' && !fileInput.files.length) {
+            e.preventDefault();
+            error.textContent = 'Photo proof is required to mark as Delivered';
+            error.style.display = 'block';
+            fileInput.focus();
+            return false;
+        }
+        
+        error.style.display = 'none';
+    });
+
+    // Render deliveries into tables
+    function renderDeliveries(statusFilter) {
+        const targetTbody = document.querySelector(`#${statusFilter}-deliveries-table tbody`);
+        
+        if (!targetTbody) {
+            console.error('Table body not found for:', statusFilter);
+            return;
+        }
+
+        targetTbody.innerHTML = '';
+
+        const filteredDeliveries = statusFilter === 'all'
+            ? allDeliveriesData
+            : allDeliveriesData.filter(delivery => delivery.delivery_status === statusFilter);
+
+        if (filteredDeliveries.length === 0) {
+            const statusLabel = statusFilter.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+            targetTbody.innerHTML = `
+                <tr>
+                    <td colspan="9">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📦</div>
+                            <div class="empty-state-text">No ${statusLabel} deliveries</div>
+                            <div class="empty-state-hint">Deliveries will appear here once added</div>
+                        </div>
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        filteredDeliveries.forEach(delivery => {
+            let productDetailsHtml = '<ul class="product-list">';
+            if (delivery.order && delivery.order.items && delivery.order.items.length > 0) {
+                delivery.order.items.forEach(item => {
+                    const productVariant = item.product_variant;
+                    const productName = productVariant && productVariant.product ? productVariant.product.name : 'N/A';
+                    const size = productVariant && productVariant.size ? productVariant.size : '';
+                    const color = productVariant && productVariant.color ? productVariant.color : '';
+                    const attributes = [size, color].filter(Boolean).join(', ');
+                    const itemTotal = (item.quantity * item.price_at_order).toFixed(2);
+                    
+                    productDetailsHtml += `
+                        <li class="product-item">
+                            <span class="product-name">${productName}</span>
+                            <span class="product-details">
+                                ${attributes ? `${attributes} • ` : ''}
+                                Qty: ${item.quantity} × ₱${item.price_at_order.toFixed(2)} = ₱${itemTotal}
+                            </span>
+                        </li>
+                    `;
+                });
+            } else {
+                productDetailsHtml += `<li class="product-item">No items found</li>`;
+            }
+            productDetailsHtml += '</ul>';
+
+            const deliveredAt = delivery.delivered_at ? new Date(delivery.delivered_at).toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : '—';
+            
+            const orderTotal = delivery.order && delivery.order.total_cost != null ? 
+                `₱${delivery.order.total_cost.toFixed(2)}` : '—';
+            const customerUsername = delivery.order && delivery.order.customer ? 
+                delivery.order.customer.username : '—';
+            const orderId = delivery.order ? delivery.order.order_id : 'N/A';
+
+            // Status badge
+            const statusClass = {
+                'pending_dispatch': 'status-pending',
+                'out_for_delivery': 'status-out-for-delivery',
+                'delivered': 'status-delivered',
+                'failed': 'status-failed'
+            }[delivery.delivery_status] || '';
+
+            const statusIcon = {
+                'pending_dispatch': '⏳',
+                'out_for_delivery': '🚚',
+                'delivered': '✅',
+                'failed': '❌'
+            }[delivery.delivery_status] || '';
+
+            const statusLabel = delivery.delivery_status.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+            
+            const statusBadge = `<span class="status-badge ${statusClass}">${statusIcon} ${statusLabel}</span>`;
+
+            const row = `
+                <tr data-id="${delivery.id}">
+                    <td><input type="checkbox" class="delivery-checkbox" data-id="${delivery.id}"></td>
+                    <td><strong>#${delivery.id}</strong></td>
+                    <td><strong>${orderId}</strong></td>
+                    <td>${customerUsername}</td>
+                    <td>${productDetailsHtml}</td>
+                    <td><strong>${orderTotal}</strong></td>
+                    <td>${statusBadge}</td>
+                    <td>${deliveredAt}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/delivery/detail/${delivery.id}/" class="btn-icon" title="View Details" style="text-decoration: none;">
+                                👁️
+                            </a>
+                            <select class="delivery-status-dropdown" data-delivery-id="${delivery.id}">
+                                <option value="pending_dispatch" ${delivery.delivery_status === 'pending_dispatch' ? 'selected' : ''}>Pending</option>
+                                <option value="out_for_delivery" ${delivery.delivery_status === 'out_for_delivery' ? 'selected' : ''}>Out</option>
+                                <option value="delivered" ${delivery.delivery_status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="failed" ${delivery.delivery_status === 'failed' ? 'selected' : ''}>Failed</option>
+                            </select>
+                            <button class="btn-icon upload-proof-btn" data-delivery-id="${delivery.id}" title="Upload Proof">
+                                📸
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            targetTbody.innerHTML += row;
+        });
+
+        attachCheckboxListeners();
+        attachUpdateStatusListeners();
+        attachUploadProofListeners();
+        updateKpis();
+    }
+
+    // Update KPIs
+    function updateKpis() {
+        const counts = { 
+            total: 0, 
+            pending_dispatch: 0, 
+            out_for_delivery: 0, 
+            delivered: 0, 
+            failed: 0 
+        };
+        
+        allDeliveriesData.forEach(delivery => {
+            counts.total += 1;
+            const status = delivery.delivery_status;
+            if (counts.hasOwnProperty(status)) {
+                counts[status] += 1;
+            }
+        });
+
+        document.getElementById('kpi-total').textContent = counts.total;
+        document.getElementById('kpi-pending_dispatch').textContent = counts.pending_dispatch;
+        document.getElementById('kpi-out_for_delivery').textContent = counts.out_for_delivery;
+        document.getElementById('kpi-delivered').textContent = counts.delivered;
+        document.getElementById('kpi-failed').textContent = counts.failed;
+    }
+
+    // Checkbox listeners
+    function attachCheckboxListeners() {
+        const activeTabContent = document.querySelector('.delivery-category-content.active');
+        if (!activeTabContent) return;
+
+        const allCheckboxes = activeTabContent.querySelectorAll('.delivery-checkbox');
+        const selectAllCheckbox = activeTabContent.querySelector('.select-all-checkbox');
+
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                allCheckboxes.forEach(cb => cb.checked = isChecked);
+            });
+        }
+
+        allCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = allChecked;
+                }
+            });
+        });
+    }
+
+    // Status update listeners
+    function attachUpdateStatusListeners() {
+        const statusDropdowns = document.querySelectorAll('.delivery-category-content.active .delivery-status-dropdown');
+        statusDropdowns.forEach(dropdown => {
+            dropdown.addEventListener('change', handleStatusChange);
+        });
+    }
+
+    function handleStatusChange(event) {
+        const deliveryId = event.target.dataset.deliveryId;
+        const newStatus = event.target.value;
+        const deliveryObj = allDeliveriesData.find(d => String(d.id) === String(deliveryId));
+
+        if (newStatus === 'delivered' && !(deliveryObj && deliveryObj.proof_of_delivery_image)) {
+            openUploadModal(deliveryId, deliveryObj ? deliveryObj.delivery_status : null);
+            event.target.value = deliveryObj ? deliveryObj.delivery_status : '';
+            return;
+        }
+
+        const validStatuses = ['pending_dispatch', 'out_for_delivery', 'delivered', 'failed'];
+        if (!validStatuses.includes(newStatus)) {
+            alert("Invalid status selected.");
+            return;
+        }
+
+        if (!confirm('Are you sure you want to update this delivery status?')) {
+            event.target.value = deliveryObj ? deliveryObj.delivery_status : '';
+            return;
+        }
+
+        fetch(`/delivery/update_status/${deliveryId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert("Error: " + (data.error || "Unknown error"));
+                event.target.value = deliveryObj ? deliveryObj.delivery_status : '';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("An error occurred while updating the delivery status.");
+            event.target.value = deliveryObj ? deliveryObj.delivery_status : '';
+        });
+    }
+
+    // Archive functionality
+    archiveSelectedBtn.addEventListener('click', function() {
+        const ids = getSelectedIds();
+        if (!ids.length) {
+            alert("Please select at least one delivery to archive.");
+            return;
+        }
+        
+        if (!confirm(`Are you sure you want to archive ${ids.length} delivery(ies)?`)) {
+            return;
+        }
+
+        fetch("{% url 'delivery:archive_deliveries' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ ids: ids })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert("Error: " + (data.error || "Unknown error"));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("An error occurred.");
+        });
+    });
+
+    function getSelectedIds() {
+        return Array.from(document.querySelectorAll('.delivery-category-content.active .delivery-checkbox:checked'))
+                    .map(cb => cb.dataset.id);
+    }
+
+    // Upload proof modal
+    function openUploadModal(deliveryId, currentStatus) {
+        document.getElementById('uploadDeliveryId').value = deliveryId;
+        document.getElementById('uploadProofForm').action = `/delivery/upload-proof/${deliveryId}/`;
+        document.getElementById('id_new_status').value = currentStatus === 'failed' ? 'failed' : 'delivered';
+        document.getElementById('id_proof_of_delivery_image').value = "";
+        document.getElementById('id_delivery_note').value = "";
+        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('imageError').style.display = 'none';
+        uploadProofModal.style.display = 'block';
+    }
+
+    function attachUploadProofListeners() {
+        const uploadButtons = document.querySelectorAll('.upload-proof-btn');
+        uploadButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const deliveryId = e.currentTarget.dataset.deliveryId;
+                const deliveryObj = allDeliveriesData.find(d => String(d.id) === String(deliveryId));
+                const currentStatus = deliveryObj ? deliveryObj.delivery_status : null;
+                openUploadModal(deliveryId, currentStatus);
+            });
+        });
+    }
+
+    document.getElementById('closeUploadModal').addEventListener('click', function() {
+        uploadProofModal.style.display = 'none';
+    });
+
+    document.getElementById('cancelUploadBtn').addEventListener('click', function() {
+        uploadProofModal.style.display = 'none';
+    });
+
+    // Initial render
+    renderDeliveries('all');
+    updateKpis();
+
+    // Auto-dismiss messages after 5 seconds
+    setTimeout(() => {
+        const messages = document.querySelectorAll('.message-item');
+        messages.forEach(msg => {
+            msg.style.animation = 'slideIn 0.3s ease reverse';
+            setTimeout(() => msg.remove(), 300);
+        });
+    }, 5000);
+});
+</script>
+{% endblock %}

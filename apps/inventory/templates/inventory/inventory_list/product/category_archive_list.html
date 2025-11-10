@@ -1,0 +1,461 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Archived Categories{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Archived Categories</h1>
+        <a href="{% url 'inventory:category_list' %}" class="btn btn-secondary btn-icon-split">
+            <span class="icon text-white-50"><i class="fas fa-arrow-left"></i></span>
+            <span class="text">Back to Active Categories</span>
+        </a>
+    </div>
+
+    <div class="d-flex justify-content-start mb-4">
+        <button class="btn btn-success btn-icon-split mr-2" id="restore-selected-btn" disabled>
+            <span class="icon text-white-50"><i class="fas fa-undo"></i></span>
+            <span class="text">Restore Selected</span>
+        </button>
+        <button class="btn btn-danger btn-icon-split" id="permanent-delete-selected-btn" disabled>
+            <span class="icon text-white-50"><i class="fas fa-skull-crossbones"></i></span>
+            <span class="text">Permanently Delete Selected</span>
+        </button>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Archived Category List</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all-checkbox"></th>
+                            <th>ID</th>
+                            <th>Category Name</th>
+                            <th>Parent Path</th>
+                            <th>Archived Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in categories %}
+                        <tr id="category-row-{{ category.id }}">
+                            <td><input type="checkbox" class="category-checkbox" data-id="{{ category.id }}" data-name="{{ category.name }}"></td>
+                            <td>{{ category.id }}</td>
+                            <td>{{ category.name }}</td>
+                            <td>
+                                {% if category.parent %}
+                                    {{ category.parent.get_full_path }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ category.updated_at|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-success restore-single-btn" data-id="{{ category.id }}" data-name="{{ category.name }}" title="Restore Category">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger permanent-delete-single-btn" data-id="{{ category.id }}" data-name="{{ category.name }}" title="Permanently Delete">
+                                    <i class="fas fa-times-circle"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No archived categories found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container (positioned at top-right) -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-check-circle me-2"></i>
+                <span id="successToastMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    
+    <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span id="errorToastMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    
+    <div id="warningToast" class="toast align-items-center text-white bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span id="warningToastMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Confirmation Modal -->
+<div class="modal fade" id="restoreConfirmModal" tabindex="-1" aria-labelledby="restoreConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="restoreConfirmModalLabel">
+                    <i class="fas fa-undo mr-2"></i>Confirm Restore
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="restoreConfirmMessage" class="mb-0">Are you sure you want to restore the selected category(ies)?</p>
+                <ul id="restoreCategoryList" class="mt-2 mb-0" style="max-height: 150px; overflow-y: auto;"></ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmRestoreBtn">
+                    <i class="fas fa-undo mr-1"></i>Restore
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Permanent Delete Confirmation Modal -->
+<div class="modal fade" id="permanentDeleteConfirmModal" tabindex="-1" aria-labelledby="permanentDeleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="permanentDeleteConfirmModalLabel">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>PERMANENT DELETE WARNING
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger mb-3">
+                    <i class="fas fa-skull-crossbones mr-2"></i>
+                    <strong>⚠️ WARNING!</strong> This will permanently remove the category and all associated data.
+                </div>
+                <p id="permanentDeleteConfirmMessage" class="mb-0 font-weight-bold">Are you sure you want to permanently delete these category(ies)?</p>
+                <ul id="permanentDeleteCategoryList" class="mt-2 mb-0" style="max-height: 150px; overflow-y: auto;"></ul>
+                <div id="productWarningSection" class="alert alert-warning mt-3" style="display: none;">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>Cannot delete the following categories:</strong>
+                    <ul id="blockedCategoryList" class="mt-2 mb-0"></ul>
+                </div>
+                <div id="descendantWarningSection" class="alert alert-info mt-3" style="display: none;">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <strong>Categories with subcategories:</strong>
+                    <ul id="descendantCategoryList" class="mt-2 mb-0"></ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmPermanentDeleteBtn">
+                    <i class="fas fa-skull-crossbones mr-1"></i>Permanently Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Toast helper functions
+    function showToast(type, message) {
+        const toastMap = {
+            success: '#successToast',
+            error: '#errorToast',
+            warning: '#warningToast'
+        };
+        const selector = toastMap[type];
+        if (!selector) return;
+
+        const toastEl = document.querySelector(selector);
+        const toastBody = toastEl.querySelector('.toast-body span');
+        toastBody.textContent = message;
+
+        const bsToast = new bootstrap.Toast(toastEl);
+        bsToast.show();
+    }
+
+    // FIXED: Show Django messages on page load
+    {% if messages %}
+        {% for message in messages %}
+            const messageText = "{{ message|escapejs }}";
+            const messageLevel = "{{ message.tags }}";
+            
+            if (messageLevel.includes('success')) {
+                showToast('success', messageText);
+            } else if (messageLevel.includes('error')) {
+                showToast('error', messageText);
+            } else if (messageLevel.includes('warning')) {
+                showToast('warning', messageText);
+            }
+        {% endfor %}
+    {% endif %}
+
+    let categoriesToRestore = [];
+    let categoriesToDelete = [];
+
+    function getSelectedIds() {
+        return $('.category-checkbox:checked').map(function() { return $(this).data('id'); }).get();
+    }
+
+    function getSelectedCategoriesInfo() {
+        return $('.category-checkbox:checked').map(function() {
+            return { id: $(this).data('id'), name: $(this).data('name') };
+        }).get();
+    }
+
+    function updateButtonStates() {
+        const selectedCount = getSelectedIds().length;
+        $('#restore-selected-btn').prop('disabled', selectedCount === 0);
+        $('#permanent-delete-selected-btn').prop('disabled', selectedCount === 0);
+    }
+
+    function showRestoreModal(categories) {
+        categoriesToRestore = categories.map(c => c.id);
+        $('#restoreConfirmMessage').text(categories.length === 1 ?
+            `Restore "${categories[0].name}"?` :
+            `Restore ${categories.length} categories?`);
+        const list = $('#restoreCategoryList').empty();
+        categories.forEach(c => list.append(`<li>${c.name}</li>`));
+        new bootstrap.Modal('#restoreConfirmModal').show();
+    }
+
+    function showPermanentDeleteModal(categories) {
+        categoriesToDelete = categories.map(c => c.id);
+        $('#permanentDeleteConfirmMessage').text(categories.length === 1 ?
+            `Permanently delete "${categories[0].name}"?` :
+            `Permanently delete ${categories.length} categories?`);
+        const list = $('#permanentDeleteCategoryList').empty();
+        categories.forEach(c => list.append(`<li>${c.name}</li>`));
+        
+        // Hide warnings initially
+        $('#productWarningSection').hide();
+        $('#descendantWarningSection').hide();
+        $('#blockedCategoryList').empty();
+        $('#descendantCategoryList').empty();
+        
+        new bootstrap.Modal('#permanentDeleteConfirmModal').show();
+    }
+
+    // Checkbox controls
+    $('#select-all-checkbox, .category-checkbox').on('change', function() {
+        if (this.id === 'select-all-checkbox') {
+            $('.category-checkbox').prop('checked', this.checked);
+        }
+        const total = $('.category-checkbox').length;
+        const checked = $('.category-checkbox:checked').length;
+        $('#select-all-checkbox').prop('checked', checked === total);
+        $('#select-all-checkbox').prop('indeterminate', checked > 0 && checked < total);
+        updateButtonStates();
+    });
+
+    // Bulk & single restore
+    $('#restore-selected-btn').on('click', () => showRestoreModal(getSelectedCategoriesInfo()));
+    $('.restore-single-btn').on('click', function() {
+        showRestoreModal([{ id: $(this).data('id'), name: $(this).data('name') }]);
+    });
+
+    // Bulk & single delete
+    $('#permanent-delete-selected-btn').on('click', () => showPermanentDeleteModal(getSelectedCategoriesInfo()));
+    $('.permanent-delete-single-btn').on('click', function() {
+        showPermanentDeleteModal([{ id: $(this).data('id'), name: $(this).data('name') }]);
+    });
+
+    // Confirm restore via AJAX
+    $('#confirmRestoreBtn').on('click', function() {
+        const btn = $(this);
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Restoring...');
+        
+        let completed = 0;
+        const total = categoriesToRestore.length;
+        const errors = [];
+        
+        $.each(categoriesToRestore, function(_, id) {
+            $.ajax({
+                url: `/inventory/categories/${id}/restore/`,
+                type: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function(response) {
+                    if (response.success) {
+                        $(`#category-row-${id}`).fadeOut();
+                    }
+                    completed++;
+                    if (completed === total) {
+                        bootstrap.Modal.getInstance(document.getElementById('restoreConfirmModal')).hide();
+                        if (errors.length === 0) {
+                            showToast('success', `Successfully restored ${total} category(ies).`);
+                            setTimeout(() => location.reload(), 1500);
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Unknown error';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        errorMessage = response.error || errorMessage;
+                    } catch (e) {
+                        errorMessage = xhr.responseText || errorMessage;
+                    }
+                    errors.push(errorMessage);
+                    showToast('error', errorMessage);
+                    completed++;
+                    
+                    if (completed === total) {
+                        btn.prop('disabled', false).html('<i class="fas fa-undo mr-1"></i>Restore');
+                    }
+                }
+            });
+        });
+    });
+
+    // Check for linked products before delete
+    $('#confirmPermanentDeleteBtn').on('click', function() {
+        const btn = $(this);
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Checking...');
+        
+        let deletable = [];
+        let blockedByProducts = [];
+        let blockedByDescendants = [];
+
+        let checks = categoriesToDelete.map(id =>
+            $.getJSON(`/inventory/categories/${id}/check-products/`, function(data) {
+                const categoryName = $(`#category-row-${id} td:eq(2)`).text().trim();
+                
+                if (data.has_descendants) {
+                    blockedByDescendants.push({ 
+                        id: id, 
+                        name: categoryName,
+                        descendant_count: data.descendant_count,
+                        descendant_names: data.descendant_names || []
+                    });
+                } else if (data.product_count > 0) {
+                    blockedByProducts.push({ 
+                        id: id, 
+                        name: categoryName,
+                        count: data.product_count,
+                        products: data.product_names || []
+                    });
+                } else {
+                    deletable.push(id);
+                }
+            }).fail(function() {
+                showToast('error', 'Error checking category dependencies.');
+                btn.prop('disabled', false).html('<i class="fas fa-skull-crossbones mr-1"></i>Permanently Delete');
+            })
+        );
+
+        $.when.apply($, checks).then(function() {
+            if (blockedByDescendants.length > 0) {
+                const descendantList = $('#descendantCategoryList').empty();
+                blockedByDescendants.forEach(c => {
+                    const categoryItem = $('<li></li>');
+                    categoryItem.append(`<strong>${c.name}</strong> (${c.descendant_count} subcategor${c.descendant_count > 1 ? 'ies' : 'y'}):`);
+                    
+                    if (c.descendant_names && c.descendant_names.length > 0) {
+                        const descendantUl = $('<ul class="mt-1 mb-1" style="font-size: 0.9em;"></ul>');
+                        c.descendant_names.forEach(descName => {
+                            descendantUl.append(`<li>${descName}</li>`);
+                        });
+                        categoryItem.append(descendantUl);
+                    }
+                    
+                    descendantList.append(categoryItem);
+                });
+                $('#descendantWarningSection').show();
+            }
+            
+            if (blockedByProducts.length > 0) {
+                const blockedList = $('#blockedCategoryList').empty();
+                blockedByProducts.forEach(c => {
+                    const categoryItem = $('<li></li>');
+                    categoryItem.append(`<strong>${c.name}</strong> (${c.count} product${c.count > 1 ? 's' : ''}):`);
+                    
+                    if (c.products && c.products.length > 0) {
+                        const productList = $('<ul class="mt-1 mb-1" style="font-size: 0.9em;"></ul>');
+                        c.products.forEach(productName => {
+                            productList.append(`<li>${productName}</li>`);
+                        });
+                        categoryItem.append(productList);
+                    }
+                    
+                    blockedList.append(categoryItem);
+                });
+                $('#productWarningSection').show();
+            }
+            
+            const totalBlocked = blockedByProducts.length + blockedByDescendants.length;
+            
+            if (totalBlocked > 0 && deletable.length === 0) {
+                btn.prop('disabled', true).html('<i class="fas fa-ban mr-1"></i>Cannot Delete');
+                return;
+            } else if (totalBlocked > 0 && deletable.length > 0) {
+                btn.prop('disabled', false).html(`<i class="fas fa-skull-crossbones mr-1"></i>Delete ${deletable.length} Valid Categor${deletable.length > 1 ? 'ies' : 'y'}`);
+            }
+
+            if (deletable.length > 0) {
+                btn.html('<i class="fas fa-spinner fa-spin mr-1"></i>Deleting...');
+                btn.prop('disabled', true);
+                
+                let completed = 0;
+                const total = deletable.length;
+                
+                deletable.forEach(id => {
+                    $.ajax({
+                        url: `/inventory/categories/${id}/delete/`,
+                        type: 'POST',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                        success: function(response) {
+                            if (response.success) {
+                                $(`#category-row-${id}`).fadeOut();
+                            }
+                            
+                            completed++;
+                            if (completed === total) {
+                                bootstrap.Modal.getInstance(document.getElementById('permanentDeleteConfirmModal')).hide();
+                                showToast('success', `Successfully deleted ${total} category(ies).`);
+                                setTimeout(() => location.reload(), 1500);
+                            }
+                        },
+                        error: function(xhr) {
+                            let errorMessage = 'Unknown error';
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                errorMessage = response.error || errorMessage;
+                            } catch (e) {
+                                errorMessage = xhr.responseText || errorMessage;
+                            }
+                            showToast('error', errorMessage);
+                            
+                            completed++;
+                            if (completed === total) {
+                                btn.prop('disabled', false).html('<i class="fas fa-skull-crossbones mr-1"></i>Permanently Delete');
+                            }
+                        }
+                    });
+                });
+            } else if (totalBlocked === 0) {
+                btn.prop('disabled', false).html('<i class="fas fa-skull-crossbones mr-1"></i>Permanently Delete');
+            }
+        });
+    });
+
+    updateButtonStates();
+});
+</script>
+{% endblock content %}

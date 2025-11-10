@@ -1,0 +1,501 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Custom CSS to re-apply borders removed by some Bootswatch themes */
+.form-control, 
+.form-select,
+.form-control-plaintext {
+    border: 1px solid #ced4da !important; /* Standard Bootstrap border color */
+    /* Add a slight border-radius to match the default Bootstrap look */
+    border-radius: 0.375rem !important; 
+}   
+</style>
+<div class="container-fluid py-4">
+    
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h1 class="fw-bolder mb-1">{% if is_edit %}Edit Product{% else %}New Product{% endif %}</h1>
+            <p class="mb-0 text-muted">Manage core details, inventory, and product variants.</p>
+        </div>
+        <a href="{% url 'inventory:product_list' %}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+            <i class="fas fa-list fa-sm me-1"></i>
+            <span>Back to List</span>
+        </a>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="row g-4">
+            
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-white border-bottom p-4">
+                        <h5 class="m-0 fw-bold text-dark"><i class="fas fa-box me-2 text-primary"></i> Primary Details</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        {{ form.non_field_errors }}
+
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.name.label }}</label>
+                            {{ form.name }}
+                            <div class="text-danger small">{{ form.name.errors }}</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_category" class="form-label">{{ form.category.label }}</label>
+                            <div class="input-group">
+                                <input 
+                                    list="categoryList" 
+                                    id="id_category" 
+                                    name="category" 
+                                    class="form-control" 
+                                    placeholder="Select or type a category..."
+                                    value="{{ form.category.value|default_if_none:'' }}"
+                                >
+                                <datalist id="categoryList">
+                                    {% for category in categories %}
+                                        {% if category.parent %}
+                                            <option value="{{ category.parent.name }} → {{ category.name }}"></option>
+                                        {% else %}
+                                            <option value="{{ category.name }}"></option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </datalist>
+                            
+                                <!-- Add category button -->
+                                <button 
+                                    type="button" 
+                                    class="btn btn-primary" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#addCategoryModal" 
+                                    title="Add new category"
+                                >
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="text-danger small">{{ form.category.errors }}</div>
+                            
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.supplier_profile.label }}</label>
+                            {{ form.supplier_profile }}
+                            <datalist id="supplierList">
+                                {% for supplier in suppliers %}
+                                    <option value="Supplier: {{ supplier.company_name }} ({{ supplier.user.username }})"></option>
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.description.label }}</label>
+                            {{ form.description }}
+                            <div class="text-danger small">{{ form.description.errors }}</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.image.label }}</label>
+                            {% if product.image and is_edit %}
+                                <div class="mb-2">
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-thumbnail shadow-sm rounded" style="max-height: 120px;">
+                                </div>
+                            {% endif %}
+                            {{ form.image }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0 rounded-4 mb-4">
+                    <div class="card-header bg-white border-bottom p-4">
+                        <h5 class="m-0 fw-bold text-dark"><i class="fas fa-coins me-2 text-primary"></i> Inventory & Pricing (Base)</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.price.label }}</label>
+                                {{ form.price }}
+                                <div class="text-danger small">{{ form.price.errors }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.cost_price.label }}</label>
+                                {{ form.cost_price }}
+                                <div class="text-danger small">{{ form.cost_price.errors }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.stock_quantity.label }}</label>
+                                {{ form.stock_quantity }}
+                                <div class="text-danger small">{{ form.stock_quantity.errors }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.unit.label }}</label>
+                                {{ form.unit }}
+                                <div class="text-danger small">{{ form.unit.errors }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-white border-bottom p-4">
+                        <h5 class="m-0 fw-bold text-dark"><i class="fas fa-layer-group me-2 text-primary"></i> Product Variants</h5>
+                        <small class="text-muted">Manage sizes, colors, or custom SKUs</small>
+                    </div>
+                    <div class="card-body p-4">
+                        {{ formset.non_form_errors }}
+
+                        <div id="variant-form-container">
+                            {{ formset.management_form }}
+
+                            <table style="display:none;">
+                                <tbody id="empty-form-template">
+                                    <tr class="variant-form-row">
+                                        {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+                                        <td>{{ formset.empty_form.sku }}</td>
+                                        <td>{{ formset.empty_form.size }}</td>
+                                        <td>{{ formset.empty_form.color }}</td>
+                                        <td>{{ formset.empty_form.price }}</td>
+                                        <td>{{ formset.empty_form.is_active }}</td>
+                                        <td>{{ formset.empty_form.DELETE }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover align-middle" id="variant-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>SKU</th>
+                                            <th>Size</th>
+                                            <th>Color</th>
+                                            <th>Price</th>
+                                            <th class="text-center">Active</th>
+                                            <th class="text-center">Delete</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for variant_form in formset %}
+                                        <tr class="variant-form-row {% if variant_form.errors %}table-danger{% endif %}">
+                                            {% for hidden in variant_form.hidden_fields %}{{ hidden }}{% endfor %}
+                                            <td>{{ variant_form.sku }}</td>
+                                            <td>{{ variant_form.size }}</td>
+                                            <td>{{ variant_form.color }}</td>
+                                            <td>{{ variant_form.price }}</td>
+                                            <td class="text-center">{{ variant_form.is_active }}</td>
+                                            <td class="text-center">{{ variant_form.DELETE }}</td>
+                                        </tr>
+                                        {% if variant_form.errors %}
+                                        <tr>
+                                            <td colspan="6" class="text-danger small bg-danger-subtle p-2">
+                                                {% for field in variant_form %}
+                                                    {% for error in field.errors %}<div>{{ field.label }}: {{ error }}</div>{% endfor %}
+                                                {% endfor %}
+                                                {% for error in variant_form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="add-variant-btn">
+                            <i class="fas fa-plus me-1"></i> Add Another Variant
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <button type="submit" class="btn btn-primary btn-lg shadow-lg px-5 py-2">
+                <i class="fas fa-save me-2"></i> 
+                {% if is_edit %}Update Product{% else %}Create Product{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header bg-primary text-white p-3">
+                <h5 class="modal-title" id="addCategoryLabel"><i class="fas fa-plus-circle me-2"></i> New Category</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="category-ajax-form">
+                <div class="modal-body p-4">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_category_name_modal" class="form-label">Category Name</label>
+                        <input type="text" id="id_category_name_modal" name="name" class="form-control" required>
+                    </div>
+                    {% if category_form %}
+                    <div class="mb-3">
+                        {{ category_form.parent.label_tag }}
+                        {{ category_form.parent }}
+                        <div class="text-danger small">{{ category_form.parent.errors }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label for="id_category_description_modal" class="form-label">Description</label>
+                        <textarea id="id_category_description_modal" name="description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div id="category-form-errors" class="alert alert-danger d-none mt-3"></div>
+                </div>
+                <div class="modal-footer p-3 border-top-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitCategoryBtn">Save Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    
+    // ========================================
+    // VARIANT FORMSET MANAGEMENT
+    // ========================================
+    const formContainer = document.querySelector('#variant-form-container');
+    const addButton = document.querySelector('#add-variant-btn');
+    const tableBody = document.querySelector('#variant-table tbody');
+    const totalForms = document.querySelector('#id_variants-TOTAL_FORMS');
+    
+    if (!formContainer || !addButton || !tableBody || !totalForms) {
+        console.error('Required variant form elements not found');
+        return;
+    }
+    
+    let formCount = parseInt(totalForms.value);
+    
+    // Get the clean template from Django's empty_form
+    const emptyFormTemplate = document.querySelector('#empty-form-template');
+    
+    if (!emptyFormTemplate) {
+        console.error('Empty form template not found. The formset may not work correctly.');
+        addButton.disabled = true;
+        addButton.title = "Template not available";
+        return;
+    }
+    
+    // Clone the empty form template
+    const templateRow = emptyFormTemplate.querySelector('.variant-form-row').cloneNode(true);
+    
+    addButton.addEventListener('click', function() {
+        // Clone the clean template
+        const newRow = templateRow.cloneNode(true);
+        
+        // Update all form field names and IDs from __prefix__ to the actual form number
+        const html = newRow.innerHTML.replace(/__prefix__/g, formCount);
+        newRow.innerHTML = html;
+        
+        // Clear the DELETE checkbox (should already be unchecked, but ensure it)
+        const deleteCheckbox = newRow.querySelector('input[id$="-DELETE"]');
+        if (deleteCheckbox) {
+            deleteCheckbox.checked = false;
+        }
+        
+        // Remove any error styling (should be clean already)
+        newRow.classList.remove('table-danger');
+        
+        // Append to the table
+        tableBody.appendChild(newRow);
+        
+        // Increment the form count
+        formCount++;
+        totalForms.value = formCount;
+    });
+    
+    // Handle delete checkbox visual feedback
+    tableBody.addEventListener('change', function(e) {
+        if (e.target && e.target.matches('input[type="checkbox"][id$="-DELETE"]')) {
+            const row = e.target.closest('.variant-form-row');
+            if (e.target.checked) {
+                row.style.backgroundColor = '#ffdddd';
+                row.style.opacity = '0.5';
+            } else {
+                row.style.backgroundColor = '';
+                row.style.opacity = '1';
+            }
+        }
+    });
+
+    
+    // ========================================
+    // CATEGORY AJAX FORM - FIXED VERSION (UNTOUCHED)
+    // ========================================
+    const categorySelect = document.getElementById('id_category');
+    const categoryForm = document.getElementById('category-ajax-form');
+    const submitBtn = document.getElementById('submitCategoryBtn');
+    const errorDiv = document.getElementById('category-form-errors');
+    const modalElement = document.getElementById('addCategoryModal');
+
+    console.log('Category elements check:', {
+        categorySelect: !!categorySelect,
+        categoryForm: !!categoryForm,
+        submitBtn: !!submitBtn,
+        errorDiv: !!errorDiv,
+        modalElement: !!modalElement
+    });
+
+    // Function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Category form submit
+    if (submitBtn && categoryForm && categorySelect && errorDiv) {
+        submitBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent any default behavior
+            console.log('Submit button clicked');
+            
+            // Clear previous errors
+            errorDiv.classList.add('d-none');
+            errorDiv.innerHTML = '';
+            
+            // Get CSRF token
+            const csrfToken = getCookie('csrftoken');
+            console.log('CSRF token:', csrfToken ? 'Found' : 'Not found');
+            
+            // Gather form data
+            const categoryName = document.querySelector('#id_category_name_modal')?.value || '';
+            const parentValue = document.querySelector('#id_parent')?.value || '';
+            const descriptionValue = document.querySelector('#id_category_description_modal')?.value || '';
+            
+            console.log('Form data:', {
+                name: categoryName,
+                parent: parentValue,
+                description: descriptionValue
+            });
+            
+            const formData = {
+                'name': categoryName,
+                'parent': parentValue,
+                'description': descriptionValue
+            };
+
+            // Disable button during submission
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            // Send AJAX request
+            fetch('/inventory/categories/add-ajax/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        throw data;
+                    }
+                    return data;
+                });
+            })
+            .then(data => {
+                console.log('Success response:', data);
+                
+                if (data.success) {
+                    // Add new category to the select dropdown
+                    const newOption = new Option(data.name, data.id, true, true);
+                    categorySelect.appendChild(newOption);
+                    categorySelect.value = data.id;
+
+                    // Close the modal properly
+                    if (modalElement) {
+                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                            document.querySelector('[data-bs-target="#addCategoryModal"]').focus(); // Move focus back to the 'Add' button.
+
+                        } else {
+                            // Create new instance and hide
+                            const newModalInstance = new bootstrap.Modal(modalElement);
+                            newModalInstance.hide();
+                        }
+                    }
+
+                    // Reset the form
+                    categoryForm.reset();
+                    
+                    // Show success message
+                    alert(`Category "${data.name}" created successfully!`);
+                }
+            })
+            .catch(errorData => {
+                console.error('Error response:', errorData);
+                
+                // Display validation errors
+                let errorHtml = '<strong>Please correct the following errors:</strong><ul>';
+                
+                if (errorData.errors) {
+                    for (const field in errorData.errors) {
+                        const fieldName = field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ');
+                        const errors = Array.isArray(errorData.errors[field]) 
+                            ? errorData.errors[field] 
+                            : [errorData.errors[field]];
+                        errorHtml += `<li><strong>${fieldName}:</strong> ${errors.join(', ')}</li>`;
+                    }
+                } else if (errorData.error) {
+                    errorHtml += `<li>${errorData.error}</li>`;
+                } else {
+                    errorHtml += `<li>An unexpected error occurred. Please check the console for details.</li>`;
+                }
+                
+                errorHtml += '</ul>';
+                
+                errorDiv.innerHTML = errorHtml;
+                errorDiv.classList.remove('d-none');
+            })
+            .finally(() => {
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Category';
+            });
+        });
+        
+        // Reset form when modal is closed
+        if (modalElement) {
+            modalElement.addEventListener('hidden.bs.modal', function () {
+                categoryForm.reset();
+                errorDiv.classList.add('d-none');
+                errorDiv.innerHTML = '';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Category';
+            });
+        }
+    } else {
+        console.error('Category form elements not found:', {
+            submitBtn: !!submitBtn,
+            categoryForm: !!categoryForm,
+            categorySelect: !!categorySelect,
+            errorDiv: !!errorDiv
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,174 @@
+/* --- Global Overwrites for a Modern Look --- */
+
+/* Remove default shadow, use a subtle border radius */
+.card {
+    border: 1px solid #e0e0e0;
+    box-shadow: none !important;
+    border-radius: 8px; /* Softer edges */
+}
+.inventory-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+.inventory-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+/* Modernize the header and main container spacing */
+.container-fluid {
+    padding: 0;
+}
+.inventory-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.inventory-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+.inventory-header h1, .inventory-header p {
+    position: relative;
+    z-index: 1;
+}
+
+.h3.text-gray-800 {
+    font-weight: 600; /* Bolder title */
+    color: #333333 !important; /* Darker, modern text color */
+    margin-bottom: 0; /* Align with button group */
+}
+
+/* Adjust top section spacing and alignment */
+.d-sm-flex.align-items-center.justify-content-between.mb-4 {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0; /* Subtle separator */
+    margin-bottom: 20px !important;
+}
+
+/* --- Button Styling Overwrites (Flat Look) --- */
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    border: none; /* Flat design */
+}
+
+/* Primary Button (Add New Product) */
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #0056b3;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2); /* Subtle hover effect */
+}
+
+/* Warning Button (Archive List) - Use a less aggressive color */
+.btn-warning {
+    background-color: #ffc107;
+    color: #343a40; /* Darker text for contrast */
+}
+.btn-warning:hover {
+    background-color: #e0a800;
+    color: #343a40;
+}
+
+/* Danger Button (Archive Selected/Single) */
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* Info Button (View/Edit) */
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+}
+.btn-info:hover {
+    background-color: #117a8b;
+}
+
+/* Active/Inactive Status Buttons */
+.btn-success { background-color: #28a745; }
+.btn-secondary { background-color: #6c757d; }
+.btn-success:hover { background-color: #1e7e34; }
+.btn-secondary:hover { background-color: #5a6268; }
+
+
+/* --- Form/Search Input --- */
+.form-control {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+    transition: border-color 0.2s;
+    box-shadow: none !important; /* Remove any framework shadows */
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+}
+
+/* --- Table Styling Overwrites --- */
+
+.table-container {
+    /* Ensures the table is scrollable on smaller screens if it gets too wide */
+    overflow-x: scroll;
+    overflow-y: scroll;
+
+}
+
+.table.table-bordered {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    border-collapse: separate; /* Required for rounded corners on the table */
+    border-spacing: 0;
+}
+
+.table thead th {
+    background-color: #f8f9fa; /* Light gray header */
+    color: #495057;
+    font-weight: 600;
+    border-bottom: 2px solid #e0e0e0;
+    padding: 12px 15px;
+    vertical-align: middle;
+}
+
+.table tbody td {
+    border-top: 1px solid #e9ecef;
+    padding: 12px 15px;
+    vertical-align: middle;
+    
+}
+
+.table tbody tr:hover {
+    background-color: #f5f5f5; /* Subtle row highlight on hover */
+}
+
+/* Apply rounded corners to the top of the table */
+.table thead tr:first-child th:first-child {
+    border-top-left-radius: 8px;
+}
+.table thead tr:first-child th:last-child {
+    border-top-right-radius: 8px;
+}
+
+/* Status row indicators (if product.stock_level_class exists) */
+/* Example for low stock, assuming you use a class like '.low-stock' on the <tr> */
+.low-stock {
+    background-color: #fff3cd !important; /* Light yellow background */
+}

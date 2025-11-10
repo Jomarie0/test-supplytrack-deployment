@@ -1,0 +1,369 @@
+/* Base Imports/Foundation (assuming these exist outside the provided CSS, e.g. for fonts and icons) */
+/* @import url('your-base-styles.css'); */
+
+/* --- Profile Container (Same as Register Container) --- */
+.profile-container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+/* --- Profile Card (Same as Register Card) --- */
+.profile-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    animation: slideUp 0.4s ease-out; /* Keeping the animation */
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Header (Adapted from Register Header) --- */
+.profile-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.profile-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    margin-bottom: 16px;
+}
+
+.profile-icon i {
+    font-size: 32px;
+    color: white;
+}
+
+.profile-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 8px;
+}
+
+.profile-header p {
+    font-size: 15px;
+    color: #718096;
+}
+
+/* --- Messages (Same as Register Messages) --- */
+.messages {
+    margin-bottom: 24px;
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert i {
+    font-size: 16px;
+}
+
+.alert-error {
+    background: #fed7d7;
+    color: #c53030;
+    border: 1px solid #fc8181;
+}
+
+.alert-success {
+    background: #c6f6d5;
+    color: #2f855a;
+    border: 1px solid #68d391;
+}
+
+.alert-info {
+    background: #bee3f8;
+    color: #2c5282;
+    border: 1px solid #63b3ed;
+}
+
+/* --- Form Sections and Titles --- */
+.form-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title i {
+    color: #667eea;
+    font-size: 20px;
+}
+
+/* --- Form Groups and Labels --- */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.required {
+    color: #e53e3e;
+    font-weight: 700;
+}
+
+/* --- Form Inputs (Profile Form) --- */
+.profile-form input[type="text"],
+.profile-form input[type="email"],
+.profile-form input[type="tel"],
+.profile-form select {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    border: 2px solid #cbd5e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: #f7fafc;
+}
+
+.profile-form input:focus,
+.profile-form select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* --- Disabled Input Styling (NEW) --- */
+.profile-form input.disabled {
+    background: #e9ecef; /* Lighter background to indicate disabled */
+    border-color: #ced4da;
+    color: #6c757d; /* Gray text color */
+    cursor: not-allowed;
+    box-shadow: none;
+}
+.profile-form input.disabled:focus {
+    border-color: #ced4da; /* Prevent focus state on disabled */
+    box-shadow: none;
+    background: #e9ecef;
+}
+
+/* --- Form Row (Grid Layout) --- */
+.form-row {
+    display: grid;
+    /* Adjusted grid for the address section (3 columns in one row) */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+    gap: 16px;
+}
+
+/* Handle the 2-column sections (Personal Info) */
+.form-section:first-of-type .form-row {
+    grid-template-columns: 1fr 1fr;
+}
+
+
+/* --- Error and Help Text (Adapted for profile.html structure) --- */
+
+/* Error Text (small.form-error in HTML) */
+.form-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #e53e3e;
+    font-size: 13px;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+/* Help Text (small.form-help in HTML) */
+.form-help {
+    display: block;
+    font-size: 12px;
+    color: #718096;
+    margin-top: 6px;
+}
+
+/* Input Error State */
+.profile-form input.error,
+.profile-form select.error {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+
+/* --- Address Preview Section (NEW) --- */
+.address-preview {
+    margin-top: 24px;
+    padding: 16px;
+    border: 1px dashed #cbd5e0;
+    border-radius: 8px;
+    background: #f7fafc;
+}
+
+.address-preview h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-top: 0;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.address-preview h4 i {
+    color: #667eea;
+}
+
+.address-preview p {
+    margin: 0;
+    font-size: 14px;
+    color: #4a5568;
+    line-height: 1.5;
+}
+
+
+/* --- Form Actions (Buttons) --- */
+.form-actions {
+    display: flex;
+    justify-content: flex-end; /* Align to the right */
+    gap: 12px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 32px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px; /* Slightly smaller padding for actions */
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+/* Primary Button (Save Changes) */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Secondary Button (Cancel) (NEW) */
+.btn-secondary {
+    background: #e2e8f0;
+    color: #4a5568;
+    border: 1px solid #cbd5e0;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e0;
+    color: #2d3748;
+    transform: translateY(-1px);
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .profile-container {
+        padding: 15px;
+        margin: 20px auto;
+    }
+
+    .profile-card {
+        padding: 30px 20px;
+    }
+
+    .profile-header h1 {
+        font-size: 24px;
+    }
+
+    .section-title {
+        font-size: 16px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr; /* Stack fields on mobile */
+    }
+
+    .form-section:first-of-type .form-row {
+        grid-template-columns: 1fr; /* Ensure personal info stacks too */
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .profile-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .profile-icon i {
+        font-size: 28px;
+    }
+}

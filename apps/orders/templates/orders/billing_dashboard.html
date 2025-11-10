@@ -1,0 +1,753 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+
+{% block content %}
+<style>
+/* ========== BILLING DASHBOARD STYLES ========== */
+
+/* Make the table scroll inside .table-container and keep the thead sticky */
+.table-container {
+    max-height: 500px;
+    min-height: 500px;
+    overflow: auto;
+}
+
+/* Keep normal table flow so columns align */
+#billingTable {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+/* Sticky header — will stick to top of .table-container while scrolling */
+#billingTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #f8f9fa;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+#billingTable tbody tr { }
+#billingTable tbody td,
+#billingTable thead th {
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* Column widths */
+#billingTable thead th:nth-child(1),
+#billingTable tbody td:nth-child(1) { width: 140px; } /* Order ID */
+#billingTable thead th:nth-child(2),
+#billingTable tbody td:nth-child(2) { width: 200px; } /* Customer */
+#billingTable thead th:nth-child(3),
+#billingTable tbody td:nth-child(3) { width: 130px; } /* Amount */
+#billingTable thead th:nth-child(4),
+#billingTable tbody td:nth-child(4) { width: 120px; } /* Payment Method */
+#billingTable thead th:nth-child(5),
+#billingTable tbody td:nth-child(5) { width: 140px; } /* Payment Status */
+#billingTable thead th:nth-child(6),
+#billingTable tbody td:nth-child(6) { width: 120px; } /* Order Status */
+#billingTable thead th:nth-child(7),
+#billingTable tbody td:nth-child(7) { width: 160px; } /* Date */
+#billingTable thead th:nth-child(8),
+#billingTable tbody td:nth-child(8) { width: 120px; } /* Actions */
+
+/* Ensure nested .table-responsive does not add another scroll */
+.table-responsive { overflow: visible; }
+
+/* Custom Header Container Style */
+.billing-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 24px 32px;
+    border-bottom: none;
+    border-radius: 12px !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.billing-header h1 {
+    margin: 0 !important;
+    font-size: 2.5rem !important;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.billing-header .subtitle {
+    margin-top: 8px !important;
+    opacity: 0.9;
+    font-size: 14px;
+    font-weight: 400;
+    color: white !important;
+    line-height: 1.5;
+}
+
+/* KPI Cards */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background: #ffffff;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-3px);
+}
+
+.kpi-card h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-card p {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.revenue { border-top: 4px solid #16a34a; }
+.unpaid { border-top: 4px solid #f59e0b; }
+.refunded { border-top: 4px solid #ef4444; }
+.gcash { border-top: 4px solid #3b82f6; }
+.today { border-top: 4px solid #8b5cf6; }
+
+/* Highlight active filter buttons */
+.filter-active {
+    background-color: #0d6efd !important;
+    color: white !important;
+    border-color: #0d6efd !important;
+}
+
+/* Fix dropdown visibility */
+.d-flex.p-3.mb-4 {
+    overflow: visible !important;
+}
+
+/* Global Dropdown Menu Enhancements */
+.dropdown-menu {
+    z-index: 1050 !important;
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(0,0,0,.15);
+}
+
+.dropdown-item {
+    color: #343a40;
+    padding: 0.5rem 1rem;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: #e9ecef !important;
+    color: #000;
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.btn-outline-secondary {
+    background-color: white !important;
+    border-color: #ced4da !important;
+    color: #495057 !important;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #e9ecef !important;
+    border-color: #adb5bd !important;
+    color: #212529 !important;
+}
+
+.btn-outline-secondary:focus {
+    box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25) !important;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* PAYMENT STATUS COLORS */
+.status-paid {
+    background: #dcfce7; /* light green */
+    color: #166534; /* dark green */
+}
+
+.status-unpaid {
+    background: #fef3c7; /* light yellow */
+    color: #92400e; /* dark amber/brown */
+}
+
+.status-partially-refunded {
+    background: #e0f2fe; /* light blue */
+    color: #075985; /* dark cyan/blue for contrast */
+
+}
+
+.status-refunded {
+    background: #fee2e2; /* light red */
+    color: #991b1b; /* deep red */
+}
+
+.status-pending {
+    background: #dbeafe; /* light blue */
+    color: #1e40af; /* dark blue */
+}
+
+/* ORDER STATUS COLORS */
+.order-status-pending {
+    background: #fef3c7; /* soft amber */
+    color: #92400e; /* dark amber */
+}
+
+.order-status-processing {
+    background: #e0f2fe; /* light blue */
+    color: #075985; /* deep blue */
+}
+
+.order-status-shipped {
+    background: #dbeafe; /* lighter blue */
+    color: #1e40af; /* rich navy */
+}
+
+.order-status-completed {
+    background: #dcfce7; /* light green */
+    color: #166534; /* dark green */
+}
+
+.order-status-canceled {
+    background: #fee2e2; /* light red */
+    color: #991b1b; /* deep red */
+}
+
+.order-status-returned {
+    background: #f3e8ff; /* light violet */
+    color: #6b21a8; /* purple for neutral return */
+}
+
+
+.payment-method-badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.order-id {
+    font-weight: 700;
+    color: #667eea;
+    font-family: 'Courier New', monospace;
+}
+
+.amount {
+    font-weight: 700;
+    color: #16a34a;
+}
+
+@media (max-width: 576px) {
+    .card-header .header-actions .btn {
+        padding-left: .5rem;
+        padding-right: .5rem;
+        font-size: .85rem;
+    }
+}
+</style>
+<title>
+    {% block title %}
+        {% if request.user.role == 'admin' %}
+                Admin | Customer Order Billing
+            {% elif request.user.role == 'manager' %}
+                Manager | Customer Order Billing
+            {% elif request.user.role == 'staff' %}
+                Staff | Customer Order Billing
+            {% elif request.user.role == 'customer' %}
+                Customer | Customer Order Billing
+            {% elif request.user.role == 'supplier' %}
+                Supplier | Customer Order Billing
+            {% elif request.user.role == 'delivery' %}
+                Delivery | Customer Order Billing
+            {% else %}
+                empty
+            {% endif %}
+    {% endblock %}
+    </title>
+
+<div class="billing-module">
+
+    <!-- Header -->
+    <div class="mb-4 billing-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>💰 Billing Dashboard</h1>
+                <p class="subtitle">Overview of total revenue, pending payments, and key billing activities.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="card-grid">
+        <div class="kpi-card revenue">
+            <h2>Total Paid Revenue</h2>
+            <p>₱{{ paid_total_revenue|floatformat:2 }}</p>
+        </div>
+
+        <div class="kpi-card unpaid">
+            <h2>Total Unpaid Amount</h2>
+            <p>₱{{ unpaid_total_amount|floatformat:2 }}</p>
+        </div>
+
+        <div class="kpi-card refunded">
+            <h2>Total Refunded Amount</h2>
+            <p>₱{{ refunded_total_amount|floatformat:2 }}</p>
+        </div>
+
+        <div class="kpi-card gcash">
+            <h2>GCash Pending Verification</h2>
+            <p>{{ gcash_pending_count }}</p>
+        </div>
+
+        <div class="kpi-card today">
+            <h2>Today's Paid Orders</h2>
+            <p>{{ paid_today_count }}</p>
+        </div>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="d-flex p-3 mb-4 bg-white border rounded-3 shadow-sm align-items-center">
+        
+        <div class="input-group input-group-lg flex-grow-1 border-0 me-3">
+            <span class="input-group-text bg-white border-0 text-muted ps-0">
+                <i class="fas fa-search"></i>
+            </span>
+            <input type="text" id="orderSearch" class="form-control border-0 px-0" 
+                placeholder="Search Order ID, Customer, or Amount..." style="box-shadow: none;">
+        </div>
+        
+        <span class="text-muted border-end pe-3 py-1 me-3">
+            <i class="fas fa-filter"></i>
+        </span>
+
+        <div class="dropdown me-2">
+            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center btn-sm px-3" 
+                    type="button" id="paymentStatusFilterBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                <span id="paymentStatusFilterText">All Payment Status</span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item payment-status-filter" href="#" data-status="all">All Payment Status</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item payment-status-filter" href="#" data-status="paid">✅ Paid</a></li>
+                <li><a class="dropdown-item payment-status-filter" href="#" data-status="unpaid">⏳ Unpaid</a></li>
+                <li><a class="dropdown-item payment-status-filter" href="#" data-status="refunded">↩️ Refunded</a></li>
+                <li><a class="dropdown-item payment-status-filter" href="#" data-status="partially_refunded">↩️ Partially Refunded</a></li>
+            </ul>
+        </div>
+
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center btn-sm px-3" 
+                    type="button" id="paymentMethodFilterBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                <span id="paymentMethodFilterText">All Methods</span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item payment-method-filter" href="#" data-method="all">All Methods</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item payment-method-filter" href="#" data-method="COD">💵 Cash on Delivery</a></li>
+                <li><a class="dropdown-item payment-method-filter" href="#" data-method="GCASH">📱 GCash</a></li>
+            </ul>
+        </div>
+        
+        <button class="btn btn-outline-danger btn-sm ms-2" id="clearFiltersBtn" style="display: none;">
+            <i class="fas fa-times"></i> Clear
+        </button>
+        
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card d-flex shadow-lg border-0 rounded-4">
+        <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="m-0 fw-bold text-dark">
+                    Orders Overview
+                    <small class="text-muted">(<span id="displayedCount">0</span> of <span id="totalCount">0</span> Orders)</small>
+                </h5>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="billingTable">
+                        <thead class="bg-light text-muted small text-uppercase">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Payment Method</th>
+                                <th>Payment Status</th>
+                                <th>Order Status</th>
+                                <th>Date</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in all_orders %}
+                            <tr data-payment-status="{{ order.payment_status }}" 
+                                data-payment-method="{{ order.payment_method }}"
+                                data-order-type="{% if order.order_date %}order{% else %}manual{% endif %}">
+                                <td class="order-id">
+                                    {% if order.order_id %}
+                                        #{{ order.order_id }}
+                                    {% else %}
+                                        #{{ order.manual_order_id }}
+                                    {% endif %}
+                                </td>
+                                <td class="fw-semibold text-dark">
+                                    {% if order.customer %}
+                                        {{ order.customer.get_full_name|default:order.customer.username }}
+                                    {% else %}
+                                        {{ order.customer_name|default:"Guest" }}
+                                    {% endif %}
+                                </td>
+                                <td class="amount">₱{{ order.get_total_cost|floatformat:2 }}</td>
+                                <td>
+                                    <span class="payment-method-badge">{{ order.payment_method }}</span>
+                                </td>
+                                <td>
+                                    {% if order.payment_status == 'paid' %}
+                                        <span class="status-badge status-paid">Paid</span>
+                                    {% elif order.payment_status == 'unpaid' %}
+                                        <span class="status-badge status-unpaid">Unpaid</span>
+                                    {% elif order.payment_status == 'refunded' %}
+                                        <span class="status-badge status-refunded">Refunded</span>
+                                    {% elif order.payment_status == 'partially_refunded' %}
+                                        <span class="status-badge status-partially-refunded">Partially Refunded</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if order.status == 'Pending' %}
+                                        <span class="badge order-status-pending">{{ order.status }}</span>
+                                    {% elif order.status == 'Processing' %}
+                                        <span class="badge order-status-processing">{{ order.status }}</span>
+                                    {% elif order.status == 'Shipped' %}
+                                        <span class="badge order-status-shipped">{{ order.status }}</span>
+                                    {% elif order.status == 'Completed' %}
+                                        <span class="badge order-status-completed">{{ order.status }}</span>
+                                    {% elif order.status == 'Canceled' %}
+                                        <span class="badge order-status-canceled">{{ order.status }}</span>
+                                    {% elif order.status == 'Returned' %}
+                                        <span class="badge order-status-returned">{{ order.status }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ order.status }}</span>
+                                    {% endif %}
+
+                                </td>
+                                <td class="text-muted">
+                                    {% if order.payment_verified_at %}
+                                        {{ order.payment_verified_at|date:"M d, g:i A" }}
+                                    {% elif order.order_date %}
+                                        {{ order.order_date|date:"M d, Y" }}
+                                    {% else %}
+                                        {{ order.created_at|date:"M d, Y" }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a class="btn btn-sm btn-outline-primary"
+                                           href="{% if order.order_id %}{% url 'orders:billing_order_detail' order.id %}{% else %}{% url 'orders:billing_manual_order_detail' order.id %}{% endif %}"
+                                           title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <!-- View Invoice Button -->
+                                        <a class="btn btn-sm btn-outline-success"
+                                        href="{% if order.order_id %}{% url 'orders:customer_invoice_view' order.id 'order' %}{% else %}{% url 'orders:customer_invoice_view' order.id 'manual' %}{% endif %}"
+                                        title="View Invoice">
+                                         <i class="fas fa-file-invoice"></i>
+                                     </a>
+                                     
+
+                                        {% if order.gcash_reference_image %}
+                                        <a href="{{ order.gcash_reference_image.url }}" target="_blank" 
+                                           class="btn btn-sm btn-outline-info" title="View Receipt">
+                                            <i class="fas fa-file-image"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-5">
+                                    <i class="fas fa-receipt fa-2x mb-2"></i><br>
+                                    No orders found.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(function() {
+    // Filter state
+    let currentFilters = {
+        search: '',
+        paymentStatus: 'all',
+        paymentMethod: 'all'
+    };
+
+    // Total count of data rows (excluding the empty state row)
+    const totalOrders = $('#billingTable tbody tr').not(':has(.fa-receipt)').length;
+    $('#totalCount').text(totalOrders);
+    
+    // Initial application to ensure correct display and counts
+    applyFilters();
+
+    // Apply all filters
+    function applyFilters() {
+        let visibleCount = 0;
+        $('#billingTable tbody tr').each(function() {
+            const $row = $(this);
+    
+            if ($row.find('.fa-receipt').length) {
+                $row.hide();
+                return;
+            }
+    
+            const orderId = $row.find('td:nth-child(1)').text().toLowerCase().trim();
+            const customer = $row.find('td:nth-child(2)').text().toLowerCase().trim();
+            const amount = $row.find('td:nth-child(3)').text().toLowerCase().trim();
+            const paymentStatus = ($row.data('payment-status') || '').toString().toLowerCase();
+            const paymentMethod = ($row.data('payment-method') || '').toString().toUpperCase();
+    
+            const searchTerm = currentFilters.search.toLowerCase();
+            const searchMatch = !searchTerm || orderId.includes(searchTerm) || customer.includes(searchTerm) || amount.includes(searchTerm);
+            const statusMatch = currentFilters.paymentStatus === 'all' || paymentStatus === currentFilters.paymentStatus;
+            const methodMatch = currentFilters.paymentMethod === 'all' || paymentMethod === currentFilters.paymentMethod;
+    
+            const shouldShow = searchMatch && statusMatch && methodMatch;
+            $row.toggle(shouldShow);
+            if (shouldShow) visibleCount++;
+        });
+    
+        $('#displayedCount').text(visibleCount);
+    }
+    
+
+    // --- EVENT HANDLERS ---
+    
+    // Search filter
+    $(document).on('keyup', '#orderSearch', function() {
+        currentFilters.search = $(this).val();
+        applyFilters();
+    });
+
+    // Payment status filter
+    $(document).on('click', '.payment-status-filter', function(e) {
+        e.preventDefault();
+        currentFilters.paymentStatus = $(this).data('status');
+        const statusText = $(this).text();
+        $('#paymentStatusFilterText').text(statusText);
+        applyFilters();
+    });
+
+    // Payment method filter
+    $(document).on('click', '.payment-method-filter', function(e) {
+        e.preventDefault();
+        currentFilters.paymentMethod = $(this).data('method');
+        const methodText = $(this).text();
+        $('#paymentMethodFilterText').text(methodText);
+        applyFilters();
+    });
+
+    // Clear all filters
+    $(document).on('click', '#clearFiltersBtn', function() {
+        currentFilters = {
+            search: '',
+            paymentStatus: 'all',
+            paymentMethod: 'all'
+        };
+        $('#orderSearch').val('');
+        $('#paymentStatusFilterText').text('All Payment Status');
+        $('#paymentMethodFilterText').text('All Methods');
+        applyFilters();
+    });
+
+    // ============================================
+    // ORDER DETAILS MODAL HANDLER
+    // ============================================
+    $(document).on('click', '.view-order-btn', function() {
+        const orderId = $(this).data('order-id');
+        const orderType = $(this).data('order-type');
+        const $button = $(this);
+        const originalHtml = $button.html();
+        
+        // Show loading spinner on button
+        $button.html('<span class="spinner-border spinner-border-sm"></span>');
+        
+        // Determine API endpoint based on order type
+        const apiUrl = orderType === 'manual' 
+        ? `/orders/api/manual-order-details/${orderId}/`
+        : `/orders/api/order-details/${orderId}/`;
+        
+        // Fetch order details
+        $.ajax({
+            url: apiUrl,
+            method: 'GET',
+            success: function(data) {
+                $button.html(originalHtml);
+                displayOrderDetails(data, orderType);
+                $('#orderDetailModal').modal('show');
+            },
+            error: function(xhr) {
+                $button.html(originalHtml);
+                console.error('Error loading order details:', xhr);
+                alert('Failed to load order details. Please try again.');
+            }
+        });
+    });
+
+    // Display order details in modal
+    function displayOrderDetails(data, orderType) {
+        const modalBody = $('#orderDetailModalBody');
+        const orderIdField = orderType === 'manual' ? (data.manual_order_id || data.id) : (data.order_id || data.id);
+
+        // Defensive defaults
+        const safePaymentStatus = (data.payment_status || 'unpaid').toString().toLowerCase();
+        const safePaymentStatusLabel = safePaymentStatus.charAt(0).toUpperCase() + safePaymentStatus.slice(1);
+        const items = Array.isArray(data.items) ? data.items : [];
+        const orderDate = data.order_date || data.created_at || null;
+        const verifiedAt = data.payment_verified_at || null;
+
+        const html = `
+            <div class="order-detail-section">
+                <h6><i class="fas fa-info-circle me-2"></i>Order Information</h6>
+                <div class="detail-row">
+                    <span class="detail-label">Order ID:</span>
+                    <span class="detail-value fw-bold">#${orderIdField || 'N/A'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Order Date:</span>
+                    <span class="detail-value">${orderDate ? new Date(orderDate).toLocaleString() : 'N/A'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Order Status:</span>
+                    <span class="detail-value"><span class="badge bg-info">${data.status || 'N/A'}</span></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Payment Method:</span>
+                    <span class="detail-value"><span class="payment-method-badge">${data.payment_method || 'N/A'}</span></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Payment Status:</span>
+                    <span class="detail-value">
+                        <span class="status-badge status-${safePaymentStatus}">${safePaymentStatusLabel}</span>
+                    </span>
+                </div>
+                ${verifiedAt ? `
+                <div class="detail-row">
+                    <span class="detail-label">Payment Verified:</span>
+                    <span class="detail-value">${new Date(verifiedAt).toLocaleString()}</span>
+                </div>` : ''}
+            </div>
+
+            <div class="order-detail-section">
+                <h6><i class="fas fa-user me-2"></i>Customer Information</h6>
+                <div class="detail-row">
+                    <span class="detail-label">Name:</span>
+                    <span class="detail-value">${data.customer_name || (data.customer && (data.customer.name || data.customer.username)) || 'Guest'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Email:</span>
+                    <span class="detail-value">${data.customer_email || (data.customer && data.customer.email) || 'N/A'}</span>
+                </div>
+                ${data.shipping_phone ? `
+                <div class="detail-row">
+                    <span class="detail-label">Phone:</span>
+                    <span class="detail-value">${data.shipping_phone}</span>
+                </div>` : ''}
+                <div class="detail-row">
+                    <span class="detail-label">Shipping Address:</span>
+                    <span class="detail-value">${data.shipping_address || 'N/A'}</span>
+                </div>
+            </div>
+
+            <div class="order-detail-section">
+                <h6><i class="fas fa-box me-2"></i>Order Items</h6>
+                <table class="items-table table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => {
+                            const variant = item.variant || item.variant_name || item.variant_sku || 'Default';
+                            return `
+                                <tr>
+                                    <td>${item.product_name || 'Item'}${variant !== 'Default' ? ` (${variant})` : ''}</td>
+                                    <td class="text-center">${item.quantity ?? 0}</td>
+                                    <td class="text-end">₱${parseFloat(item.price || 0).toFixed(2)}</td>
+                                    <td class="text-end fw-bold">₱${parseFloat(item.total || 0).toFixed(2)}</td>
+                                </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+
+                <div class="total-section mt-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold" style="font-size: 1.125rem;">Total Amount:</span>
+                        <span class="fw-bold text-success" style="font-size: 1.25rem;">
+                            ₱${parseFloat(data.total_cost || data.get_total_cost || 0).toFixed(2)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        modalBody.html(html);
+    }
+});
+</script>
+{% endblock %}

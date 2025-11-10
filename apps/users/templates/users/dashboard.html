@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <h2>Welcome, {{ user.username }}!</h2>
+  <p>You are successfully logged in.</p>
+  <a href="{% url 'users:logout' %}">Logout</a>
+
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+{% if messages %}
+<script id="django-messages-json" type="application/json">
+  [
+    {% for message in messages %}
+      {
+        "message": "{{ message|escapejs }}",
+        "tags": "{{ message.tags }}"
+      }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+</script>
+<script src="{% static 'js/messages.js' %}"></script>
+{% endif %}
+
+{% endblock %}
+
+
+
+<!-- yaan mo lang to dito -->

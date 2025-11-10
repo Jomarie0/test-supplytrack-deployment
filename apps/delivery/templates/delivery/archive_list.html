@@ -1,0 +1,74 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+<h1>Archived Deliveries</h1>
+<a href="{% url 'delivery:delivery_list' %}" class="button" style="margin-bottom: 1rem;">← Back to Deliveries</a>
+<button onclick="restoreSelected()">Restore</button>
+<button onclick="permanentlyDeleteSelected()">Delete Permanently</button>
+
+<form method="post">{% csrf_token %}</form>
+
+<table>
+    <thead>
+        <tr>
+            <th><input type="checkbox" id="select-all"></th>
+            <th>Order ID</th>
+            <th>product name</th>
+            <th>total_price</th>
+            <th>Status</th>
+            <th>Delivered At</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for delivery in deliveries reversed%}
+        <tr>
+            <td><input type="checkbox" class="delivery-checkbox" data-id="{{ delivery.id }}"></td>
+            <td>{{ delivery.order.order_id }}</td>
+            <td>{{ delivery.order.product.name }}</td>
+            <td>{{ delivery.order.total_price }}</td>
+
+            <td>{{ delivery.delivery_status }}</td>
+            <!-- <td>{{ delivery.delivered_at|default:"-" }}</td> -->
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+function restoreSelected() {
+  const ids = getSelectedIds();
+  if (!ids.length) return alert("Select at least one.");
+  if (!confirm("Restore selected deliveries?")) return;
+
+  fetch("{% url 'delivery:restore_deliveries' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify({ ids })
+  }).then(r => r.json()).then(data => {
+    if (data.success) location.reload();
+    else alert("Restore failed.");
+  });
+}
+
+function permanentlyDeleteSelected() {
+  const ids = getSelectedIds();
+  if (!ids.length) return alert("Select at least one.");
+  if (!confirm("Permanently delete selected deliveries?")) return;
+
+  fetch("{% url 'delivery:permanently_delete_deliveries' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify({ ids })
+  }).then(r => r.json()).then(data => {
+    if (data.success) location.reload();
+    else alert("Permanent delete failed.");
+  });
+}
+</script>
+{% endblock %}

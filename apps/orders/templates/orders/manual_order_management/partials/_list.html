@@ -1,0 +1,99 @@
+<!-- templates/orders/manual_order_management/partials/_list.html -->
+
+<div class="manual-order-table-container">
+    {% if orders %}
+    <table class="manual-order-table">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="select-all"></th>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Source</th>
+                <th>Status</th>
+                <th>Order Date</th>
+                <th>Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr data-order-id="{{ order.id }}">
+                <td>
+                    <input type="checkbox" class="order-checkbox" value="{{ order.id }}">
+                </td>
+                <td>
+                    <span class="order-id-badge">{{ order.manual_order_id }}</span>
+                </td>
+                <td>
+                    <strong>{{ order.get_customer_display }}</strong>
+                    {% if order.customer_email %}
+                    <br><small style="color: #6b7280;">{{ order.customer_email }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="source-badge">{{ order.get_order_source_display }}</span>
+                </td>
+                <td>
+                    <span class="status-badge status-{{ order.status|lower }}">
+                        {{ order.status }}
+                    </span>
+                </td>
+                <td>{{ order.order_date|date:"M d, Y" }}</td>
+                <td><strong>₱{{ order.get_total_cost|floatformat:2 }}</strong></td>
+                <td>
+                    {% comment %} <button class="btn-manual btn-primary-manual" 
+                            style="padding: 6px 12px; font-size: 12px;"
+                            onclick="openDetailsModal({{ order.id }})">
+                        View
+                    </button> {% endcomment %}
+                    <button class="btn-open-details" 
+                        data-order-id="{{ order.id }}"
+                        style="padding: 6px 12px; font-size: 12px;
+                        ">
+                        View Details
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📦</div>
+        <h3>No Manual Orders Yet</h3>
+        <p>Create your first manual order to get started</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('click', function(e) {
+        // View details buttons
+        if (e.target.matches('.btn-open-details')) {
+            const orderId = e.target.dataset.orderId;
+            if (typeof openDetailsModal === 'function') {
+                openDetailsModal(orderId);
+            } else {
+                console.warn('openDetailsModal function not defined yet');
+            }
+        }
+    
+        // Select all checkbox
+        if (e.target.matches('#select-all')) {
+            const checked = e.target.checked;
+            document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = checked);
+        }
+    
+        // Individual checkboxes update select-all
+        if (e.target.matches('.order-checkbox')) {
+            const allCheckboxes = document.querySelectorAll('.order-checkbox');
+            const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
+            const selectAll = document.getElementById('select-all');
+            if (selectAll) {
+                selectAll.checked = checkedBoxes.length === allCheckboxes.length;
+                selectAll.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < allCheckboxes.length;
+            }
+        }
+    });
+    </script>
+    

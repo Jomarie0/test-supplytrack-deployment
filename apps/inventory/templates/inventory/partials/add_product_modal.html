@@ -1,0 +1,129 @@
+{% load static %}
+<!-- apps/inventory/templates/inventory/partials/add_product_modal.html -->
+<div id="addProductModal" class="modal" style="display: none;">
+    <div class="modal-content themed-modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Add New Product</h2>
+            <button class="close-btn" onclick="closeAddModal()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <form method="POST" id="add-product-form" action="{% url 'inventory:inventory_list' %}">
+                {% csrf_token %}
+                
+                <h3 style="margin-bottom: 16px; color: #374151; font-size: 1.1rem;">Product Information</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="add-name">Product Name *</label>
+                        <input type="text" id="add-name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="add-category">Category</label>
+                        <select id="add-category" name="category">
+                            <option value="">Select Category</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="add-supplier">Supplier</label>
+                        <select id="add-supplier" name="supplier">
+                            <option value="">Select Supplier</option>
+                            {% for supplier in supplier_profiles %}
+                                <option value="{{ supplier.id }}">{{ supplier.company_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="add-unit">Unit</label>
+                        <input type="text" id="add-unit" name="unit" placeholder="e.g., kg, pcs, box">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="add-price">Base Price *</label>
+                        <input type="number" id="add-price" name="price" step="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="add-cost-price">Cost Price</label>
+                        <input type="number" id="add-cost-price" name="cost_price" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="add-stock-quantity">Stock Quantity *</label>
+                        <input type="number" id="add-stock-quantity" name="stock_quantity" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="add-reorder-level">Reorder Level *</label>
+                        <input type="number" id="add-reorder-level" name="reorder_level" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="add-description">Description</label>
+                    <textarea id="add-description" name="description" rows="3"></textarea>
+                </div>
+
+                <!-- Variant Section -->
+                <hr style="margin: 24px 0; border: none; border-top: 2px solid #e5e7eb;">
+                <h3 style="margin-bottom: 16px; color: #374151; font-size: 1.1rem;">Product Variant Details</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="add-variant-size">Size</label>
+                        <input type="text" id="add-variant-size" name="variant_size" placeholder="e.g., Small, Medium, Large">
+                        <span class="help-text">Optional: Leave blank if not applicable</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="add-variant-color">Color</label>
+                        <input type="text" id="add-variant-color" name="variant_color" placeholder="e.g., Red, Blue, Black">
+                        <span class="help-text">Optional: Leave blank if not applicable</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="add-variant-sku">Variant SKU</label>
+                        <input type="text" id="add-variant-sku" name="variant_sku" placeholder="Auto-generated if empty">
+                        <span class="help-text">Optional: Auto-generated from product details</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="add-variant-price">Variant Price</label>
+                        <input type="number" id="add-variant-price" name="variant_price" step="0.01" placeholder="Uses base price if empty">
+                        <span class="help-text">Optional: Defaults to product base price</span>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn-submit">Add Product</button>
+                    <button type="button" class="btn-cancel" onclick="closeAddModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openAddModal() {
+    const modal = document.getElementById('addProductModal');
+    if (modal) {
+        modal.style.display = 'block';
+        modal.classList.remove('hidden');
+    }
+}
+
+function closeAddModal() {
+    const modal = document.getElementById('addProductModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+        document.getElementById('add-product-form').reset();
+    }
+}
+</script>

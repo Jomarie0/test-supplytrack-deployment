@@ -1,0 +1,196 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Complete Your Profile{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Complete Your Profile</h1>
+            <p class="mt-2 text-gray-600">
+                {% if is_profile_complete %}
+                Update your personal information and password
+                {% else %}
+                Please complete your profile information
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Current Info -->
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <h3 class="text-sm font-medium text-gray-700 mb-2">Current Account Info</h3>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Username:</span>
+                            <span class="font-medium ml-2">{{ user.username }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Role:</span>
+                            <span class="font-medium ml-2">{{ user.role|title }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- First Name -->
+                        <div>
+                            <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">
+                                First Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="first_name" 
+                                name="first_name" 
+                                value="{{ user.first_name }}"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="John"
+                            >
+                        </div>
+
+                        <!-- Last Name -->
+                        <div>
+                            <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">
+                                Last Name
+                            </label>
+                            <input 
+                                type="text" 
+                                id="last_name" 
+                                name="last_name" 
+                                value="{{ user.last_name }}"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Doe"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mt-4">
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                            Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            value="{{ user.email }}"
+                            required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="john.doe@example.com"
+                        >
+                    </div>
+                </div>
+
+                <!-- Password Change (Optional) -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Change Password (Optional)</h3>
+                    <p class="text-sm text-gray-600 mb-4">Leave blank if you don't want to change your password</p>
+                    
+                    <div class="space-y-4">
+                        <!-- New Password -->
+                        <div>
+                            <label for="new_password" class="block text-sm font-medium text-gray-700 mb-1">
+                                New Password
+                            </label>
+                            <input 
+                                type="password" 
+                                id="new_password" 
+                                name="new_password" 
+                                minlength="8"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Minimum 8 characters"
+                            >
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div>
+                            <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1">
+                                Confirm New Password
+                            </label>
+                            <input 
+                                type="password" 
+                                id="confirm_password" 
+                                name="confirm_password" 
+                                minlength="8"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Re-enter new password"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-yellow-600 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <p class="text-sm text-yellow-800">
+                                If you change your password, you'll be logged out and need to log in again with your new password.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 pt-6">
+                    <button 
+                        type="submit"
+                        class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-medium"
+                    >
+                        Save Changes
+                    </button>
+                    <a 
+                        href="{% url 'inventory:dashboard' %}"
+                        class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-200"
+                    >
+                        {% if is_profile_complete %}Cancel{% else %}Skip for Now{% endif %}
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Help Text -->
+        {% if not is_profile_complete %}
+        <div class="mt-6 text-center text-sm text-gray-600">
+            <p>Need help? Contact your administrator</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Password validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    
+    if (newPassword && newPassword !== confirmPassword) {
+        e.preventDefault();
+        alert('Passwords do not match!');
+    }
+    
+    if (newPassword && newPassword.length < 8) {
+        e.preventDefault();
+        alert('Password must be at least 8 characters long!');
+    }
+});
+</script>
+{% endblock %}

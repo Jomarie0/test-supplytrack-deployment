@@ -1,0 +1,119 @@
+<!-- templates/orders/manual_order_management/partials/_details.html -->
+
+<!-- Details Modal -->
+<div id="detailsModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="details-order-id">Order Details</h2>
+            <button type="button" class="close-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="detail-grid" id="details-content">
+                <!-- Content loaded via AJAX -->
+            </div>
+
+            <div style="margin-top: 24px; padding: 20px; background: #f8fafc; border-radius: 8px;">
+                <h3 style="margin: 0 0 16px 0; color: #0c4a6e;">Update Status</h3>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <select id="update-status-select" class="form-control" style="flex: 1;">
+                        <option value="Pending">Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Canceled">Canceled</option>
+                        <option value="Returned">Returned</option>
+                    </select>
+                    <button type="button" class="btn-submit" id="btn-update-status">Update Status</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function getCSRFToken() {
+        const cookieValue = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+        return cookieValue ? cookieValue.split('=')[1] : '';
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('detailsModal');
+        let currentOrderId = null;
+    
+        window.openDetailsModal = function(orderId) {
+            currentOrderId = orderId;
+            if (!modal) return;
+    
+            modal.style.display = 'flex';
+            modal.classList.remove('hidden');
+    
+            const content = document.getElementById('details-content');
+            if (content) content.innerHTML = '<div style="text-align:center;padding:40px;">Loading...</div>';
+    
+            fetch(`/orders/manual/api/details/${orderId}/`)
+                .then(resp => resp.json())
+                .then(data => {
+                    if (data.error) {
+                        if (content) content.innerHTML = `<div style="color:#dc2626;">${data.error}</div>`;
+                        return;
+                    }
+    
+                    document.getElementById('details-order-id').textContent = data.manual_order_id;
+                    document.getElementById('update-status-select').value = data.status;
+    
+                    let itemsHTML = '';
+                    data.items.forEach(item => {
+                        itemsHTML += `
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e5e7eb;">
+                                <div>
+                                    <div style="font-weight:600;">${item.product_name}</div>
+                                    <div style="font-size:12px;color:#6b7280;">SKU: ${item.variant_sku}</div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div>₱${item.price.toFixed(2)} × ${item.quantity}</div>
+                                    <div style="font-weight:600;">₱${item.total.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+    
+                    if (content) content.innerHTML = `<div>${itemsHTML}</div>`;
+                })
+                .catch(err => {
+                    if (content) content.innerHTML = '<div style="color:#dc2626;">Error loading order details</div>';
+                });
+        };
+    
+        modal?.querySelector('.close-btn')?.addEventListener('click', function() {
+            modal.style.display = 'none';
+            modal.classList.add('hidden');
+            currentOrderId = null;
+        });
+    
+        // Status update
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'btn-update-status' && currentOrderId) {
+                const newStatus = document.getElementById('update-status-select').value;
+                fetch(`/orders/manual/api/update/${currentOrderId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                })
+                .then(resp => resp.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Status updated successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                });
+            }
+        });
+    });
+    </script>
+    

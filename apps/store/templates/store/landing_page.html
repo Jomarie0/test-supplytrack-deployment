@@ -1,0 +1,189 @@
+{% extends "base_store.html" %}
+{% load static %}
+
+{% block title %}SupplyTrack | Home{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/landingpage/landing_page.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="landing-container">
+
+    <!-- ================= HERO SLIDER (SLIDING ANIMATION) ================= -->
+    <section class="hero">
+        <div class="hero-slider">
+            <div class="hero-slide">
+                <img src="{% static 'images/hero1.jpg' %}" alt="Fresh Groceries">
+                <div class="hero-overlay"></div>
+                <div class="hero-caption">
+                    <h1>Welcome to SupplyTrack</h1>
+                    <p>Your reliable partner in food supply and inventory management.</p>
+                    <a href="{% url 'store:product_list' %}" class="btn-hero">Shop Now</a>
+                </div>
+            </div>
+            <div class="hero-slide">
+                <img src="{% static 'images/hero2.jpg' %}" alt="Affordable Prices">
+                <div class="hero-overlay"></div>
+                <div class="hero-caption">
+                    <h1>Daily Deals You’ll Love</h1>
+                    <p>Enjoy discounts and bulk supply savings for your business.</p>
+                    <a href="{% url 'store:product_list' %}" class="btn-hero">View Offers</a>
+                </div>
+            </div>
+            <div class="hero-slide">
+                <img src="{% static 'images/hero3.jpg' %}" alt="Quality Supplies">
+                <div class="hero-overlay"></div>
+                <div class="hero-caption">
+                    <h1>Quality You Can Trust</h1>
+                    <p>From local farms to your kitchen — we deliver freshness every day.</p>
+                    <a href="{% url 'store:product_list' %}" class="btn-hero">Explore Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+
+
+    <!-- ================= FEATURED PRODUCTS (AUTO SCROLL FIXED) ================= -->
+    <section class="featured-section">
+        <h2><i class="fas fa-fire"></i> Featured Products</h2>
+        <div class="featured-slider-container">
+            <button class="slide-btn prev-btn"><i class="fas fa-chevron-left"></i></button>
+            <div class="featured-slider">
+                <div class="featured-track">
+                    {% for product in featured_products %}
+                    <div class="featured-card">
+                        <a href="{% url 'store:product_detail' slug=product.slug %}">
+                            {% if product.image and product.image.url %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="uniform-img">
+                            {% else %}
+                                <img src="{% static 'images/placeholder.png' %}" alt="{{ product.name }}" class="uniform-img">
+                            {% endif %}
+                        </a>
+                        <h3>{{ product.name }}</h3>
+                        <p class="price">₱{{ product.price }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <button class="slide-btn next-btn"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </section>
+
+
+    <!-- ================= BEST SELLERS ================= -->
+    <section class="best-seller-section">
+        <h2><i class="fas fa-star"></i> Best Sellers</h2>
+        <div class="best-seller-grid">
+            {% for product in best_sellers|slice:":8" %}
+            <div class="slide">
+                <!-- Ribbon -->
+                <div class="ribbon">Best Seller</div>
+
+                <a href="{% url 'store:product_detail' slug=product.slug %}">
+                    {% if product.image and product.image.url %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                        <img src="{% static 'images/placeholder.png' %}" alt="{{ product.name }}">
+                    {% endif %}
+                </a>
+                <h3>{{ product.name }}</h3>
+                <p class="price">₱{{ product.price }}</p>
+            </div>
+            {% empty %}
+            <p>No best sellers available.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+
+    <!-- ================= CATEGORIES ================= -->
+    <section class="categories-section card-section">
+        <h2><i class="fas fa-th-large"></i> Shop by Category</h2>
+        <div class="category-grid circular-grid">
+            {% for category in categories %}
+            <a href="{% url 'store:category_products' slug=category.slug %}" class="category-circle">
+                <div class="circle-container">
+                    {% if category.image and category.image.url %}
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                    {% else %}
+                        <img src="{% static 'images/placeholder.png' %}" alt="{{ category.name }}">
+                    {% endif %}
+                </div>
+                <span>{{ category.name }}</span>
+            </a>
+            {% empty %}
+            <p>No categories available.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+
+</div>
+
+{% block scripts %}
+<script>
+// ================= HERO SLIDER (SLIDING) =================
+const heroSlider = document.querySelector('.hero-slider');
+let heroIndex = 0;
+function slideHero() {
+    heroIndex = (heroIndex + 1) % 3;
+    heroSlider.style.transform = `translateX(-${heroIndex * 100}%)`;
+}
+setInterval(slideHero, 5000);
+
+
+// ================= FEATURED PRODUCTS AUTO SLIDER (STEADY + BUTTONS) =================
+const track = document.querySelector('.featured-track');
+const nextBtn = document.querySelector('.next-btn');
+const prevBtn = document.querySelector('.prev-btn');
+
+if (track) {
+    const cards = Array.from(track.children);
+
+    // Clone first few cards for looping
+    cards.forEach(card => {
+        const clone = card.cloneNode(true);
+        track.appendChild(clone);
+    });
+
+    let scrollAmount = 0;
+    const scrollSpeed = 0.3; // steady speed
+    const resetPoint = track.scrollWidth / 2;
+    let animationFrameId;
+
+    // Auto slide function
+    function autoSlide() {
+        scrollAmount += scrollSpeed;
+        if (scrollAmount >= resetPoint) scrollAmount = 0;
+        track.style.transform = `translateX(-${scrollAmount}px)`;
+        animationFrameId = requestAnimationFrame(autoSlide);
+    }
+
+    autoSlide();
+
+    // Pause on hover
+    track.addEventListener('mouseenter', () => cancelAnimationFrame(animationFrameId));
+    track.addEventListener('mouseleave', () => autoSlide());
+
+    // Button handlers
+    const cardWidth = cards[0].offsetWidth + 24; // card + gap
+
+    nextBtn.addEventListener('click', () => {
+        scrollAmount += cardWidth;
+        if (scrollAmount >= resetPoint) scrollAmount = 0;
+        track.style.transform = `translateX(-${scrollAmount}px)`;
+    });
+
+    prevBtn.addEventListener('click', () => {
+        scrollAmount -= cardWidth;
+        if (scrollAmount < 0) scrollAmount = resetPoint - cardWidth;
+        track.style.transform = `translateX(-${scrollAmount}px)`;
+    });
+}
+
+
+</script>
+{% endblock %}
+{% endblock %}

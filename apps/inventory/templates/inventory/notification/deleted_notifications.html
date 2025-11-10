@@ -1,0 +1,63 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block content %}
+<h2>Deleted Notifications</h2>
+
+<div class="notification-actions">
+    <a href="{% url 'inventory:restock_notifications_view' %}" class="btn btn-primary">Back to Active Notifications</a>
+    <button id="restore-selected-btn" class="btn btn-success">Restore Selected</button>
+    <button id="select-all-btn" class="btn btn-secondary">Select All</button>
+</div>
+
+<div id="deleted-logs">
+    <p>Deleted notifications: {{ logs|length }}</p>
+    {% if logs %}
+        {% for log in logs %}
+            <div class="notification-item" style="border: 1px solid #ddd; padding: 10px; margin: 5px 0; background: #f8f9fa;">
+                <input type="checkbox" class="notification-checkbox" value="{{ log.id }}">
+                <strong>Product:</strong> {{ log.product.name }}<br>
+                <strong>Forecasted Quantity:</strong> {{ log.forecasted_quantity }}<br>
+                <strong>Current Stock:</strong> {{ log.current_stock }}<br>
+                <strong>Originally Checked:</strong> {{ log.checked_at|date:"M d, Y H:i" }}<br>
+                <strong>Deleted at:</strong> {{ log.deleted_at|date:"M d, Y H:i" }}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No deleted notifications.</p>
+    {% endif %}
+</div>
+
+<script>
+$('#select-all-btn').click(function() {
+    $('.notification-checkbox').prop('checked', true);
+});
+
+$('#restore-selected-btn').click(function() {
+    const selectedIds = [];
+    $('.notification-checkbox:checked').each(function() {
+        selectedIds.push($(this).val());
+    });
+    
+    if (selectedIds.length > 0) {
+        if (confirm(`Restore ${selectedIds.length} selected notifications?`)) {
+            fetch('/inventory/api/restore-notifications/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ids: selectedIds})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                }
+            });
+        }
+    } else {
+        alert('Please select notifications to restore.');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,180 @@
+{% extends "base_store.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} - SupplyTrack Store{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/store/store_detail_view.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="product-detail-container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="product-breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'store:product_list' %}">Store</a></li>
+            {% if product.category %}
+                {% with category=product.category %}
+                    {% with parent_list=category.get_ancestors %}
+                        {% for parent in parent_list %}
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'store:category_products' slug=parent.slug %}">{{ parent.name }}</a>
+                            </li>
+                        {% endfor %}
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'store:category_products' slug=category.slug %}">{{ category.name }}</a>
+                        </li>
+                    {% endwith %}
+                {% endwith %}
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="product-detail-wrapper">
+        <!-- Product Images Section -->
+        <div class="product-images-section">
+            <div class="main-image-wrapper">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" id="main-product-image">
+                {% else %}
+                    <img src="{% static 'images/placeholder.png' %}" alt="No image available" id="main-product-image">
+                {% endif %}
+                {% if product.stock_quantity <= 0 %}
+                    <div class="out-of-stock-badge">Out of Stock</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Product Info Section -->
+        <div class="product-info-section">
+            <div class="product-header">
+                <h1 class="product-title">{{ product.name }}</h1>
+                <div class="product-meta">
+                    {% if product.category %}
+                        <span class="meta-item">
+                            <i class="fas fa-tag"></i> {{ product.category.name }}
+                        </span>
+                    {% endif %}
+                    {% if product.supplier %}
+                        <span class="meta-item">
+                            <i class="fas fa-building"></i> {{ product.supplier.name }}
+                        </span>
+                    {% endif %}
+                    <span class="meta-item">
+                        <i class="fas fa-box"></i> {{ product.unit }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="product-pricing">
+                <div class="price-tag">₱{{ product.price|floatformat:2 }}</div>
+                <div class="stock-status {% if product.stock_quantity > 0 %}in-stock{% else %}out-of-stock{% endif %}">
+                    <i class="fas {% if product.stock_quantity > 0 %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                    {% if product.stock_quantity > 0 %}
+                        In Stock ({{ product.stock_quantity }} {{ product.unit }})
+                    {% else %}
+                        Out of Stock
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if product.stock_quantity > 0 %}
+                <form class="add-to-cart-form" action="{% url 'store:add_to_cart' product_id=product.id %}" method="post">
+                    {% csrf_token %}
+                    <div class="quantity-selector">
+                        <label for="quantity">Quantity:</label>
+                        <div class="quantity-controls">
+                            <button type="button" class="quantity-btn minus" onclick="updateQuantity(-1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}" required>
+                            <button type="button" class="quantity-btn plus" onclick="updateQuantity(1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <span class="max-quantity">Maximum: {{ product.stock_quantity }} {{ product.unit }}</span>
+                    </div>
+                    <button type="submit" class="btn-add-to-cart">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                </form>
+            {% else %}
+                <button class="btn-add-to-cart disabled" disabled>
+                    <i class="fas fa-times"></i> Out of Stock
+                </button>
+            {% endif %}
+
+            {% if product.description %}
+                <div class="product-description">
+                    <h2>Product Description</h2>
+                    <div class="description-content">
+                        {{ product.description|linebreaksbr }}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Additional Product Details -->
+            <div class="product-details">
+                <h2>Product Details</h2>
+                <div class="details-grid">
+                    {% comment %} {% if product.product_id %}
+                        <div class="detail-item">
+                            <span class="detail-label">Product ID</span>
+                            <span class="detail-value">{{ product.product_id }}</span>
+                        </div>
+                    {% endif %} {% endcomment %}
+                    {% if product.category %}
+                        <div class="detail-item">
+                            <span class="detail-label">Category</span>
+                            <span class="detail-value">{{ product.category.name }}</span>
+                        </div>
+                    {% endif %}
+                    {% if product.supplier %}
+                        <div class="detail-item">
+                            <span class="detail-label">Supplier</span>
+                            <span class="detail-value">{{ product.supplier.name }}</span>
+                        </div>
+                    {% endif %}
+                    <div class="detail-item">
+                        <span class="detail-label">Unit</span>
+                        <span class="detail-value">{{ product.unit }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    function updateQuantity(change) {
+        const input = document.getElementById('quantity');
+        const currentValue = parseInt(input.value) || 0;
+        const newValue = currentValue + change;
+        const maxValue = parseInt(input.max);
+        
+        if (newValue >= 1 && newValue <= maxValue) {
+            input.value = newValue;
+        }
+    }
+
+    // Prevent form submission on Enter key in quantity input
+    document.getElementById('quantity').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+        }
+    });
+
+    // Validate input when manually typed
+    document.getElementById('quantity').addEventListener('input', function(e) {
+        const value = parseInt(this.value) || 0;
+        const maxValue = parseInt(this.max);
+        
+        if (value < 1) this.value = 1;
+        if (value > maxValue) this.value = maxValue;
+    });
+</script>
+{% endblock %}
+
+{% endblock %} 

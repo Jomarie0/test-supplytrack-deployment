@@ -1,0 +1,191 @@
+{% extends "base_store.html" %}
+{% load static %}
+
+{% block title %}SupplyTrack Store{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/store/store_view.css' %}">
+{% endblock %}
+{% block content %}
+<div class="store-container">
+    <!-- Categories Sidebar -->
+    <aside class="categories-sidebar">
+    <div class="sidebar-header">
+        <h2><i class="fas fa-th-list"></i> Categoriess</h2>
+    </div>
+    <div class="categories-list">
+        <a href="{% url 'store:product_list' %}" 
+        class="category-item {% if not request.resolver_match.kwargs.slug %}active{% endif %}">
+            <i class="fas fa-shopping-basket"></i>
+            <span>All Productsss</span>
+            <span class="category-count">{{ products|length }}</span>
+        </a>
+        
+        {% for category in parent_categories %}
+            <div class="category-group {% if category.is_expanded %}expanded{% endif %}">
+                
+                <a href="{% url 'store:category_products' slug=category.slug %}"  
+                    class="category-item parent-category {% if category.is_active %}active{% endif %}">
+                    
+                    <i class="fas fa-folder"></i> 
+                    
+                    <span>{{ category.name }}</span>
+                    <span class="category-count">{{ category.get_all_products_count }}</span>
+                    
+                    {% if category.children.all %}
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    {% endif %}
+                </a>
+                
+                {% if category.children.all %}
+                    <div class="child-categories {% if category.is_expanded %}expanded{% endif %}">
+                        {% for child in category.children.all %}
+                            <a href="{% url 'store:category_products' slug=child.slug %}" 
+                            class="category-item child-category {% if child.is_active %}active{% endif %}">
+                                <i class="fas fa-tag"></i>
+                                <span>{{ child.name }}</span>
+                                <span class="category-count">{{ child.get_direct_products_count }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        {% for category in all_categories %}
+            {% if category.parent == None and category not in parent_categories %}
+                <a href="{% url 'store:category_products' slug=category.slug %}" 
+                class="category-item {% if request.resolver_match.kwargs.slug == category.slug %}active{% endif %}">
+                    <i class="fas fa-tag"></i>
+                    <span>{{ category.name }}</span>
+                    <span class="category-count">{{ category.get_all_products_count }}</span>
+                </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+</aside>
+    <!-- Main Content -->
+    <main class="store-content">
+        <!-- Store Header -->
+        <div class="store-header">
+            <div class="welcome-section">
+                {% if request.user.is_authenticated %}
+                    <h1>Welcome back, {{ request.user.first_name|default:request.user.username }}!</h1>
+                    <p>Discover our latest products and special offers.nagana ba?</p>
+                {% else %}
+                    <h1>Welcome to SupplyTrack Store</h1>
+                    <p>Browse our collection of quality products.</p>
+                {% endif %}
+            </div>
+
+            <!-- Filters and Sort (placeholder for future implementation) -->
+            <div class="store-filters">
+                <div class="view-options">
+                    <button class="view-btn active" data-view="grid">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="view-btn" data-view="list">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-wrapper">
+            {% if products %}
+                <div class="products-grid">
+                    {% for product in products %}
+                        <div class="product-card">
+                            <div class="product-image">
+                                <a href="{% url 'store:product_detail' slug=product.slug %}">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                    {% else %}
+                                        <img src="{% static 'images/placeholder.png' %}" alt="No image available">
+                                    {% endif %}
+                                </a>
+                                {% if product.stock_quantity <= 0 %}
+                                    <div class="out-of-stock-badge">Out of Stock</div>
+                                {% endif %}
+                            </div>
+                            <div class="product-info">
+                                <a href="{% url 'store:product_detail' slug=product.slug %}" class="product-name">
+                                    {{ product.name }}
+                                </a>
+                                {% if product.category %}
+                                    <span class="product-category">
+                                        <i class="fas fa-tag"></i> {{ product.category.name }}
+                                    </span>
+                                {% endif %}
+                                <div class="product-price">₱{{ product.price|floatformat:2 }}</div>
+                                <div class="product-actions">
+                                    <form action="{% url 'store:add_to_cart' product_id=product.id %}" method="post">
+                                        {% csrf_token %}    
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="add-to-cart-btn" {% if product.stock_quantity <= 0 %}disabled{% endif %}>
+                                            <i class="fas {% if product.stock_quantity > 0 %}fa-cart-plus{% else %}fa-times{% endif %}"></i>
+                                            {% if product.stock_quantity > 0 %}Add to Cart{% else %}Out of Stock{% endif %}
+                                        </button>
+                                    </form>
+                                    <a href="{% url 'store:product_detail' slug=product.slug %}" class="view-details-btn">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-products">
+                    <i class="fas fa-box-open"></i>
+                    <h2>No Products Available</h2>
+                    <p>There are currently no products in this category.</p>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all parent category links that have the dropdown icon
+    const parentCategoryLinks = document.querySelectorAll('.category-item.parent-category');
+
+    parentCategoryLinks.forEach(link => {
+        // We only want to add the click handler to parent links that have children
+        const toggleIcon = link.querySelector('.toggle-icon');
+
+        if (toggleIcon) {
+            // Find the immediate sibling .child-categories wrapper for this parent
+            // We use .closest('.category-group') to ensure we're looking in the right scope
+            const childCategories = link.closest('.category-group').querySelector('.child-categories');
+            
+            // Add click listener to the entire parent link
+            link.addEventListener('click', function(event) {
+                // IMPORTANT: Prevent the link from immediately navigating away.
+                event.preventDefault(); 
+                
+                if (childCategories) {
+                    // Toggle the 'expanded' class on the child container
+                    childCategories.classList.toggle('expanded');
+                    
+                    // You can optionally toggle a class on the parent group too for styling
+                    link.closest('.category-group').classList.toggle('expanded');
+                    
+                    // The icon rotation is already handled well by your CSS!
+                    // (But the template logic for the initial state needs adjusting, see below)
+                }
+            });
+            
+            // NOTE: Since we are preventing the default navigation (event.preventDefault()),
+            // you might want to consider making the parent category *unclickable* for navigation,
+            // or adjusting the script to only toggle if the user clicks the icon itself.
+            // For now, this makes the entire parent category link act as the toggle button.
+        }
+    });
+});
+</script>
+
+{% endblock scripts %}
+{% endblock %} 

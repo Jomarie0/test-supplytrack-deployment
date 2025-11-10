@@ -1,0 +1,23 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/users/base_auth.css' %}">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% block title %}Auth{% endblock %} | SupplyTrack</title>
+</head>
+<body>
+    
+    <main class="login-register">
+        <div class="logo-container">
+            <h1>Logo</h1>
+            <h1>SupplyTrack</h1>
+        </div>
+        {% block content %}{% endblock %}
+    </main>
+    <section class="Img-container"> 
+        <div class="Img-frame-container">
+            <h1>PHOTO 1</h1>
+        </div>
+    </section>
+</body>
+</html>

@@ -1,0 +1,62 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Receive Shipment {{ purchase_order.purchase_order_id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-3">Receive Shipment: <span class="text-success">{{ purchase_order.purchase_order_id }}</span></h2>
+            <p class="lead">
+                This action will mark the PO as **Received**, **update inventory stock**, and **log the expense**.
+                Ensure the goods match the order before proceeding.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-4 border-success">
+        <div class="card-header bg-success text-white">
+            Shipment Checklist
+        </div>
+        <div class="card-body">
+            <p><strong>Supplier:</strong> {{ purchase_order.supplier_profile.company_name }}</p>
+            <p><strong>Status:</strong> <span class="badge bg-warning">{{ purchase_order.get_status_display }}</span></p>
+            <p><strong>Total Value:</strong> <span class="text-success fw-bold">₱{{ purchase_order.total_cost|floatformat:2 }}</span></p>
+            
+            <hr>
+            <h4>Items to be Received:</h4>
+            <ul>
+                {% for item in purchase_order.items.all %}
+                <li>
+                    {{ item.quantity_ordered }}x 
+                    <strong>{{ item.product_variant.product.name|default:item.product_name_text }}</strong>
+                    at ₱{{ item.unit_cost|floatformat:2 }} each.
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'PO:po_receive' purchase_order.purchase_order_id %}">
+        {% csrf_token %}
+        
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Final Warning!</h4>
+            By clicking "Complete Receiving," you commit to the following:
+            <ul>
+                <li>Inventory stock levels will increase.</li>
+                <li>A financial expense of ₱{{ purchase_order.total_cost|floatformat:2 }} will be logged.</li>
+                <li>The PO status will change to **Received**.</li>
+            </ul>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-lg">
+            <i class="fas fa-box-open"></i> Complete Receiving
+        </button>
+        <a href="{% url 'PO:purchase_order_detail' purchase_order.purchase_order_id %}" class="btn btn-secondary btn-lg">
+            <i class="fas fa-arrow-left"></i> Back to Detail
+        </a>
+    </form>
+</div>
+{% endblock %}

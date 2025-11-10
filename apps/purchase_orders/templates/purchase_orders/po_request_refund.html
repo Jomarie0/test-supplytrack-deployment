@@ -1,0 +1,133 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Request Refund - {{ purchase_order.purchase_order_id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Request Refund/Return</h2>
+                    <p class="text-muted mb-0">PO: <span class="badge bg-danger">{{ purchase_order.purchase_order_id }}</span></p>
+                </div>
+                <a href="{% url 'PO:purchase_order_detail' purchase_order.purchase_order_id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to PO
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Info Card -->
+    <div class="card mb-4 border-danger">
+        <div class="card-header bg-danger text-white">
+            <i class="fas fa-exclamation-triangle"></i> Refund Request
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Supplier:</strong> {{ purchase_order.supplier_profile.company_name }}</p>
+                    <p><strong>Order Date:</strong> {{ purchase_order.order_date|date:"M d, Y" }}</p>
+                    <p><strong>Received Date:</strong> {{ purchase_order.received_date|date:"M d, Y"|default:"N/A" }}</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <h4 class="text-danger">Total Paid: ₱{{ purchase_order.total_cost|floatformat:2 }}</h4>
+                    <p class="text-muted mb-0">Current Status: <span class="badge bg-success">{{ purchase_order.get_status_display }}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Received -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-list"></i> Items Received
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="text-center">Quantity Received</th>
+                            <th class="text-end">Unit Cost</th>
+                            <th class="text-end">Line Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in purchase_order.items.all %}
+                        <tr>
+                            <td>{{ item.product_variant.product.name|default:item.product_name_text }}</td>
+                            <td class="text-center">{{ item.quantity_received }}</td>
+                            <td class="text-end">₱{{ item.unit_cost|floatformat:2 }}</td>
+                            <td class="text-end">₱{{ item.total_price|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refund Form -->
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <i class="fas fa-undo"></i> Refund Details
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle"></i> 
+                    <strong>Warning:</strong> Requesting a refund will reverse the stock additions from this PO. 
+                    Make sure items are physically returned/damaged before proceeding.
+                </div>
+
+                <div class="mb-3">
+                    <label for="refund_reason" class="form-label">
+                        Reason for Refund <span class="text-danger">*</span>
+                    </label>
+                    <textarea 
+                        name="refund_reason" 
+                        id="refund_reason" 
+                        class="form-control" 
+                        rows="4" 
+                        placeholder="E.g., Damaged items, wrong products shipped, quality issues..."
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="refund_amount" class="form-label">
+                        Refund Amount
+                    </label>
+                    <input 
+                        type="number" 
+                        name="refund_amount" 
+                        id="refund_amount" 
+                        class="form-control" 
+                        step="0.01" 
+                        value="{{ purchase_order.total_cost }}"
+                        min="0"
+                        max="{{ purchase_order.total_cost }}"
+                    >
+                    <small class="form-text text-muted">Default is full amount. Adjust if partial refund.</small>
+                </div>
+
+                <hr>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-undo"></i> Submit Refund Request
+                    </button>
+                    <a href="{% url 'PO:purchase_order_detail' purchase_order.purchase_order_id %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% load static %}
+<div id="viewProductModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="viewProductName">Product Details</h2>
+            <button class="close-btn" onclick="closeViewModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="detail-grid" id="viewProductContent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openViewModal(productId) {
+    const modal = document.getElementById('viewProductModal');
+    const content = document.getElementById('viewProductContent');
+    if (!modal || !content) return console.error('View modal or content not found');
+
+    content.innerHTML = '<div style="text-align:center;padding:40px;">Loading product details...</div>';
+    modal.style.display = 'block';
+    modal.classList.remove('hidden');
+
+    fetch(`/inventory/api/product-details/${productId}/`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) return content.innerHTML = `<div style="text-align:center;padding:40px;color:#dc2626;">Error: ${data.error}</div>`;
+
+            const variantHTML = data.variant ? `
+                <div class="detail-section">
+                    <h3>🎨 Variant Details</h3>
+                    <div class="detail-item"><span class="detail-label">SKU:</span> <span class="detail-value">${data.variant.sku || 'N/A'}</span></div>
+                    <div class="detail-item"><span class="detail-label">Size:</span> <span class="detail-value">${data.variant.size || 'N/A'}</span></div>
+                    <div class="detail-item"><span class="detail-label">Color:</span> <span class="detail-value">${data.variant.color || 'N/A'}</span></div>
+                    <div class="detail-item"><span class="detail-label">Variant Price:</span> <span class="detail-value">$${data.variant.price || data.price}</span></div>
+                    <div class="detail-item"><span class="detail-label">Status:</span> <span class="detail-value">${data.variant.is_active ? 'Active' : 'Inactive'}</span></div>
+                </div>` : `<div class="detail-section"><h3>🎨 Variant Details</h3><div style="text-align:center;padding:20px;color:#6b7280;">No variant information available</div></div>`;
+
+            document.getElementById('viewProductName').textContent = data.name;
+            content.innerHTML = `
+                <div class="detail-section"><h3>📋 Basic Information</h3>
+                    <div class="detail-item"><span class="detail-label">Product ID:</span> <span class="detail-value">${data.product_id}</span></div>
+                    <div class="detail-item"><span class="detail-label">Name:</span> <span class="detail-value">${data.name}</span></div>
+                    <div class="detail-item"><span class="detail-label">Description:</span> <span class="detail-value">${data.description || 'No description'}</span></div>
+                    <div class="detail-item"><span class="detail-label">Category:</span> <span class="detail-value">${data.category?.name || 'Uncategorized'}</span></div>
+                </div>
+                <div class="detail-section"><h3>💰 Pricing & Stock</h3>
+                    <div class="detail-item"><span class="detail-label">Base Price:</span> <span class="detail-value">$${data.price}</span></div>
+                    <div class="detail-item"><span class="detail-label">Cost Price:</span> <span class="detail-value">$${data.cost_price}</span></div>
+                    <div class="detail-item"><span class="detail-label">Stock Quantity:</span> <span class="detail-value">${data.stock_quantity} ${data.unit}</span></div>
+                    <div class="detail-item"><span class="detail-label">Reorder Level:</span> <span class="detail-value">${data.reorder_level}</span></div>
+                </div>
+                ${variantHTML}
+                <div class="detail-section"><h3>📊 Sales & Performance</h3>
+                    <div class="detail-item"><span class="detail-label">Total Sales:</span> <span class="detail-value">${data.total_sales}</span></div>
+                    <div class="detail-item"><span class="detail-label">Total Revenue:</span> <span class="detail-value">$${data.total_revenue}</span></div>
+                    <div class="detail-item"><span class="detail-label">Status:</span> <span class="detail-value">${data.is_active ? 'Active' : 'Inactive'}</span></div>
+                </div>
+                <div class="detail-section"><h3>🏢 Supplier Information</h3>
+                    <div class="detail-item"><span class="detail-label">Supplier:</span> <span class="detail-value">${data.supplier?.name || 'No supplier'}</span></div>
+                    <div class="detail-item"><span class="detail-label">Phone:</span> <span class="detail-value">${data.supplier?.phone || 'N/A'}</span></div>
+                    <div class="detail-item"><span class="detail-label">Email:</span> <span class="detail-value">${data.supplier?.email || 'N/A'}</span></div>
+                    <div class="detail-item"><span class="detail-label">Address:</span> <span class="detail-value">${data.supplier?.address || 'N/A'}</span></div>
+                </div>
+            `;
+        })
+        .catch(err => content.innerHTML = '<div style="text-align:center;padding:40px;color:#dc2626;">Error loading product details. Please try again.</div>');
+}
+
+function closeViewModal() {
+    const modal = document.getElementById('viewProductModal');
+    if (modal) modal.style.display = 'none';
+    const content = document.getElementById('viewProductContent');
+    if (content) content.innerHTML = '';
+}
+</script>

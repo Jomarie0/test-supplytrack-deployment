@@ -1,0 +1,208 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Receive & Inspect - {{ purchase_order.purchase_order_id }}{% endblock %}
+
+{% block styles %}
+<style>
+    .quality-check-row {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border-left: 4px solid #6c757d;
+    }
+    
+    .quality-check-row.passed {
+        border-left-color: #28a745;
+        background: #e8f5e9;
+    }
+    
+    .quality-check-row.failed {
+        border-left-color: #dc3545;
+        background: #ffebee;
+    }
+    
+    .quality-check-row.partial {
+        border-left-color: #ffc107;
+        background: #fff8e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-clipboard-check"></i> Quality Inspection & Receiving</h2>
+                    <p class="text-muted mb-0">PO: <span class="badge bg-success">{{ purchase_order.purchase_order_id }}</span></p>
+                </div>
+                <a href="{% url 'PO:purchase_order_detail' purchase_order.purchase_order_id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to PO
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="card mb-4 border-success">
+        <div class="card-header bg-success text-white">
+            <i class="fas fa-box-open"></i> Shipment Information
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <p><strong>Supplier:</strong><br>{{ purchase_order.supplier_profile.company_name }}</p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>Total Value:</strong><br><span class="h4 text-success">₱{{ purchase_order.total_cost|floatformat:2 }}</span></p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>Expected Date:</strong><br>{{ purchase_order.expected_delivery_date|date:"M d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quality Check Form -->
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> 
+            <strong>Important:</strong> Inspect each item carefully. Only ACCEPTED quantities will be added to inventory. Rejected items can be returned for refund.
+        </div>
+
+        {{ formset.management_form }}
+        
+        {% for form in formset %}
+        <div class="quality-check-row">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <h5 class="mb-2">
+                        {% if form.instance.product_variant %}
+                            {{ form.instance.product_variant.product.name }}
+                        {% else %}
+                            {{ form.instance.product_name_text|default:"Item" }}
+                        {% endif %}
+                    </h5>
+                    <p class="text-muted mb-0">
+                        Ordered: <strong>{{ form.instance.quantity_ordered }}</strong> | 
+                        Received: <strong>{{ form.instance.quantity_received }}</strong>
+                    </p>
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label small">Accepted</label>
+                    {{ form.quantity_accepted }}
+                    {% if form.quantity_accepted.errors %}
+                        <div class="text-danger small">{{ form.quantity_accepted.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label small">Rejected</label>
+                    {{ form.quantity_rejected }}
+                    {% if form.quantity_rejected.errors %}
+                        <div class="text-danger small">{{ form.quantity_rejected.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label small">Status</label>
+                    {{ form.inspection_status }}
+                </div>
+                
+                <div class="col-md-2 text-end">
+                    <span class="text-muted small">Unit: ₱{{ form.instance.unit_cost|floatformat:2 }}</span><br>
+                    <strong>₱{{ form.instance.total_price|floatformat:2 }}</strong>
+                </div>
+            </div>
+            
+            {% if form.instance.quantity_rejected > 0 or form.rejection_reason %}
+            <div class="row mt-2">
+                <div class="col-12">
+                    <label class="form-label small">Rejection Reason</label>
+                    {{ form.rejection_reason }}
+                    {% if form.rejection_reason.errors %}
+                        <div class="text-danger small">{{ form.rejection_reason.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {{ form.id }}
+            {{ form.purchase_order }}
+        </div>
+        {% endfor %}
+
+        <!-- Form Errors -->
+        {% if formset.non_form_errors %}
+        <div class="alert alert-danger">
+            {{ formset.non_form_errors }}
+        </div>
+        {% endif %}
+
+        <div class="card border-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-check-circle"></i> Confirm Receiving</h5>
+                <p class="mb-3">By submitting, you confirm that:</p>
+                <ul>
+                    <li>Physical inspection has been completed</li>
+                    <li>Accepted items will be added to inventory immediately</li>
+                    <li>Rejected items will be documented for return/refund</li>
+                </ul>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-box-open"></i> Complete Receiving & Update Inventory
+                    </button>
+                    <a href="{% url 'PO:purchase_order_detail' purchase_order.purchase_order_id %}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-calculate accepted/rejected based on received
+    const forms = document.querySelectorAll('.quality-check-row');
+    
+    forms.forEach(row => {
+        const acceptedInput = row.querySelector('input[name$="quantity_accepted"]');
+        const rejectedInput = row.querySelector('input[name$="quantity_rejected"]');
+        const statusSelect = row.querySelector('select[name$="inspection_status"]');
+        
+        if (!acceptedInput || !rejectedInput) return;
+        
+        function updateStatus() {
+            const accepted = parseInt(acceptedInput.value) || 0;
+            const rejected = parseInt(rejectedInput.value) || 0;
+            
+            // Auto-update status
+            if (accepted > 0 && rejected === 0) {
+                statusSelect.value = 'passed';
+                row.classList.add('passed');
+                row.classList.remove('failed', 'partial');
+            } else if (accepted === 0 && rejected > 0) {
+                statusSelect.value = 'failed';
+                row.classList.add('failed');
+                row.classList.remove('passed', 'partial');
+            } else if (accepted > 0 && rejected > 0) {
+                statusSelect.value = 'partial';
+                row.classList.add('partial');
+                row.classList.remove('passed', 'failed');
+            }
+        }
+        
+        acceptedInput.addEventListener('change', updateStatus);
+        rejectedInput.addEventListener('change', updateStatus);
+    });
+});
+</script>
+{% endblock %}

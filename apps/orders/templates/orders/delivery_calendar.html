@@ -1,0 +1,459 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}Delivery & Payment Calendar{% endblock %}
+
+{% block content %}
+<style>
+    /* Calendar Header */
+    .calendar-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 24px 32px;
+        border-radius: 12px !important;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        margin-bottom: 30px;
+    }
+
+    .calendar-header h1 {
+        margin: 0 !important;
+        font-size: 2.5rem !important;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .calendar-header .subtitle {
+        margin-top: 8px !important;
+        opacity: 0.9;
+        font-size: 14px;
+        font-weight: 400;
+        color: white !important;
+        line-height: 1.5;
+    }
+
+    /* Calendar Container */
+    .calendar-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    /* Legend */
+    .calendar-legend {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    /* FullCalendar Customization */
+    .fc {
+        font-family: inherit;
+    }
+
+    .fc-toolbar-title {
+        font-size: 1.75rem !important;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .fc-button {
+        background-color: #667eea !important;
+        border-color: #667eea !important;
+        color: white !important;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+
+    .fc-button:hover {
+        background-color: #5568d3 !important;
+        border-color: #5568d3 !important;
+    }
+
+    .fc-button-active {
+        background-color: #5568d3 !important;
+        border-color: #5568d3 !important;
+    }
+
+    .fc-daygrid-day-number {
+        color: #495057;
+        font-weight: 500;
+    }
+
+    .fc-day-today {
+        background-color: #e7f3ff !important;
+    }
+
+    /* Event Tooltip/Modal */
+    .event-details-modal .modal-body {
+        padding: 20px;
+    }
+
+    .event-detail-row {
+        display: flex;
+        padding: 10px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .event-detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .event-detail-label {
+        font-weight: 600;
+        color: #495057;
+        min-width: 120px;
+    }
+
+    .event-detail-value {
+        color: #212529;
+    }
+
+    .badge-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    /* Hide order creation events */
+    .fc-event.order-created-hidden {
+        display: none !important;
+    }
+</style>
+
+<div class="calendar-module">
+    <div class="mb-4 calendar-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>
+                    📅 Delivery & Payment Calendar
+                </h1>
+                <p class="subtitle">Track delivery dates and payment due dates for all orders.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="calendar-legend">
+        <div class="legend-item">
+            <span class="legend-color" style="background-color: #28a745;"></span>
+            <span>Customer Order Delivery</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background-color: #17a2b8;"></span>
+            <span>Manual Order Delivery</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background-color: #ffc107;"></span>
+            <span>Purchase Order Delivery</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background-color: #fd7e14;"></span>
+            <span>Payment Due (Net 30/Pay Later)</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background-color: #dc3545;"></span>
+            <span>Payment Overdue</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background-color: #6c757d; border: 2px solid #495057;"></span>
+            <span>Order Created</span>
+        </div>
+        <div class="legend-item">
+            <label class="form-check-label d-flex align-items-center gap-2" style="cursor: pointer;">
+                <input type="checkbox" id="toggleOrderCreated" class="form-check-input" checked>
+                <span>Show Order Creation Dates</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="calendar-container">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<!-- Event Details Modal -->
+<div class="modal fade event-details-modal" id="eventDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventModalTitle">Event Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="eventModalBody">
+                <!-- Event details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a id="eventViewLink" href="#" class="btn btn-primary" style="display: none;">View Order</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FullCalendar CSS -->
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+
+<!-- FullCalendar JS -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        height: 'auto',
+        slotMinTime: '06:00:00',
+        slotMaxTime: '20:00:00',
+        slotDuration: '01:00:00',
+        allDaySlot: true,
+        events: function(fetchInfo, successCallback, failureCallback) {
+            fetch("{% url 'orders:calendar_events_api' %}")
+                .then(response => response.json())
+                .then(data => {
+                    successCallback(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching calendar events:', error);
+                    failureCallback(error);
+                });
+        },
+        eventClick: function(info) {
+            const event = info.event;
+            const extendedProps = event.extendedProps;
+            
+            // Set modal title
+            document.getElementById('eventModalTitle').textContent = event.title;
+            
+            // Build event details
+            let detailsHtml = '<div class="event-details">';
+            
+            if (extendedProps.type === 'delivery') {
+                detailsHtml += `
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Type:</span>
+                        <span class="event-detail-value">📦 Delivery</span>
+                    </div>
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Order Number:</span>
+                        <span class="event-detail-value">${extendedProps.order_number || 'N/A'}</span>
+                    </div>
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Order Type:</span>
+                        <span class="event-detail-value">${extendedProps.order_type === 'customer_order' ? 'Customer Order' : extendedProps.order_type === 'manual_order' ? 'Manual Order' : 'Purchase Order'}</span>
+                    </div>
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Status:</span>
+                        <span class="event-detail-value"><span class="badge badge-status bg-info">${extendedProps.status || 'N/A'}</span></span>
+                    </div>
+                `;
+                
+                if (extendedProps.customer) {
+                    detailsHtml += `
+                        <div class="event-detail-row">
+                            <span class="event-detail-label">Customer:</span>
+                            <span class="event-detail-value">${extendedProps.customer}</span>
+                        </div>
+                    `;
+                }
+                
+                if (extendedProps.supplier) {
+                    detailsHtml += `
+                        <div class="event-detail-row">
+                            <span class="event-detail-label">Supplier:</span>
+                            <span class="event-detail-value">${extendedProps.supplier}</span>
+                        </div>
+                    `;
+                }
+                
+                // Set view link
+                const viewLink = document.getElementById('eventViewLink');
+                if (extendedProps.order_type === 'customer_order') {
+                    viewLink.href = `/orders/billing/order/${extendedProps.order_id}/`;
+                    viewLink.textContent = 'View Customer Order';
+                    viewLink.style.display = 'inline-block';
+                } else if (extendedProps.order_type === 'manual_order') {
+                    viewLink.href = `/orders/billing/manual/${extendedProps.order_id}/`;
+                    viewLink.textContent = 'View Manual Order';
+                    viewLink.style.display = 'inline-block';
+                } else if (extendedProps.order_type === 'purchase_order') {
+                    viewLink.href = `/purchase_orders/billing/order/${extendedProps.order_id}/`;
+                    viewLink.textContent = 'View Purchase Order';
+                    viewLink.style.display = 'inline-block';
+                } else {
+                    viewLink.style.display = 'none';
+                }
+            } else if (extendedProps.type === 'order_created') {
+                detailsHtml += `
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Type:</span>
+                        <span class="event-detail-value">📝 Order Created</span>
+                    </div>
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Order Number:</span>
+                        <span class="event-detail-value">${extendedProps.order_number || 'N/A'}</span>
+                    </div>
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Order Type:</span>
+                        <span class="event-detail-value">${extendedProps.order_type === 'customer_order' ? 'Customer Order' : extendedProps.order_type === 'manual_order' ? 'Manual Order' : 'Purchase Order'}</span>
+                    </div>
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Status:</span>
+                        <span class="event-detail-value"><span class="badge badge-status bg-info">${extendedProps.status || 'N/A'}</span></span>
+                    </div>
+                `;
+                
+                if (extendedProps.customer) {
+                    detailsHtml += `
+                        <div class="event-detail-row">
+                            <span class="event-detail-label">Customer:</span>
+                            <span class="event-detail-value">${extendedProps.customer}</span>
+                        </div>
+                    `;
+                }
+                
+                if (extendedProps.supplier) {
+                    detailsHtml += `
+                        <div class="event-detail-row">
+                            <span class="event-detail-label">Supplier:</span>
+                            <span class="event-detail-value">${extendedProps.supplier}</span>
+                        </div>
+                    `;
+                }
+                
+                // Set view link
+                const viewLink = document.getElementById('eventViewLink');
+                if (extendedProps.order_type === 'customer_order') {
+                    viewLink.href = `/orders/billing/order/${extendedProps.order_id}/`;
+                    viewLink.textContent = 'View Customer Order';
+                    viewLink.style.display = 'inline-block';
+                } else if (extendedProps.order_type === 'manual_order') {
+                    viewLink.href = `/orders/billing/manual/${extendedProps.order_id}/`;
+                    viewLink.textContent = 'View Manual Order';
+                    viewLink.style.display = 'inline-block';
+                } else if (extendedProps.order_type === 'purchase_order') {
+                    viewLink.href = `/purchase_orders/billing/order/${extendedProps.order_id}/`;
+                    viewLink.textContent = 'View Purchase Order';
+                    viewLink.style.display = 'inline-block';
+                } else {
+                    viewLink.style.display = 'none';
+                }
+            } else if (extendedProps.type === 'payment_due') {
+                detailsHtml += `
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Type:</span>
+                        <span class="event-detail-value">💰 Payment Due</span>
+                    </div>
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">PO Number:</span>
+                        <span class="event-detail-value">${extendedProps.order_number || 'N/A'}</span>
+                    </div>
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Supplier:</span>
+                        <span class="event-detail-value">${extendedProps.supplier || 'N/A'}</span>
+                    </div>
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Amount:</span>
+                        <span class="event-detail-value"><strong>₱${parseFloat(extendedProps.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></span>
+                    </div>
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Payment Method:</span>
+                        <span class="event-detail-value">${extendedProps.payment_method || 'N/A'}</span>
+                    </div>
+                    <div class="event-detail-row">
+                        <span class="event-detail-label">Status:</span>
+                        <span class="event-detail-value">
+                            <span class="badge badge-status ${extendedProps.is_overdue ? 'bg-danger' : 'bg-warning'}">
+                                ${extendedProps.is_overdue ? '⚠️ Overdue' : 'Due Soon'}
+                            </span>
+                        </span>
+                    </div>
+                `;
+                
+                // Set view link
+                const viewLink = document.getElementById('eventViewLink');
+                viewLink.href = `/purchase_orders/billing/order/${extendedProps.order_id}/`;
+                viewLink.textContent = 'View Purchase Order';
+                viewLink.style.display = 'inline-block';
+            }
+            
+            detailsHtml += `
+                <div class="event-detail-row">
+                    <span class="event-detail-label">Date:</span>
+                    <span class="event-detail-value">${event.start.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                </div>
+            `;
+            
+            detailsHtml += '</div>';
+            
+            document.getElementById('eventModalBody').innerHTML = detailsHtml;
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('eventDetailsModal'));
+            modal.show();
+            
+            info.jsEvent.preventDefault();
+        },
+        eventDisplay: 'block',
+        dayMaxEvents: 3,
+        moreLinkClick: 'popover',
+        eventTimeFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            meridiem: 'short'
+        }
+    });
+    
+    calendar.render();
+    
+    // Toggle order creation dates visibility
+    const toggleOrderCreated = document.getElementById('toggleOrderCreated');
+    if (toggleOrderCreated) {
+        toggleOrderCreated.addEventListener('change', function() {
+            calendar.getEvents().forEach(function(event) {
+                if (event.extendedProps.type === 'order_created') {
+                    const eventEl = event.el;
+                    if (eventEl) {
+                        if (this.checked) {
+                            eventEl.classList.remove('order-created-hidden');
+                        } else {
+                            eventEl.classList.add('order-created-hidden');
+                        }
+                    }
+                }
+            }.bind(this));
+        });
+    }
+});
+</script>
+{% endblock %}
+

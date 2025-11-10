@@ -1,0 +1,45 @@
+<!-- templates/orders/manual_order_management/partials/_manual_order_items_formset.html -->
+
+<h3>Order Items</h3>
+{{ formset.management_form }}
+
+<div id="order-items-container">
+    {% for form in formset %}
+        <div class="order-item">
+            {{ form.id }}
+            <div class="form-group">
+                {{ form.product_variant.label_tag }}
+                {{ form.product_variant }}
+            </div>
+            <div class="form-group">
+                {{ form.quantity.label_tag }}
+                {{ form.quantity }}
+            </div>
+            <div class="form-group">
+                {{ form.price_at_order.label_tag }}
+                {{ form.price_at_order }}
+            </div>
+            {% if form.DELETE %}
+            <div class="form-group">
+                {{ form.DELETE }} Delete
+            </div>
+            {% endif %}
+        </div>
+        <hr>
+    {% endfor %}
+</div>
+
+<button type="button" class="btn btn-secondary" id="add-item-btn">Add Item</button>
+
+<script>
+// Optional: JS to dynamically add a new empty form row
+document.getElementById('add-item-btn').addEventListener('click', () => {
+    const totalForms = document.querySelector('#id_items-TOTAL_FORMS');
+    const container = document.getElementById('order-items-container');
+    const currentFormCount = parseInt(totalForms.value);
+    const emptyFormHtml = container.querySelector('.order-item').outerHTML.replace(/items-0/g, `items-${currentFormCount}`);
+    
+    container.insertAdjacentHTML('beforeend', emptyFormHtml);
+    totalForms.value = currentFormCount + 1;
+});
+</script>

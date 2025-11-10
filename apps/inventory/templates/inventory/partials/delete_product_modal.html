@@ -1,0 +1,93 @@
+{% load static %}
+<div id="deleteProductModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>🗑️ Delete Products</h2>
+            <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="delete-confirmation">
+                <div class="warning-icon">⚠️</div>
+                <h3>Confirm Deletion</h3>
+                <p id="delete-message">Are you sure you want to delete the selected products?</p>
+                <p class="warning-text">This action will move the products to the archive. They can be restored later if needed.</p>
+                
+                <div class="selected-products" id="selected-products-list"></div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-danger-inv" onclick="confirmSoftDelete()">🗑️ Move to Archive</button>
+                    <button type="button" class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedProductIds = [];
+
+function openDeleteModal() {
+    const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+    if (selectedCheckboxes.length === 0) {
+        alert('Please select products to delete.');
+        return;
+    }
+
+    selectedProductIds = Array.from(selectedCheckboxes).map(cb => cb.getAttribute('data-id'));
+    
+    const modal = document.getElementById('deleteProductModal');
+    const message = document.getElementById('delete-message');
+    const productsList = document.getElementById('selected-products-list');
+    
+    if (modal) {
+        modal.style.display = 'block';
+        modal.classList.remove('hidden');
+        
+        if (message) message.textContent = `Are you sure you want to delete ${selectedProductIds.length} product(s)?`;
+        if (productsList) {
+            productsList.innerHTML = '';
+            selectedCheckboxes.forEach(cb => {
+                const productRow = cb.closest('tr');
+                const productName = productRow?.querySelector('.product-name')?.textContent || 'N/A';
+                const productId = productRow?.querySelector('.product-id')?.textContent || 'N/A';
+                const productItem = document.createElement('div');
+                productItem.className = 'selected-product-item';
+                productItem.innerHTML = `<span class="product-name">${productName}</span><span class="product-id">${productId}</span>`;
+                productsList.appendChild(productItem);
+            });
+        }
+    }
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteProductModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+    }
+    selectedProductIds = [];
+    const productsList = document.getElementById('selected-products-list');
+    if (productsList) productsList.innerHTML = '';
+}
+
+function confirmSoftDelete() {
+    if (!selectedProductIds.length) return alert('No products selected for deletion.');
+
+    fetch('/inventory/delete-products/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value
+        },
+        body: JSON.stringify({ ids: selectedProductIds })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            closeDeleteModal();
+            location.reload();
+        } else alert('Error deleting products: ' + data.status);
+    })
+    .catch(err => alert('Error deleting products. Please try again.'));
+}
+</script>

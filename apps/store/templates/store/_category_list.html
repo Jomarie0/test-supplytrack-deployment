@@ -1,0 +1,42 @@
+{% comment %}
+==============================================================================
+REFACTORED: templates/store/_category_list.html
+==============================================================================
+This template recursively renders category hierarchies of unlimited depth.
+It calls itself for each level of children.
+{% endcomment %}
+
+{% load static %}
+
+{% for category in categories %}
+    <div class="category-group {% if category.is_expanded %}expanded{% endif %}">
+        
+        {# Parent/Current Category Link #}
+        <a href="{% url 'store:category_products' slug=category.slug %}"  
+           class="category-item parent-category {% if category.is_active_slug %}active{% endif %}">
+            
+            <span>{{ category.name }}</span>
+            <span class="category-count">{{ category.get_all_products_count }}</span>
+            
+            {# Only show toggle icon if this category has children #}
+            {% if category.annotated_children %}
+                <i class="fas fa-chevron-down toggle-icon {% if category.is_expanded %}expanded{% endif %}"></i>
+            {% endif %}
+        </a>
+        
+        {# Render Children Recursively #}
+        {% if category.annotated_children %}
+            <div class="child-categories {% if category.is_expanded %}expanded{% endif %}">
+                
+                {% comment %}
+                RECURSIVE CALL: Template includes itself to render children
+                CRITICAL: Use annotated_children instead of children.all to preserve flags
+                {% endcomment %}
+                {% with categories=category.annotated_children %}
+                    {% include "store/_category_list.html" %}
+                {% endwith %}
+                
+            </div>
+        {% endif %}
+    </div>
+{% endfor %}

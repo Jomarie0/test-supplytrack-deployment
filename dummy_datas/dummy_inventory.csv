@@ -1,0 +1,52 @@
+name,description,supplier,price,stock_quantity,reorder_level,unit,category
+Nescafé 3-in-1 Original,Instant coffee sachets for staff pantry,Supplier A,180.00,150,30,pack,Beverage
+Bear Brand Powdered Milk 1kg,Nutritional milk powder,Supplier A,320.00,100,20,pack,Beverage
+Distilled Water 1L,Bottled drinking water,Supplier A,25.00,300,50,bottle,Beverage
+Tide Powder Detergent 1kg,Laundry detergent for linens,Supplier B,90.00,80,20,bag,Cleaning
+Zonrox Bleach 1L,Surface disinfectant and bleach,Supplier B,40.00,150,30,bottle,Cleaning
+Downy Fabric Softener 800ml,Linen softener for hospital laundry,Supplier B,70.00,100,20,bottle,Cleaning
+Plastic Trash Bags (Large),Heavy-duty garbage bags,Supplier C,120.00,200,40,roll,Utility
+Toilet Paper 2-ply,Comfort tissue for hospital restrooms,Supplier C,25.00,500,100,roll,Hygiene
+Paper Towels,Multi-purpose cleaning wipes,Supplier C,45.00,250,50,roll,Hygiene
+Dishwashing Liquid 1L,For cleaning hospital kitchenware,Supplier C,55.00,100,20,bottle,Cleaning
+Gas Tank (LPG 11kg),For kitchen use in hospital cafeteria,Supplier D,950.00,10,2,tank,Utility
+Alcohol Stove Burner,Portable cooking burner,Supplier D,450.00,5,1,unit,Utility
+Milo Powder Drink 1kg,Nutritious drink for patients and staff,Supplier A,300.00,80,15,pack,Beverage
+SkyFlakes Crackers,Easy-to-digest crackers for patients,Supplier A,45.00,120,25,box,Food
+Canola Oil 1L,Used in hospital kitchen,Supplier D,110.00,60,10,bottle,Food
+Eggs (Tray of 30),Fresh chicken eggs,Supplier D,180.00,40,10,tray,Food
+Rice 50kg sack,Staple food for hospital meals,Supplier D,2800.00,15,3,sack,Food
+Sugar (Brown) 1kg,For kitchen and pantry use,Supplier D,50.00,90,20,bag,Food
+Salt 1kg,Kitchen essential,Supplier D,20.00,100,25,bag,Food
+Safeguard Soap Bar 135g,Handwashing soap for staff and patients,Supplier B,30.00,300,50,bar,Hygiene
+Disposable Gloves,Medical gloves for hygiene,Supplier D,25.00,100,20,box,Medical
+Alcohol 70%,Disinfectant liquid,Supplier A,45.00,200,30,bottle,Medical
+Surgical Mask,Face mask for medical use,Supplier D,5.00,500,100,piece,Medical
+Face Shield,Plastic face cover protection,Supplier A,30.00,150,25,piece,Medical
+IV Drip Set,Complete IV drip kit,Supplier B,120.00,80,20,kit,Medical
+Syringe 5ml,Standard syringe for injection,Supplier A,3.00,1000,200,piece,Medical
+Bandage Roll,Elastic bandage for wound dressing,Supplier B,18.00,200,40,roll,Medical
+Vitamin C Supplements (Effervescent),Effervescent vitamin C tablets to boost immunity,Supplier E,150.00,120,25,box,Medical
+N95 Respirators,Higher-grade masks for medical staff,Supplier D,50.00,300,75,piece,Medical
+Antiseptic Wipes,Quick sanitization wipes for surfaces and hands,Supplier B,80.00,200,40,pack,Medical
+Thermometers (Digital),Digital thermometers for daily health checks,Supplier C,450.00,50,10,unit,Medical
+Medical Gowns,Disposable protective gowns for hospital staff,Supplier D,120.00,100,20,unit,Medical
+UV Sterilizer Boxes,Boxes for disinfecting small equipment,Supplier F,3500.00,15,5,unit,Utility
+Eye Protection Goggles,Protective goggles for medical staff,Supplier D,90.00,150,30,piece,Medical
+Disinfectant Spray (Multi-surface),Spray disinfectant for general cleaning,Supplier B,110.00,180,35,bottle,Cleaning
+Gatorade 500ml,Electrolyte drink for hydration of staff/patients,Supplier A,35.00,120,30,bottle,Beverage
+Canned Tuna 155g,Ready-to-eat protein source for quick meals,Supplier D,40.00,150,35,can,Food
+Instant Noodles (Pack),Quick emergency meal for staff during long shifts,Supplier D,15.00,300,60,pack,Food
+Tissue Box (100s),Facial tissue for staff/patient rooms,Supplier C,55.00,200,50,box,Hygiene
+Hand Sanitizer Gel 250ml,Portable sanitization for hands,Supplier B,60.00,200,40,bottle,Hygiene
+Canned Fruit Cocktail 432g,Nutritious dessert option,Supplier D,50.00,90,20,can,Food
+Instant Oatmeal Pack,High-fiber breakfast/snack for patients,Supplier A,25.00,180,35,pack,Food
+Bottled Iced Tea 500ml,Refreshment for staff/patients,Supplier A,30.00,150,30,bottle,Beverage
+Coffee Creamer 500g,Supplement for coffee stations,Supplier A,95.00,80,20,pack,Beverage
+Powdered Juice Sachets,Quick-mix beverage option,Supplier A,10.00,250,50,pack,Beverage
+Paracetamol 500mg tablets,Fever and mild pain relief,Supplier E,120.00,200,50,box,Medical
+Ibuprofen 200mg tablets,Pain reliever and anti-inflammatory,Supplier E,130.00,180,40,box,Medical
+Oxygen Tank (Small, Portable),Emergency oxygen supply for patients,Supplier D,2800.00,8,2,tank,Medical
+Saline Solution 500ml (NaCl 0.9%),Hydration and IV flushing fluid,Supplier B,45.00,150,30,bottle,Medical
+Shoe Covers (Disposable),Disposable covers for infection control,Supplier D,5.00,500,100,pair,Medical
+Hydrogen Peroxide Solution 3% (1L),Surface and wound disinfectant,Supplier B,60.00,100,25,bottle,Cleaning

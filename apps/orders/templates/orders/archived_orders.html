@@ -1,0 +1,92 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/orders/archives.css' %}">
+{% endblock %}
+
+{% block content %}
+<h1 class="section-title">Archived Orders</h1>
+
+<div class="action-buttons">
+  <a href="{% url 'orders:order_list' %}" class="btn">← Back to Customer Orders</a>
+  <button onclick="restoreSelected()">Restore</button>
+  <button onclick="permanentlyDeleteSelected()">Permanently Delete</button>
+</div class="table-wrapper">
+
+<table>
+  <thead>
+    <tr>
+      <th><input type="checkbox" id="select-all"></th>
+      <th>Order ID</th>
+      <th>Product</th>
+      <th>Status</th>
+      <th>Deleted At</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for order in archived_orders reversed %}
+    <tr>
+      <td><input type="checkbox" class="archive-checkbox" data-id="{{ order.order_id }}"></td>
+      <td>{{ order.order_id }}</td>
+      <td>{{ order.product.name }}</td>
+      <td>{{ order.status }}</td>
+      <td>{{ order.deleted_at }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">No archived orders found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<script>
+function restoreSelected() {
+  const ids = Array.from(document.querySelectorAll('.archive-checkbox:checked'))
+    .map(cb => cb.dataset.id);
+  if (!ids.length) return alert('Select at least one order to restore.');
+  if (!confirm('Restore selected orders?')) return;
+
+  fetch("{% url 'orders:restore_orders' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]')||{}).value
+    },
+    body: JSON.stringify({ ids })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) location.reload();
+    else alert('Error restoring orders');
+  })
+  .catch(e => alert('Error: ' + e));
+}
+
+function permanentlyDeleteSelected() {
+  const ids = Array.from(document.querySelectorAll('.archive-checkbox:checked'))
+    .map(cb => cb.dataset.id);
+  if (!ids.length) return alert('Select at least one order.');
+  if (!confirm('Permanently delete selected orders? This cannot be undone.')) return;
+
+  fetch("{% url 'orders:permanent_delete_orders' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]')||{}).value
+    },
+    body: JSON.stringify({ ids })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) location.reload();
+    else alert('Error deleting orders');
+  })
+  .catch(e => alert('Error: ' + e));
+}
+
+document.getElementById('select-all').addEventListener('change', function() {
+  document.querySelectorAll('.archive-checkbox')
+    .forEach(cb => cb.checked = this.checked);
+});
+</script>
+{% endblock %}

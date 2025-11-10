@@ -1,0 +1,105 @@
+{% extends "base_admin.html" %}
+{% block title %}PO #{{ order_id }}{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="m-0">PO #{{ order_id }}</h5>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'PO:po_billing_dashboard' %}">Back to PO Billing</a>
+  </div>
+  <div class="card-body">
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="p-3 border rounded-3">
+          <h6 class="fw-bold">PO Information</h6>
+          <div><strong>Status:</strong> {{ status }}</div>
+          <div><strong>Order Date:</strong> {{ order_date }}</div>
+          <div><strong>Payment Method:</strong> {{ payment_method }}</div>
+          <div><strong>Payment Status:</strong> 
+            <span class="badge bg-{% if payment_status == 'paid' %}success{% elif payment_status == 'overdue' %}danger{% else %}warning{% endif %}">
+              {{ payment_status|title }}
+            </span>
+          </div>
+          {% if payment_due_date %}
+          <div><strong>Payment Due Date:</strong> {{ payment_due_date }}</div>
+          {% endif %}
+          {% if payment_verified_at %}
+          <div><strong>Verified At:</strong> {{ payment_verified_at|date:"Y-m-d H:i" }}</div>
+          {% endif %}
+          <div class="mt-2"><strong>Total:</strong> ₱{{ total_cost|floatformat:2 }}</div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="p-3 border rounded-3">
+          <h6 class="fw-bold">Supplier</h6>
+          <div><strong>Name:</strong> {{ customer_name }}</div>
+          <div><strong>Email:</strong> {{ customer_email }}</div>
+          <div><strong>Phone:</strong> {{ shipping_phone }}</div>
+          <div><strong>Address:</strong> {{ shipping_address }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 p-3 border rounded-3">
+      <h6 class="fw-bold">Items</h6>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Product</th>
+              <th style="width: 120px;" class="text-center">Qty</th>
+              <th style="width: 140px;" class="text-end">Unit Cost</th>
+              <th style="width: 160px;" class="text-end">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{{ item.product_name }}{% if item.variant and item.variant != "Default" %} ({{ item.variant }}){% endif %}</td>
+              <td class="text-center">{{ item.quantity }}</td>
+              <td class="text-end">₱{{ item.price|floatformat:2 }}</td>
+              <td class="text-end fw-semibold">₱{{ item.total|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% comment %} Payment Proof Section {% endcomment %}
+    {% if purchase_order.payment_method == 'net_30' or purchase_order.pay_later %}
+    <div class="mt-4 p-3 border rounded-3">
+      <h6 class="fw-bold">Payment Proof</h6>
+      {% if payment_proof_image %}
+        <div class="mb-3">
+          <p class="text-success"><strong>Payment proof uploaded:</strong></p>
+          <img src="{{ payment_proof_image.url }}" alt="Payment Proof" class="img-thumbnail" style="max-width: 400px; max-height: 400px;">
+          <p class="text-muted small mt-2">Uploaded on: {{ purchase_order.payment_verified_at|date:"Y-m-d H:i" }}</p>
+        </div>
+      {% else %}
+        <div class="alert alert-warning">
+          <p class="mb-2">No payment proof uploaded yet.</p>
+          {% if payment_status == 'unpaid' or payment_status == 'overdue' %}
+          <a href="{% url 'PO:po_upload_payment_proof' purchase_order.id %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-upload"></i> Upload Payment Proof
+          </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+    {% elif purchase_order.payment_method == 'prepaid' and payment_proof_image %}
+    <div class="mt-4 p-3 border rounded-3">
+      <h6 class="fw-bold">Payment Proof</h6>
+      <div class="mb-3">
+        <p class="text-success"><strong>Payment proof:</strong></p>
+        <img src="{{ payment_proof_image.url }}" alt="Payment Proof" class="img-thumbnail" style="max-width: 400px; max-height: 400px;">
+        {% if payment_verified_at %}
+        <p class="text-muted small mt-2">Uploaded on: {{ payment_verified_at|date:"Y-m-d H:i" }}</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+

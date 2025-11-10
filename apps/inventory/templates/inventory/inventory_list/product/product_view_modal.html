@@ -1,0 +1,287 @@
+
+<!-- inventory/inventory_list/product/product_view_modal.html -->
+<div class="modal fade" id="productViewModal" tabindex="-1" aria-labelledby="productViewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="productViewModalLabel">
+                    <i class="fas fa-box mr-2"></i>Product Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="productViewModalBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading product details...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                {% comment %} <button type="button" class="btn btn-sm btn-outline-danger rounded-2 soft-delete-single-btn"
+                                        data-id="{{ product.id }}" data-name="{{ product.name }}" title="Archive">
+                                    <i class="fas fa-trash-alt"></i> Delete Product
+                                </button> {% endcomment %}
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="editProductBtn" class="btn btn-primary">
+                    <i class="fas fa-edit mr-1"></i>Edit Product
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        let currentProductId = null;
+        let lastTriggerButton = null;
+        const productViewModalElement = document.getElementById('productViewModal');
+    
+        if (productViewModalElement) {
+            productViewModalElement.addEventListener('hide.bs.modal', function () {
+                if (lastTriggerButton) {
+                    setTimeout(function() {
+                        lastTriggerButton.focus();
+                    }, 0); 
+                }
+            });
+            
+            productViewModalElement.addEventListener('hidden.bs.modal', function () {
+                lastTriggerButton = null; 
+            });
+        }
+    
+        window.openProductViewModal = function(productId, triggerElement) {
+            lastTriggerButton = triggerElement; 
+            loadProductDetails(productId);
+            const modal = new bootstrap.Modal(productViewModalElement);
+            modal.show();
+        };
+    
+        function loadProductDetails(productId) {
+            currentProductId = productId;
+            
+            $('#productViewModalBody').html(`
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading product details...</p>
+                </div>
+            `);
+            
+            $.ajax({
+                url: `/inventory/api/product-details/${productId}/`,
+                method: 'GET',
+                success: function(data) {
+                    renderProductDetails(data);
+                    $('#editProductBtn').attr('href', `edit/${productId}`);
+                },
+                error: function(xhr) {
+                    $('#productViewModalBody').html(`
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Failed to load product details. Please try again.
+                        </div>
+                    `);
+                }
+            });
+        }
+        
+        function renderProductDetails(product) {
+            // Use forecasted_quantity instead of reorder_level
+            const stockLevelText = getStockLevelText(
+                product.stock_quantity, 
+                product.forecasted_quantity
+            );
+            
+            const stockLevelClass = getStockLevelClass(
+                product.stock_quantity,
+                product.forecasted_quantity
+            );
+            
+            const html = `
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            ${product.image ? 
+                                `<img src="${product.image}" alt="${product.name}" class="img-fluid rounded shadow-sm" style="max-height: 300px;">` :
+                                `<div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 300px;">
+                                    <i class="fas fa-box fa-5x text-muted"></i>
+                                </div>`
+                            }
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <h4 class="mb-3">${product.name}</h4>
+                            
+                            <table class="table table-sm table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <td class="text-muted" width="40%"><strong>Product ID:</strong></td>
+                                        <td>${product.product_id}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted"><strong>Category:</strong></td>
+                                        <td>${product.category ? product.category.name : 'N/A'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted"><strong>Price:</strong></td>
+                                        <td class="text-success"><strong>₱${parseFloat(product.price).toFixed(2)}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted"><strong>Cost Price:</strong></td>
+                                        <td>₱${parseFloat(product.cost_price).toFixed(2)}</td>
+                                    </tr>
+                                    ${product.last_purchase_price ? `
+                                    <tr>
+                                        <td class="text-muted"><strong>Last Purchase Price:</strong></td>
+                                        <td>₱${parseFloat(product.last_purchase_price).toFixed(2)}</td>
+                                    </tr>
+                                    ` : ''}
+                                    <tr>
+                                        <td class="text-muted"><strong>Stock Quantity:</strong></td>
+                                        <td>
+                                            <span class="badge ${stockLevelClass} px-3 py-2">
+                                                ${product.stock_quantity} ${product.unit || 'units'}
+                                            </span>
+                                            <small class="text-muted d-block mt-1">${stockLevelText}</small>
+                                        </td>
+                                    </tr>
+                                    ${product.forecasted_quantity !== null && product.forecasted_quantity !== undefined ? `
+                                     <tr>
+                                        <td class="text-muted"><strong>Forecasted Demand:</strong></td>
+                                        <td>
+                                            <span class="badge ${product.restock_needed ? 'bg-warning text-dark' : 'bg-success'} px-3 py-2">
+                                                ${product.forecasted_quantity} ${product.unit || 'units'}
+                                            </span>
+                                            ${product.restock_needed ? 
+                                                '<small class="text-danger d-block mt-1"><i class="fas fa-exclamation-triangle me-1"></i>Restock Needed</small>' : 
+                                                '<small class="text-success d-block mt-1"><i class="fas fa-check-circle me-1"></i>Stock Adequate</small>'
+                                            }
+                                        </td>
+                                    </tr>
+                                    ` : ''}
+                                    <tr>
+                                        <td class="text-muted"><strong>Status:</strong></td>
+                                        <td>
+                                            <span class="badge ${product.is_active ? 'bg-success' : 'bg-secondary'}">
+                                                ${product.is_active ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    ${product.description ? `
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-2"><i class="fas fa-align-left mr-2"></i>Description</h6>
+                            <p class="bg-light p-3 rounded">${product.description}</p>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${product.supplier ? `
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-2"><i class="fas fa-truck mr-2"></i>Supplier Information</h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-1"><strong>Company:</strong> ${product.supplier.name}</p>
+                                            <p class="mb-1"><strong>Phone:</strong> ${product.supplier.phone || 'N/A'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-1"><strong>Email:</strong> ${product.supplier.email || 'N/A'}</p>
+                                            <p class="mb-1"><strong>Address:</strong> ${product.supplier.address || 'N/A'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${product.variant ? `
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="text-muted mb-2"><i class="fas fa-tag mr-2"></i>Variant Information</h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <p class="mb-1"><strong>SKU:</strong> ${product.variant.sku || 'N/A'}</p>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p class="mb-1"><strong>Size:</strong> ${product.variant.size || 'N/A'}</p>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p class="mb-1"><strong>Color:</strong> ${product.variant.color || 'N/A'}</p>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p class="mb-1"><strong>Price:</strong> ₱${parseFloat(product.variant.price).toFixed(2)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-2">Total Sales</h6>
+                                    <h3 class="mb-0">${product.total_sales || 0} <small>units</small></h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-2">Total Revenue</h6>
+                                    <h3 class="mb-0 text-success">₱${parseFloat(product.total_revenue || 0).toFixed(2)}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar-plus mr-1"></i> Created: ${new Date(product.created_at).toLocaleString()}
+                                &nbsp;&nbsp;|&nbsp;&nbsp;
+                                <i class="fas fa-calendar-edit mr-1"></i> Last Updated: ${new Date(product.updated_at).toLocaleString()}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            $('#productViewModalBody').html(html);
+        }
+        
+        // Updated helper functions to use forecasted_quantity
+        function getStockLevelClass(stock, forecasted) {
+            if (!forecasted || forecasted === 0) return 'bg-secondary';
+            if (stock < forecasted) return 'bg-danger';
+            if (stock < forecasted * 1.5) return 'bg-warning';
+            if (stock < forecasted * 2) return 'bg-info';
+            return 'bg-success';
+        }
+        
+        function getStockLevelText(stock, forecasted) {
+            if (!forecasted || forecasted === 0) return 'No forecast available';
+            if (stock < forecasted) return 'Critical - Restock Needed (Below Forecast)';
+            if (stock < forecasted * 1.5) return 'Low Stock - Monitor Closely';
+            if (stock < forecasted * 2) return 'Adequate Stock';
+            return 'Good Stock Level';
+        }
+    
+    })();
+    </script>

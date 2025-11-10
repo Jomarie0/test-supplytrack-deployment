@@ -1,0 +1,298 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+
+{% block styles %}
+<style>
+    /* 1. Purchase Header Container Style (Custom Gradient) */
+    /* Renamed from .inventory-header to .purchase-header */
+    .purchase-header {
+        /* Your desired gradient background */
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 24px 32px; /* Adopted custom padding */
+        border-bottom: none;
+        
+        /* Retaining original visual styles for appearance */
+        border-radius: 12px; 
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); 
+        margin-bottom: 2rem; /* Matches the Bootstrap margin */
+    }
+
+    /* 2. H1/H2 within the header */
+    .purchase-header h1, 
+    .purchase-header h2 {
+        margin: 0 !important; /* Overrides Bootstrap margins */
+        font-size: 2.5rem !important; /* Standardized modern H1 size */
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* 3. Subtitle (p tag) style */
+    .purchase-header .subtitle {
+        margin-top: 8px !important;
+        font-size: 1.1rem;
+        opacity: 0.9;
+        font-weight: 400;
+        color: white !important;
+        line-height: 1.5;
+    }
+    
+    /* Primary Button Styling to match Header Gradient */
+    .btn-primary, .btn-primary:focus {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        opacity: 0.9;
+    }
+
+    /* --- Existing Styles Follow --- */
+    .purchase-order-page {
+        padding: 1.5rem 0;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08); 
+    }
+    .table-responsive {
+        height: 500px;
+        max-height: 100vh; /* adjust as needed */
+        overflow-y: auto; 
+    }
+    .table {
+        max-height: 420px; /* adjust as needed */
+        overflow-y: auto;    /* scroll the whole table inside this container */
+    }
+    .table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .table tbody tr {
+        background-color: white !important;
+        transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .table tbody tr:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transform: scale(1.005);
+    }
+    .table thead th {
+        background-color: #f7fafc !important; 
+        color: #4a5568 !important; 
+        border-bottom: 2px solid #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<title>
+    {% block title %}
+        {% if request.user.role == 'admin' %}
+                Admin | Purchase Order Management
+            {% elif request.user.role == 'manager' %}
+                Manager | Purchase Order Management
+            {% elif request.user.role == 'staff' %}
+                Staff | Purchase Order Management
+            {% elif request.user.role == 'customer' %}
+                Customer | Purchase Order Management
+            {% elif request.user.role == 'supplier' %}
+                Supplier | Purchase Order Management
+            {% elif request.user.role == 'delivery' %}
+                Delivery | Purchase Order Management
+            {% else %}
+                empty
+            {% endif %}
+    {% endblock %}
+    </title>
+
+
+
+<div class="container-fluid purchase-order-page">
+    
+    <div class="purchase-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>
+                    🛒 Purchase Orders
+                </h1>
+                <p class="subtitle">Track the full Purchase Order cycle from request to inventory receiving.</p>
+            </div>
+            <div class="text-end">
+                <button type="button" class="btn btn-primary btn-lg shadow" data-bs-toggle="modal" data-bs-target="#newPOModal">
+                    <i class="fas fa-plus-circle me-2"></i> Create Draft
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4 p-3 border-0">
+    <h6 class="card-title text-primary fw-bold mb-3">Filter by Status</h6>
+    <div class="d-flex flex-wrap gap-2" role="group">
+        
+        <a href="{% url 'PO:purchase_order_list' %}" class="btn btn-outline-primary {% if not request.GET.status %}active{% endif %}">
+            All Active <span class="badge rounded-pill bg-primary ms-1">{{ total_count|default:0 }}</span>
+        </a>
+        
+        <a href="{% url 'PO:purchase_order_list' %}?status=draft" class="btn btn-outline-secondary {% if request.GET.status == 'draft' %}active{% endif %}">
+            Draft <span class="badge rounded-pill bg-secondary ms-1">{{ draft_count|default:0 }}</span>
+        </a>
+        
+        <a href="{% url 'PO:purchase_order_list' %}?status=request_pending" class="btn btn-outline-warning {% if request.GET.status == 'request_pending' %}active{% endif %}">
+            Pending Price <span class="badge rounded-pill bg-warning text-dark ms-1">{{ pending_count|default:0 }}</span>
+        </a>
+        
+        <a href="{% url 'PO:purchase_order_list' %}?status=supplier_priced" class="btn btn-outline-info {% if request.GET.status == 'supplier_priced' %}active{% endif %}">
+            Supplier Priced <span class="badge rounded-pill bg-info ms-1">{{ supplier_priced_count|default:0 }}</span>
+        </a>
+        
+        <a href="{% url 'PO:purchase_order_list' %}?status=confirmed" class="btn btn-outline-success {% if request.GET.status == 'confirmed' %}active{% endif %}">
+            Confirmed <span class="badge rounded-pill bg-success ms-1">{{ confirmed_count|default:0 }}</span>
+        </a>
+        
+        <a href="{% url 'PO:purchase_order_list' %}?status=received" class="btn btn-outline-primary {% if request.GET.status == 'received' %}active{% endif %}">
+            Received <span class="badge rounded-pill bg-primary ms-1">{{ received_count|default:0 }}</span>
+        </a>
+    </div>
+</div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">PO ID</th>
+                            <th>Supplier</th>
+                            <th>Status</th>
+                            <th>Total Cost</th>
+                            <th>Order Date</th>
+                            <th>Created By</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    
+                    <tbody>
+                        {% for po in purchase_orders %}
+                        <tr>
+                            <td class="fw-bold ps-4">
+                                <a href="{% url 'PO:purchase_order_detail' po.purchase_order_id %}" class="text-decoration-none text-primary">{{ po.purchase_order_id }}</a>
+                            </td>
+                            <td>{{ po.supplier_profile.company_name|default:"N/A" }}</td>
+                            <td>
+                                {% if po.status == 'draft' %}
+                                    <span class="badge bg-secondary">{{ po.get_status_display }}</span>
+                                {% elif po.status == 'request_pending' %}
+                                    <span class="badge bg-warning text-dark">{{ po.get_status_display }}</span>
+                                {% elif po.status == 'supplier_priced' %}
+                                    <span class="badge bg-info">{{ po.get_status_display }}</span>
+                                {% elif po.status == 'confirmed' %}
+                                    <span class="badge bg-success">{{ po.get_status_display }}</span>
+                                {% elif po.status == 'received' %}
+                                    <span class="badge bg-primary">{{ po.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ po.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if po.total_cost > 0 %}
+                                    <span class="fw-semibold">₱{{ po.total_cost|floatformat:2 }}</span>
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ po.order_date|date:"M d, Y" }}</td>
+                            <td>{{ po.created_by.username|default:"System" }}</td>
+                            <td class="text-center">
+                                {% if po.status == 'supplier_priced' %}
+                                    <a href="{% url 'PO:po_confirm' po.purchase_order_id %}" class="btn btn-sm btn-info shadow-sm" title="Review prices and confirm">
+                                        <i class="fas fa-check me-1"></i> review
+                                    </a>
+                                {% elif po.status == 'confirmed' or po.status == 'in_transit' %}
+                                    <a href="{% url 'PO:po_receive' po.purchase_order_id %}" class="btn btn-sm btn-success shadow-sm" title="Mark as received and update inventory">
+                                        <i class="fas fa-box-open me-1"></i> Receive
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'PO:purchase_order_detail' po.purchase_order_id %}" class="btn btn-sm btn-secondary" title="View Details">
+                                        <i class="fas fa-eye me-1"></i> View
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No purchase orders found with the current filter.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newPOModal" tabindex="-1" aria-labelledby="newPOModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="newPOModalLabel"><i class="fas fa-clipboard-list me-2"></i> New Purchase Order Request</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'PO:purchase_order_list' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-muted">Fill in the basic details. You will add the specific items on the detail page.</p>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.supplier_profile.id_for_label }}" class="form-label">Supplier <span class="text-danger">*</span></label>
+                        {{ form.supplier_profile }}
+                        {% for error in form.supplier_profile.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <input type="hidden" name="{{ form.status.html_name }}" value="request_pending">
+                            <input type="hidden" name="{{ form.payment_method.html_name }}" value="tbd">
+                            <label for="{{ form.payment_due_date.id_for_label }}" class="form-label">Payment Due Date (Optional)</label>
+                            {{ form.payment_due_date }}
+                            {% for error in form.payment_due_date.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="text-muted small mt-3">
+                                <i class="fas fa-info-circle"></i> 
+                                Expected delivery date will be set by the supplier when they submit pricing.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label">Notes for Supplier</label>
+                        {{ form.notes }}
+                        {% for error in form.notes.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                    </div>
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create & Send Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

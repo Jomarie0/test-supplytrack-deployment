@@ -1,0 +1,231 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 20px auto; padding: 20px;">
+    
+    <!-- Back Button -->
+    <a href="{% url 'delivery:delivery_list' %}" style="display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #f0f0f0; text-decoration: none; color: #333; border-radius: 5px;">
+        ← Back to Deliveries
+    </a>
+    
+    <!-- Main Header -->
+    <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h1 style="margin: 0 0 10px 0;">Delivery #{{ delivery.id }}</h1>
+        <p style="margin: 0; color: #666;">Order: {{ delivery.order.order_id }}</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+        
+        <!-- Left Column: Main Info -->
+        <div>
+            
+            <!-- Delivery Status -->
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <h2 style="margin: 0 0 15px 0; font-size: 18px;">Delivery Status</h2>
+                <p style="margin: 0;">
+                    <strong>Status:</strong> 
+                    <span style="padding: 5px 15px; border-radius: 20px; display: inline-block; margin-left: 10px;
+                        {% if delivery.delivery_status == 'pending_dispatch' %}background: #fff3cd; color: #856404;
+                        {% elif delivery.delivery_status == 'out_for_delivery' %}background: #d1ecf1; color: #0c5460;
+                        {% elif delivery.delivery_status == 'delivered' %}background: #d4edda; color: #155724;
+                        {% elif delivery.delivery_status == 'failed' %}background: #f8d7da; color: #721c24;
+                        {% endif %}">
+                        {{ delivery.get_delivery_status_display }}
+                    </span>
+                </p>
+                {% if delivery.delivered_at %}
+                <p style="margin: 10px 0 0 0;"><strong>Delivered At:</strong> {{ delivery.delivered_at|date:"F d, Y g:i A" }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Customer Information -->
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <h2 style="margin: 0 0 15px 0; font-size: 18px;">Customer Information</h2>
+                {% if delivery.order.customer %}
+                <p style="margin: 5px 0;"><strong>Name:</strong> {{ delivery.order.customer.get_full_name|default:delivery.order.customer.username }}</p>
+                <p style="margin: 5px 0;"><strong>Email:</strong> {{ delivery.order.customer.email }}</p>
+                <p style="margin: 5px 0;"><strong>Phone:</strong> {{ delivery.order.customer.phone_number|default:"N/A" }}</p>
+                {% else %}
+                <p>No customer information available</p>
+                {% endif %}
+            </div>
+
+            <!-- Delivery Address -->
+            <div class="delivery-address" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <h4>Delivery Address</h4>
+                <p>{{ shipping_address_display }}</p>
+            </div>
+
+            <!-- Order Items -->
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <h2 style="margin: 0 0 15px 0; font-size: 18px;">Order Items</h2>
+                {% if delivery.order.items.all %}
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                            <th style="padding: 10px; text-align: left;">Product</th>
+                            <th style="padding: 10px; text-align: center;">Quantity</th>
+                            <th style="padding: 10px; text-align: right;">Price</th>
+                            <th style="padding: 10px; text-align: right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in delivery.order.items.all %}
+                        <tr style="border-bottom: 1px solid #dee2e6;">
+                            <td style="padding: 10px;">
+                                <strong>{{ item.product_variant.product.name }}</strong><br>
+                                <small style="color: #666;">
+                                    {% if item.product_variant.size %}Size: {{ item.product_variant.size }}{% endif %}
+                                    {% if item.product_variant.color %} | Color: {{ item.product_variant.color }}{% endif %}
+                                </small>
+                            </td>
+                            <td style="padding: 10px; text-align: center;">{{ item.quantity }}</td>
+                            <td style="padding: 10px; text-align: right;">₱{{ item.price_at_order }}</td>
+                            <td style="padding: 10px; text-align: right;"><strong>₱{{ item.item_total }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #f8f9fa; font-weight: bold;">
+                            <td colspan="3" style="padding: 15px; text-align: right;">Total:</td>
+                            <td style="padding: 15px; text-align: right; font-size: 18px;">₱{{ delivery.order.get_total_cost }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                {% else %}
+                <p>No items in this order</p>
+                {% endif %}
+            </div>
+
+            <!-- Proof of Delivery -->
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <h2 style="margin: 0 0 15px 0; font-size: 18px;">Proof of Delivery</h2>
+                {% if delivery.proof_of_delivery_image %}
+                <img src="{{ delivery.proof_of_delivery_image.url }}" alt="Proof of Delivery" style="max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #ddd;">
+                {% else %}
+                <p style="padding: 30px; text-align: center; background: #f8f9fa; border-radius: 8px; color: #666;">
+                    No proof of delivery uploaded yet
+                </p>
+                {% endif %}
+                
+                {% if delivery.delivery_note %}
+                <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 5px; border-left: 4px solid #667eea;">
+                    <strong>Delivery Note:</strong><br>
+                    {{ delivery.delivery_note }}
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- Right Column: Quick Actions & Timeline -->
+        <div>
+            
+            <!-- Quick Actions -->
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <h2 style="margin: 0 0 15px 0; font-size: 18px;">Quick Actions</h2>
+                
+                <a href="{% url 'delivery:upload_proof' delivery.id %}" style="display: block; margin-bottom: 10px; padding: 12px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; text-align: center;">
+                    📸 Upload Proof
+                </a>
+                
+                <a href="{% url 'delivery:delivery_list' %}" style="display: block; margin-bottom: 10px; padding: 12px; background: #f0f0f0; color: #333; text-decoration: none; border-radius: 5px; text-align: center;">
+                    📋 Back to List
+                </a>
+                
+                {% if request.user.is_staff %}
+                <form method="post" action="{% url 'delivery:archive_deliveries' %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <input type="hidden" name="ids" value="{{ delivery.id }}">
+                    <button type="submit" onclick="return confirm('Archive this delivery?')" style="width: 100%; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        🗂️ Archive Delivery
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- Order Summary -->
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <h2 style="margin: 0 0 15px 0; font-size: 18px;">Order Summary</h2>
+                <p style="margin: 5px 0;"><strong>Order ID:</strong> {{ delivery.order.order_id }}</p>
+                <p style="margin: 5px 0;"><strong>Order Date:</strong> {{ delivery.order.order_date|date:"F d, Y" }}</p>
+                <p style="margin: 5px 0;"><strong>Payment Method:</strong> {{ delivery.order.get_payment_method_display }}</p>
+                <p style="margin: 5px 0;"><strong>Payment Status:</strong> 
+                    <span style="padding: 3px 10px; border-radius: 12px; font-size: 12px; display: inline-block;
+                        {% if delivery.order.payment_status == 'paid' %}background: #d4edda; color: #155724;
+                        {% elif delivery.order.payment_status == 'pending' %}background: #fff3cd; color: #856404;
+                        {% else %}background: #f8d7da; color: #721c24;
+                        {% endif %}">
+                        {{ delivery.order.get_payment_status_display }}
+                    </span>
+                </p>
+            </div>
+
+            <!-- Delivery Timeline -->
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <h2 style="margin: 0 0 15px 0; font-size: 18px;">Timeline</h2>
+                
+                <div style="position: relative; padding-left: 30px;">
+                    <div style="position: absolute; left: 8px; top: 8px; bottom: 8px; width: 2px; background: #e0e0e0;"></div>
+                    
+                    <div style="position: relative; margin-bottom: 20px;">
+                        <div style="position: absolute; left: -26px; width: 16px; height: 16px; border-radius: 50%; background: #667eea; border: 3px solid white; box-shadow: 0 0 0 2px #667eea;"></div>
+                        <div style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                            <strong>Order Created</strong><br>
+                            <small style="color: #666;">{{ delivery.order.order_date|date:"M d, Y g:i A" }}</small>
+                        </div>
+                    </div>
+
+                    {% if delivery.delivery_status == 'pending_dispatch' or delivery.delivery_status == 'out_for_delivery' or delivery.delivery_status == 'delivered' or delivery.delivery_status == 'failed' %}
+                    <div style="position: relative; margin-bottom: 20px;">
+                        <div style="position: absolute; left: -26px; width: 16px; height: 16px; border-radius: 50%; 
+                            {% if delivery.delivery_status != 'pending_dispatch' %}background: #667eea; border: 3px solid white; box-shadow: 0 0 0 2px #667eea;
+                            {% else %}background: white; border: 3px solid #e0e0e0;{% endif %}"></div>
+                        <div style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                            <strong>Pending Dispatch</strong><br>
+                            <small style="color: #666;">Awaiting pickup</small>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if delivery.delivery_status == 'out_for_delivery' or delivery.delivery_status == 'delivered' %}
+                    <div style="position: relative; margin-bottom: 20px;">
+                        <div style="position: absolute; left: -26px; width: 16px; height: 16px; border-radius: 50%; 
+                            {% if delivery.delivery_status == 'delivered' %}background: #667eea; border: 3px solid white; box-shadow: 0 0 0 2px #667eea;
+                            {% elif delivery.delivery_status == 'out_for_delivery' %}background: #667eea; border: 3px solid white; box-shadow: 0 0 0 2px #667eea;
+                            {% else %}background: white; border: 3px solid #e0e0e0;{% endif %}"></div>
+                        <div style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                            <strong>Out for Delivery</strong><br>
+                            <small style="color: #666;">In transit</small>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if delivery.delivery_status == 'delivered' %}
+                    <div style="position: relative; margin-bottom: 20px;">
+                        <div style="position: absolute; left: -26px; width: 16px; height: 16px; border-radius: 50%; background: #28a745; border: 3px solid white; box-shadow: 0 0 0 2px #28a745;"></div>
+                        <div style="padding: 10px; background: #d4edda; border-radius: 5px;">
+                            <strong>Delivered</strong><br>
+                            <small style="color: #155724;">{{ delivery.delivered_at|date:"M d, Y g:i A" }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if delivery.delivery_status == 'failed' %}
+                    <div style="position: relative;">
+                        <div style="position: absolute; left: -26px; width: 16px; height: 16px; border-radius: 50%; background: #dc3545; border: 3px solid white; box-shadow: 0 0 0 2px #dc3545;"></div>
+                        <div style="padding: 10px; background: #f8d7da; border-radius: 5px;">
+                            <strong>Delivery Failed</strong><br>
+                            <small style="color: #721c24;">Delivery attempt unsuccessful</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

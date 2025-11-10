@@ -1,0 +1,472 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>
+    {% block title %}
+        {% if request.user.role == 'admin' %}
+            Admin | Panel
+        {% elif request.user.role == 'manager' %}
+            Manager | Panel
+        {% elif request.user.role == 'staff' %}
+            Staff | Panel
+        {% elif request.user.role == 'customer' %}
+            Customer | Panel
+        {% elif request.user.role == 'supplier' %}
+            Supplier | Panel
+        {% elif request.user.role == 'delivery' %}
+            Delivery | Panel
+        {% else %}
+            empty
+        {% endif %}
+    {% endblock %}
+    </title>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="{% static 'css/base/base_admin/base_admin.css' %}">
+    
+    <style>
+        /* Enhanced Toast Styling - Kept for existing toast functionality */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+        }
+        
+        .toast {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid;
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        .toast.text-bg-success {
+            border-left-color: #198754;
+        }
+        
+        .toast.text-bg-danger {
+            border-left-color: #dc3545;
+        }
+        
+        .toast.text-bg-warning {
+            border-left-color: #ffc107;
+        }
+        
+        .toast.text-bg-info {
+            border-left-color: #0dcaf0;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        
+        .loading-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .loader-spinner {
+            border: 6px solid #eee;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            margin-top: 15px;
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        .toast.hiding {
+            animation: slideOutRight 0.3s ease-in;
+        }
+        
+        .toast-body {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toast-body i {
+            font-size: 1.2em;
+        }
+
+        /* NEW SIDEBAR STYLING - Ensure it's sticky at the bottom */
+        .sidebar {
+            display: flex;
+            flex-direction: column; /* Stack children vertically */
+            height: 100vh; /* Full viewport height */
+            /* Assuming base_admin.css has a fixed width, e.g., width: 250px; */
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1;
+        }
+        .sidebar-nav {
+            flex-grow: 1; /* Navigation takes up all available space */
+            overflow-y: auto; /* Allows scrolling for many menu items */
+            display: flex; /* Make it a flex container to align brand and menu */
+            flex-direction: column; /* Stack brand and menu vertically */
+        }
+        .menu {
+            flex-grow: 1; /* Menu list fills the space before the footer */
+        }
+        /* Your existing menu-item styles should be applied via the custom CSS file */
+    </style>
+    
+    {% block styles %}
+    <link rel="stylesheet" href="{% static 'css/base/base_inventory/base_inventory.css' %}">
+    <link rel="stylesheet" href="{% static 'css/inventory/inventory_list.css' %}">
+
+    {% endblock %}
+</head>
+
+<body>
+    <button class="btn-toggle" onclick="toggleSidebar()">☰</button>
+
+    <aside id="sidebar" class="sidebar bg-white shadow-sm" aria-label="Main Sidebar Navigation">
+        <nav class="sidebar-nav">
+            <div class="sidebar-brand" style="padding: 16px 20px; font-weight: 700; font-size: 18px; letter-spacing: .3px; border-bottom: 1px solid #e5e7eb;">SupplyTrack</div>
+            
+            <ul class="menu p-4 space-y-2"> 
+            {% if request.user.role == 'admin' %}
+                <li><a href="{% url 'inventory:dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="{% url 'inventory:product_list' %}" class="menu-item {% if request.resolver_match.url_name == 'product_list' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-warehouse"></i> Inventory</a></li>
+                
+                <li><a href="{% url 'orders:customer_orders_management' %}" class="menu-item {% if request.resolver_match.url_name == 'customer_orders_management' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-shopping-cart"></i> Customer Orders</a></li>
+                <li><a href="{% url 'orders:manual_order_management' %}" class="menu-item {% if request.resolver_match.url_name == 'manual_order_management' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-file-invoice"></i> Manual Orders</a></li>
+                <li><a href="{% url 'PO:purchase_order_list' %}" class="menu-item {% if request.resolver_match.url_name == 'purchase_order_list' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-file-alt"></i> Purchase Orders</a></li>
+                <li><a href="{% url 'orders:billing_dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'billing_dashboard' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fas fa-file-invoice-dollar"></i> Billing Dashboard</a></li>
+                <li><a href="{% url 'PO:po_billing_dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'po_billing_dashboard' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fas fa-file-invoice-dollar"></i> PO Billing Dashboard</a></li>
+                <li><a href="{% url 'orders:delivery_calendar' %}" class="menu-item {% if request.resolver_match.url_name == 'delivery_calendar' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-calendar-alt"></i> Calendar</a></li>
+                <li><a href="{% url 'users:user_management' %}" class="menu-item {% if request.resolver_match.url_name == 'user_management' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-users"></i> Users</a></li>
+                <li>
+                <a href="{% url 'inventory:restock_notifications_view' %}" class="menu-item relative inline-flex items-center gap-3 p-2 rounded hover:bg-gray-100 {% if request.resolver_match.url_name == 'restock_notifications_view' %}active{% endif %}">
+                    <i class="fas fa-bell"></i> Notifications
+                    <span id="notif-badge"
+                        class="ml-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full"
+                        style="display: none;">0</span>
+                </a>
+                </li>
+                <li><a href="{% url 'delivery:delivery_list' %}" class="menu-item {% if request.resolver_match.url_name == 'delivery_list' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-truck"></i> Delivery</a></li>
+                <li><a href="{% url 'transactions:auditlog_list' %}" class="menu-item {% if request.resolver_match.url_name == 'auditlog_list' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-history"></i> Audit Log</a></li>
+            {% elif request.user.role == 'manager' %}
+                <li><a href="{% url 'inventory:dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="{% url 'inventory:product_list' %}" class="menu-item {% if request.resolver_match.url_name == 'product_list' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-warehouse"></i> Inventory</a></li>
+                <li><a href="{% url 'orders:customer_orders_management' %}" class="menu-item {% if request.resolver_match.url_name == 'customer_orders_management' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-shopping-cart"></i> Customer Orders</a></li>
+                <li><a href="{% url 'orders:manual_order_management' %}" class="menu-item {% if request.resolver_match.url_name == 'manual_order_management' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-file-invoice"></i> Manual Orders</a></li>
+                <li><a href="{% url 'PO:purchase_order_list' %}" class="menu-item {% if request.resolver_match.url_name == 'purchase_order_list' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-file-alt"></i> Purchase Orders</a></li>
+                <li><a href="{% url 'orders:delivery_calendar' %}" class="menu-item {% if request.resolver_match.url_name == 'delivery_calendar' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-calendar-alt"></i> Delivery Calendar</a></li>
+            
+            {% elif request.user.role == 'staff' %}
+                {% comment %} NOTE: The profile completion link from original 'staff' role is moved to the modal {% endcomment %}
+                <li><a href="{% url 'inventory:dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="{% url 'inventory:product_list' %}" class="menu-item {% if request.resolver_match.url_name == 'product_list' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-warehouse"></i> Inventory</a></li>
+                <li><a href="{% url 'orders:customer_orders_management' %}" class="menu-item {% if request.resolver_match.url_name == 'customer_orders_management' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-shopping-cart"></i> Customer Orders</a></li>
+                <li><a href="{% url 'orders:manual_order_management' %}" class="menu-item {% if request.resolver_match.url_name == 'manual_order_management' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-file-invoice"></i> Manual Orders</a></li>
+                <li><a href="{% url 'orders:delivery_calendar' %}" class="menu-item {% if request.resolver_match.url_name == 'delivery_calendar' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-calendar-alt"></i> Delivery Calendar</a></li>
+            {% elif request.user.role == 'supplier' %}
+                <li><a href="{% url 'suppliers:supplier_order_list' %}" class="menu-item {% if request.resolver_match.url_name == 'supplier_order_list' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-boxes"></i> PO Orders</a></li>
+                
+            {% elif request.user.role == 'delivery' %}
+                <li><a href="{% url 'delivery:delivery_list' %}" class="menu-item {% if request.resolver_match.url_name == 'delivery_list' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-truck-loading"></i> Delivery</a></li>
+
+            {% endif %}
+            </ul>
+        </nav>
+        
+        <div class="sidebar-footer sticky bottom-0 bg-white border-t border-gray-200 p-3">
+            <button id="sidebarProfileBtn" 
+                    class="w-full flex items-center justify-between gap-3 p-2 hover:bg-gray-100 rounded-lg transition"
+                    onclick="openProfileModal()">
+                
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500
+                                flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
+                        {{ request.user.first_name|default:request.user.username|slice:":1"|upper }}
+                    </div>
+
+                    <div class="flex flex-col text-left overflow-hidden">
+                        <span class="font-medium text-sm text-gray-900 truncate">{{ request.user.get_full_name|default:request.user.username }}</span>
+                        <span class="text-xs text-gray-500">{{ request.user.role|title }}</span>
+                    </div>
+                </div>
+                
+                <i class="fas fa-chevron-up text-gray-500 text-xs"></i> 
+            </button>
+        </div>
+    </aside>
+    
+    <div id="profileModal" 
+         class="hidden fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50" 
+         aria-labelledby="modal-title" role="dialog" aria-modal="true" 
+         onclick="closeProfileModal()">
+        
+        <div class="absolute bottom-20 left-4 w-64 max-w-sm bg-white rounded-lg shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:p-6"
+             onclick="event.stopPropagation()">
+            
+            <div class="p-4 border-b border-gray-100">
+                <div class="flex items-center justify-center mb-3">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500
+                                flex items-center justify-center text-white font-bold text-2xl">
+                        {{ request.user.first_name|default:request.user.username|slice:":1"|upper }}
+                    </div>
+                </div>
+                
+                <p class="text-center text-lg font-semibold text-gray-900">{{ request.user.get_full_name|default:request.user.username }}</p>
+                <p class="text-center text-sm text-gray-500 truncate">{{ request.user.email|default:request.user.username }}</p>
+                <p class="text-center text-xs text-indigo-600 mt-1">{{ request.user.role|title }}</p>
+            </div>
+            
+            <div class="p-2 space-y-1">
+                <a href="{% url 'users:staff_profile_completion' %}" class="flex items-center gap-3 w-full p-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition duration-150">
+                    <i class="fas fa-user-circle w-5 text-indigo-500"></i> 
+                    Edit Profile
+                </a>
+                
+                <a href="{% url 'users:logout_view' %}" class="flex items-center gap-3 w-full p-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition duration-150">
+                    <i class="fas fa-sign-out-alt w-5 text-red-500"></i> 
+                    Sign Out
+                </a>
+            </div>
+            
+            <div class="text-center p-2 pt-3 text-xs text-gray-400 border-t border-gray-100">
+                Privacy Policy • Terms of Service
+            </div>
+        </div>
+    </div>
+    
+    <main id="content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // =========================
+        // PROFILE MODAL FUNCTIONS (Updated to use TailWind classes)
+        // =========================
+        const profileModal = document.getElementById('profileModal');
+        
+        function openProfileModal() {
+            profileModal.classList.remove('hidden');
+            profileModal.classList.add('flex');
+        }
+
+        function closeProfileModal() {
+            profileModal.classList.add('hidden');
+            profileModal.classList.remove('flex');
+        }
+
+        // Close modal when clicking outside content is already handled by the event listener on the modal div itself:
+        // document.getElementById('profileModal').addEventListener('click', function(e) { if (e.target === this) closeProfileModal(); });
+
+
+        // =========================
+        // GLOBAL TOAST FUNCTION (Kept as is)
+        // =========================
+        window.showToast = function(message, type = "success") {
+            const container = document.getElementById("toast-container");
+            if (!container) return;
+            
+            const typeMap = {
+                'success': 'success',
+                'error': 'danger',
+                'danger': 'danger',
+                'warning': 'warning',
+                'info': 'info'
+            };
+            
+            const bgClass = typeMap[type] || 'success';
+            
+            const iconMap = {
+                'success': 'fa-check-circle',
+                'danger': 'fa-exclamation-circle',
+                'warning': 'fa-exclamation-triangle',
+                'info': 'fa-info-circle'
+            };
+            
+            const iconClass = iconMap[bgClass] || 'fa-check-circle';
+            
+            const toastEl = document.createElement('div');
+            toastEl.className = `toast align-items-center text-bg-${bgClass} border-0 mb-2`;
+            toastEl.setAttribute('role', 'alert');
+            toastEl.setAttribute('aria-live', 'assertive');
+            toastEl.setAttribute('aria-atomic', 'true');
+            
+            toastEl.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas ${iconClass}"></i>
+                        <span>${message}</span>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            
+            container.appendChild(toastEl);
+            
+            const bsToast = new bootstrap.Toast(toastEl, {
+                delay: 5000,
+                autohide: true
+            });
+            
+            bsToast.show();
+            
+            toastEl.addEventListener('hidden.bs.toast', function () {
+                this.remove();
+            });
+        };
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // =========================
+            // DJANGO MESSAGES TO TOASTS
+            // =========================
+            {% if messages %}
+                {% for message in messages %}
+                    showToast("{{ message|escapejs }}", "{{ message.tags }}");
+                {% endfor %}
+            {% endif %}
+        
+            // =========================
+            // SIDEBAR TOGGLE
+            // =========================
+            window.toggleSidebar = function() {
+                const sidebar = document.getElementById('sidebar');
+                const content = document.getElementById('content');
+                
+                if (sidebar) {
+                    // You'll need to define the 'collapsed' class in your custom CSS
+                    sidebar.classList.toggle('collapsed');
+                }
+                if (content) {
+                    // You'll need to define the 'expanded' class in your custom CSS
+                    content.classList.toggle('expanded');
+                }
+            };
+        
+            // =========================
+            // RESTOCK NOTIFICATIONS
+            // =========================
+            const notifBadge = document.getElementById('notif-badge');
+            if (notifBadge) {
+                // ... (API call logic remains the same)
+                 fetch('/inventory/api/restock-notifications/')
+                    .then(res => res.json())
+                    .then(data => {
+                        const count = Array.isArray(data) ? data.length : 0;
+                        notifBadge.textContent = count;
+                        notifBadge.style.display = count > 0 ? 'inline-flex' : 'none';
+                    })
+                    .catch(err => console.error('Error fetching notifications:', err));
+            }
+            // =========================
+            // LOGOUT CONFIRMATION MODAL
+            // =========================
+            const logoutLinks = document.querySelectorAll("a[href$='/users/logout/']");
+            const overlay = document.getElementById("logoutOverlay");
+            const logoutModal = document.getElementById("logoutConfirmModal");
+            const confirmLogoutBtn = document.getElementById("confirmLogoutBtn");
+            const cancelLogoutBtn = document.getElementById("cancelLogoutBtn");
+
+            logoutLinks.forEach(link => {
+            link.addEventListener("click", function (event) {
+                event.preventDefault();
+                logoutModal.classList.remove("hidden");
+                logoutModal.classList.add("flex");
+
+                confirmLogoutBtn.onclick = () => {
+                logoutModal.classList.add("hidden");
+                overlay.classList.add("show");
+                setTimeout(() => {
+                    window.location.href = link.href;
+                }, 1500);
+                };
+
+                cancelLogoutBtn.onclick = () => {
+                logoutModal.classList.add("hidden");
+                };
+            });
+            });
+
+        
+        });
+    </script>
+        
+    {% block scripts %}{% endblock %}
+    <!-- Logout Loading Overlay -->
+    <div class="loading-overlay" id="logoutOverlay">
+        <div class="loader-spinner"></div>
+        <div class="loading-text">Logging out, please wait...</div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutConfirmModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[99999]">
+        <div class="bg-white rounded-xl shadow-xl w-80 p-6 text-center">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3">Confirm Logout</h3>
+        <p class="text-sm text-gray-600 mb-6">Are you sure you want to log out?</p>
+        <div class="flex justify-center gap-4">
+            <button id="confirmLogoutBtn" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition">
+            Yes, Logout
+            </button>
+            <button id="cancelLogoutBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition">
+            Cancel
+            </button>
+        </div>
+        </div>
+    </div>
+  
+</body>
+</html>

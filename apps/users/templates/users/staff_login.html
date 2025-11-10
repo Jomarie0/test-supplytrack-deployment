@@ -1,0 +1,78 @@
+{% extends "base_store.html" %}
+{% load static %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/users/staff_login.css' %}">
+{% endblock %}
+
+{% block title %}Staff Portal{% endblock %}
+
+
+{% block content %}
+<div class="login-container customer">
+    <div>
+        <h1>Staff Portal</h1>
+        <p>Access your administrative dashboard.</p>
+    </div>    
+    {% comment %} {% if messages %}
+    <div class="alert-messages">
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %} {% endcomment %}
+    {% include 'messages.html' %}
+    <form method="post" class="login-custom-form">
+        {% csrf_token %}
+        <div class="login-form-input-container">
+            <label for="username">Username:</label>
+            <input type="text" name="username" required>
+        </div>
+        
+        <div class="login-form-input-container">
+            <label for="password">Password:</label>
+            <input type="password" name="password" required>
+            <a href="{% url 'users:forgot_password' %}" class="forgot-pass">Forgot password?</a>
+        </div>
+        <button type="submit">Login</button>
+    </form>
+    
+    <div class="staff-notice">
+        <p>This is a restricted area. For authorized personnel only.</p>
+    </div>
+</div>
+
+{% if redirect_after_login %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const overlay = document.getElementById("loadingOverlay");
+    overlay.classList.add("show");
+
+    setTimeout(() => {
+      window.location.href = "{{ redirect_after_login }}";
+    }, 2000);
+  });
+</script>
+{% else %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const loginForm = document.querySelector("form.login-custom-form");
+    const overlay = document.getElementById("loadingOverlay");
+
+    if (loginForm) {
+      loginForm.addEventListener("submit", function () {
+        overlay.classList.add("show");
+      });
+    }
+  });
+</script>
+{% endif %}
+
+<!-- Fullscreen loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loader-spinner"></div>
+  <div class="loading-text">Logging in, please wait...</div>
+</div>
+{% endblock %} 

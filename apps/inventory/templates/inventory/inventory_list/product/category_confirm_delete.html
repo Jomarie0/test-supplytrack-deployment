@@ -1,0 +1,38 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<h2>Delete Category</h2>
+
+<div class="card shadow p-4">
+  <p>
+    Are you sure you want to permanently delete the category
+    <strong>{{ category.name }}</strong>?
+  </p>
+
+  {% if product_count > 0 %}
+    <div class="alert alert-warning">
+      ⚠️ <strong>Warning:</strong> This category currently has
+      <strong>{{ product_count }}</strong> active product{{ product_count|pluralize }} linked to it.
+      <br>
+      You must remove or reassign these products before deleting this category.
+    </div>
+
+    <button class="btn btn-danger" disabled title="Cannot delete — products still linked">
+      Delete (Disabled)
+    </button>
+    <a href="{% url 'inventory:archived_category_list_view' %}" class="btn btn-secondary">
+      Cancel
+    </a>
+
+  {% else %}
+    <form method="post" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">
+        <i class="fas fa-skull-crossbones"></i> Yes, delete permanently
+      </button>
+      <a href="{% url 'inventory:archived_category_list_view' %}" class="btn btn-secondary">
+        Cancel
+      </a>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,819 @@
+{% extends 'base_admin.html' %} 
+{% load static %}
+
+{% block content %}
+<style>
+    /* --- existing visual styles kept --- */
+    /* Make the table scroll inside .table-container and keep the thead sticky */
+    .table-container {
+      max-height: 420px; /* adjust as needed */
+      overflow: auto;    /* scroll the whole table inside this container */
+    }
+
+    /* Keep normal table flow so columns align */
+    #dataTable {
+      width: 100%;
+      table-layout: fixed; /* ensures th/td widths line up */
+      border-collapse: collapse;
+    }
+
+    /* Sticky header — will stick to top of .table-container while scrolling */
+    #dataTable thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #f8f9fa; /* match your header background */
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    /* Ensure rows and cells use normal table layout (do NOT set display:block on tbody) */
+    #dataTable tbody tr { }
+    #dataTable tbody td,
+    #dataTable thead th {
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      {% comment %} text-overflow: ellipsis; {% endcomment %}
+    }
+    /* Column width hints (optional — keep or tune) */
+    #dataTable thead th:first-child,
+    #dataTable tbody td:first-child { width: 48px; } /* checkbox */
+    {% comment %} #dataTable thead th:nth-child(2),
+    #dataTable tbody td:nth-child(2) { width: 80px; } /* ID */
+    #dataTable thead th:nth-child(3),
+    #dataTable tbody td:nth-child(3) { width: 240px; } /* Name */
+    #dataTable thead th:nth-child(4),
+    #dataTable tbody td:nth-child(4) { width: 160px; } /* Category */
+    #dataTable thead th:nth-child(5),
+    #dataTable tbody td:nth-child(5) { width: 100px; } /* Stock */
+    #dataTable thead th:nth-child(6),
+    #dataTable tbody td:nth-child(6) { width: 90px; }  /* Forecasted */
+    #dataTable thead th:nth-child(7),
+    #dataTable tbody td:nth-child(7) { width: 110px; } /* Price */
+    #dataTable thead th:nth-child(8),
+    #dataTable tbody td:nth-child(8) { width: 160px; } /* Supplier */
+    #dataTable thead th:nth-child(9),
+    #dataTable tbody td:nth-child(9) { width: 120px; } /* Status */
+    #dataTable thead th:nth-child(10),
+    #dataTable tbody td:nth-child(10) { width: 140px; } /* Actions */  {% endcomment %}
+
+    /* Ensure nested .table-responsive does not add another scroll */
+    .table-responsive { overflow: visible; }
+
+    /* Keep existing dropdown / button styles */
+    .dropdown-menu { z-index: 1050 !important; max-height: 300px; overflow-y: auto; }
+
+    /* preserve other existing styles */
+    #dataTable thead th {
+        /* Makes the header stick to the top of its scrolling parent (.table-container) */
+        position: sticky;
+        top: 0; 
+        z-index: 10; /* Ensures the header is above the scrolling table body */
+        background-color: #f8f9fa; /* Match the .bg-light from the <thead> class for a solid background */
+        box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); /* Subtle shadow for visual separation */
+    }
+    
+    /* Ensure the padding on the first column is maintained for the sticky header */
+    #dataTable thead th:first-child {
+        padding-left: 1.5rem !important; /* Matches the 'ps-4' (padding-start: 1.5rem) on the header row */
+    }
+    /* Custom Header Container Style */
+    .inventory-header {
+        /* Your new gradient background */
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 24px 32px; /* Updated padding */
+        border-bottom: none;
+        
+        /* Retaining original visual Bootstrap styles for appearance */
+        border-radius: 12px !important; /* Re-apply rounded corners based on original */
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important; /* Re-apply shadow based on original */
+    }
+
+    /* h1 within the header */
+    .inventory-header h1 {
+        margin: 0 !important; /* Overrides Bootstrap margins */
+        ffont-size: 2.5rem !important;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* Subtitle (p tag) style */
+    .inventory-header .subtitle {
+        margin-top: 8px !important;
+        opacity: 0.9;
+        font-size: 14px;
+        font-weight: 400;
+        color: white !important;
+        line-height: 1.5;
+    }
+   /* Custom Header Style */
+    .inventory-header1  {
+        margin: 0 !important; 
+        font-size: 28px !important;
+        font-weight: 600 !important;
+        display: flex !important;
+        align-items: center;
+        gap: 12px; 
+    }
+    
+    /* Highlight active filter buttons */
+    .filter-active {
+        background-color: #0d6efd !important;
+        color: white !important;
+        border-color: #0d6efd !important;
+    }
+    
+    /* Fix dropdown visibility */
+    .d-flex.p-3.mb-4 {
+        overflow: visible !important;
+    }
+    
+    /* Global Dropdown Menu Enhancements */
+    .dropdown-menu {
+        z-index: 1050 !important;
+        max-height: 300px;
+        overflow-y: auto;
+        /* Ensures a crisp white background */
+        background-color: #fff;
+        /* Subtle shadow for depth */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+        /* Slightly larger border radius */
+        border-radius: 0.5rem; 
+        border: 1px solid rgba(0,0,0,.15); /* Defines a clear border */
+    }
+    
+    /* Dropdown Item (Link) Enhancements */
+    .dropdown-item {
+        color: #343a40; /* Darker text for readability */
+        padding: 0.5rem 1rem; /* Better vertical padding */
+        transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    }
+
+    /* Dropdown Item Hover/Focus State */
+    .dropdown-item:hover,
+    .dropdown-item:focus {
+        background-color: #e9ecef !important; /* Lighter, cleaner grey hover */
+        color: #000; /* Ensures text is black on hover */
+    }
+    
+    /* Active Dropdown Item Style (if you apply 'active' class) */
+    .dropdown-item.active,
+    .dropdown-item:active {
+        background-color: #0d6efd !important; /* Use primary blue for selection */
+        color: #fff !important;
+    }
+
+    .dropdown {
+        position: relative;
+    }
+    .btn-outline-secondary {
+        background-color: white !important;
+        border-color: #ced4da !important;
+        color: #495057 !important;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #e9ecef !important;
+        border-color: #adb5bd !important;
+        color: #212529 !important;
+    }
+    
+    .btn-outline-secondary:focus {
+        box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25) !important;
+    }
+
+    .card-header .header-actions { white-space: nowrap; }
+
+    /* optional: tighten spacing on small screens */
+    @media (max-width: 576px) {
+      .card-header .header-actions .btn { padding-left: .5rem; padding-right: .5rem; font-size: .85rem; }
+    }
+</style>
+<title>
+    {% block title %}
+        {% if request.user.role == 'admin' %}
+                Admin | Inventory
+            {% elif request.user.role == 'manager' %}
+                Manager | Inventory
+            {% elif request.user.role == 'staff' %}
+                Staff | Inventory
+            {% elif request.user.role == 'customer' %}
+                Customer | Inventory
+            {% elif request.user.role == 'supplier' %}
+                Supplier | Inventory
+            {% elif request.user.role == 'delivery' %}
+                Delivery | Inventory
+            {% else %}
+                empty
+            {% endif %}
+    {% endblock %}
+    </title>
+<div class="inventory-module">
+
+    <div class="mb-4 inventory-header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h1>
+                        📦 Inventory Products
+                    </h1>
+                    <p class="subtitle">Track, manage, and forecast your product stocks efficiently.</p>
+                </div>
+                <button id="refreshForecastsBtn" class="btn btn-info fw-semibold shadow-lg d-flex align-items-center gap-2">
+                    <i class="fas fa-sync-alt fa-lg"></i>
+                    <span>Refresh Forecasts</span>
+                </button>
+                <a href="{% url 'inventory:category_list' %}" class="btn btn-primary btn-icon-split">
+                    <span class="icon text-white-50"><i class="fas fa-list"></i></span>
+                    <span class="text">Active Categories</span>
+                </a>
+                
+                <a href="{% url 'inventory:product_create' %}" class="btn btn-warning fw-semibold shadow-lg text-dark d-flex align-items-center gap-2">
+                    <i class="fas fa-plus fa-lg"></i>
+                    <span>Create New Product</span>
+                </a>
+            </div>
+        </div>
+    
+    <div class="d-flex p-3 mb-4 bg-white border rounded-3 shadow-sm align-items-center">
+        
+        <div class="input-group input-group-lg flex-grow-1 border-0 me-3">
+            <span class="input-group-text bg-white border-0 text-muted ps-0">
+                <i class="fas fa-search"></i>
+            </span>
+            <input list="productList" id="productSearch" class="form-control border-0 px-0" 
+                placeholder="Search Products, SKU's, or Categories..." style="box-shadow: none;">
+            <datalist id="productList">
+                {% for product in products %}
+                <option value="{{ product.name }}">
+                {% endfor %}
+            </datalist>
+        </div>
+        
+        <span class="text-muted border-end pe-3 py-1 me-3">
+            <i class="fas fa-filter"></i> 
+        </span>
+
+        <div class="dropdown me-2">
+            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center btn-sm px-3" 
+                    type="button" id="categoryFilterBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                <span id="categoryFilterText">All Categories</span>
+            </button>
+            <ul class="dropdown-menu" id="categoryDropdown">
+                <li><a class="dropdown-item category-filter" href="#" data-category="all">All Categories</a></li>
+                <li><hr class="dropdown-divider"></li>
+                {% for product in products %}
+                    {% if product.category %}
+                        <li><a class="dropdown-item category-filter" href="#" 
+                               data-category="{{ product.category.id }}">{{ product.category.name }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center btn-sm px-3" 
+                    type="button" id="statusFilterBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                <span id="statusFilterText">All Statuses</span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item status-filter" href="#" data-status="all">All Statuses</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item status-filter" href="#" data-status="active">Active</a></li>
+                <li><a class="dropdown-item status-filter" href="#" data-status="inactive">Inactive</a></li>
+            </ul>
+        </div>
+        
+        <button class="btn btn-outline-danger btn-sm ms-2" id="clearFiltersBtn" style="display: none;">
+            <i class="fas fa-times"></i> Clear
+        </button>
+        
+    </div>
+    
+    
+
+    <div class="card d-flex shadow-lg border-0 rounded-4">
+      <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="m-0 fw-bold text-dark">
+            Product Inventory
+            <small class="text-muted">(<span id="displayedCount">{{ products|length }}</span> of <span id="totalCount">{{ products|length }}</span> Items)</small>
+          </h5>
+        </div>
+
+        <div class="header-actions d-flex align-items-center gap-2">
+            
+          <button class="btn btn-danger btn-sm fw-semibold d-flex align-items-center gap-2" id="soft-delete-selected-btn" disabled>
+            <i class="fas fa-trash-alt fa-sm"></i>
+            <span>Archive Selected</span>
+          </button>
+        {% if request.user.role == 'admin'%}
+          <a href="{% url 'inventory:product_archive_list' %}" class="btn btn-outline-secondary btn-sm fw-semibold d-flex align-items-center gap-2">
+            <i class="fas fa-archive fa-sm"></i>
+            <span>Archive List</span>
+          </a>
+        {% endif %}
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="dataTable">
+                    <thead class="bg-light text-muted small text-uppercase">
+                        <tr>
+                            <th class="ps-4">
+                                <input type="checkbox" id="select-all-checkbox" class="form-check-input">
+                            </th>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Stock Qty</th>
+                            <th>Forecasted</th>
+                            <th>Price</th>
+                            <th>Supplier</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr id="product-row-{{ product.id }}" 
+                            class="{{ product.stock_level_class }}" 
+                            data-category-id="{{ product.category.id|default:'none' }}"
+                            data-status="{{ product.is_active|yesno:'active,inactive' }}">
+                            <td class="ps-4">
+                                <input type="checkbox" class="product-checkbox form-check-input"
+                                    data-id="{{ product.id }}" data-name="{{ product.name }}">
+                            </td> 
+                            <td class="fw-bold text-muted">{{ product.product_id }}</td>
+                            <td class="fw-semibold text-dark">{{ product.name }}</td>
+                            <td>{{ product.category.name|default:"N/A" }}</td>
+                            
+                            <td class="fw-bold">
+                                {{ product.stock_quantity }}
+                                {% if product.stock_level_class == 'low-stock' %}
+                                    <span class="badge bg-danger ms-1">Low</span>
+                                {% elif product.stock_level_class == 'high-stock' %}
+                                    <span class="badge bg-success ms-1">High</span>
+                                {% endif %}
+                            </td>
+                            
+                            <td>
+                                {% if product.latest_forecast %}
+                                    {{ product.latest_forecast.forecasted_quantity|floatformat:0 }}
+                                    {% if product.latest_forecast.restock_needed %}
+                                        <span class="badge bg-warning text-dark ms-1" title="Restock needed">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted" title="No sales data available for forecasting">
+                                        <i class="fas fa-chart-line"></i> No Data
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold text-primary">₱{{ product.price }}</td>
+                            <td>{{ product.supplier_profile.company_name|default:"None" }}</td>
+                            
+                            <td class="text-center">
+                                {% if product.is_active %}
+                                    <a href="{% url 'inventory:toggle_product_active' product.product_id %}"
+                                        class="btn btn-sm btn-success status-btn">
+                                        <i class="fas fa-check-circle me-1"></i> Active
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'inventory:toggle_product_active' product.product_id %}"
+                                        class="btn btn-sm btn-secondary status-btn">
+                                        <i class="fas fa-times-circle me-1"></i> Inactive
+                                    </a>
+                                {% endif %}
+                            </td>
+                            
+                            <td class="actions-column text-center">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary"
+                                        data-product-id="{{ product.id }}" title="View"
+                                        onclick="openProductViewModal({{ product.id }}, this)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <a href="{% url 'inventory:product_update' pk=product.pk %}"
+                                        class="btn btn-sm btn-outline-info" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger soft-delete-single-btn"
+                                        data-id="{{ product.id }}" data-name="{{ product.name }}" title="Archive">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-5">
+                                <i class="fas fa-box-open fa-2x mb-2"></i><br>
+                                No active products found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Confirm Archive</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p id="deleteConfirmMessage">Are you sure?</p>
+            <ul id="deleteProductList" class="list-group list-group-flush small" style="display:none;"></ul>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button id="confirmDeleteBtn" type="button" class="btn btn-danger">Archive</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+{% include 'inventory/inventory_list/product/product_view_modal.html' %}
+
+<script>
+if (typeof window.openProductViewModal === 'undefined') {
+    window.openProductViewModal = function(productId, buttonElement) {
+        const $button = $(buttonElement);
+        const originalHtml = $button.html();
+        $button.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+
+        const viewUrl = `/inventory/api/product-details/${productId}/`;
+
+        $.ajax({
+            url: viewUrl,
+            method: 'GET',
+            dataType: 'json',
+            success: function(productData) {
+                $button.html(originalHtml);
+                const modalElement = document.getElementById('productViewModal');
+                if (!modalElement) {
+                    console.error("Modal with ID 'productViewModal' not found.");
+                    return;
+                }
+                try { $('#productViewModalLabel').text(productData.name || 'Product'); } catch (e) {}
+                try { $('#productViewModalBody').html(`<div class="p-3"><strong>SKU:</strong> ${productData.product_id || 'N/A'}<br><strong>Stock:</strong> ${productData.stock_quantity || 0}</div>`); } catch (e) {}
+
+                if (typeof bootstrap !== 'undefined') {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                }
+            },
+            error: function(xhr) {
+                $button.html(originalHtml);
+                console.error('Error loading product details:', xhr.status, xhr.responseText);
+            }
+        });
+    };
+}
+
+$(function() {
+    // CSRF helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken') || '{{ csrf_token }}';
+    $.ajaxSetup({
+        headers: { 'X-CSRFToken': csrftoken }
+    });
+
+    let productsToDelete = [];
+    
+    // Filter state
+    let currentFilters = {
+        search: '',
+        category: 'all',
+        status: 'all'
+    };
+
+    // Get unique categories from the table
+    function populateCategoryDropdown() {
+        const categories = new Set();
+        $('#dataTable tbody tr').each(function() {
+            const categoryId = $(this).data('category-id');
+            const categoryText = $(this).find('td:eq(3)').text().trim();
+            if (categoryId && categoryId !== 'none' && categoryText !== 'N/A') {
+                categories.add(JSON.stringify({id: categoryId, name: categoryText}));
+            }
+        });
+        
+        const dropdown = $('#categoryDropdown');
+        dropdown.find('.category-filter').not('[data-category="all"]').parent().remove();
+        
+        Array.from(categories).sort().forEach(cat => {
+            const catObj = JSON.parse(cat);
+            dropdown.append(`<li><a class="dropdown-item category-filter" href="#" data-category="${catObj.id}">${catObj.name}</a></li>`);
+        });
+    }
+
+    // Apply all filters
+    function applyFilters() {
+        let visibleCount = 0;
+        
+        $('#dataTable tbody tr').each(function() {
+            const $row = $(this);
+            const rowText = $row.text().toLowerCase();
+            const categoryId = String($row.data('category-id'));
+            const status = $row.data('status');
+            
+            // Check search filter
+            const searchMatch = currentFilters.search === '' || 
+                                rowText.indexOf(currentFilters.search) > -1;
+            
+            // Check category filter
+            const categoryMatch = currentFilters.category === 'all' || 
+                                  categoryId === String(currentFilters.category);
+            
+            // Check status filter
+            const statusMatch = currentFilters.status === 'all' || 
+                               status === currentFilters.status;
+            
+            // Show row only if all filters match
+            const shouldShow = searchMatch && categoryMatch && statusMatch;
+            $row.toggle(shouldShow);
+            
+            if (shouldShow) visibleCount++;
+        });
+        
+        // Update count display
+        $('#displayedCount').text(visibleCount);
+        
+        // Show/hide clear button
+        const hasActiveFilters = currentFilters.search !== '' || 
+                                currentFilters.category !== 'all' || 
+                                currentFilters.status !== 'all';
+        $('#clearFiltersBtn').toggle(hasActiveFilters);
+        
+        // Update button styles
+        if (currentFilters.category !== 'all') {
+            $('#categoryFilterBtn').addClass('filter-active');
+        } else {
+            $('#categoryFilterBtn').removeClass('filter-active');
+        }
+        
+        if (currentFilters.status !== 'all') {
+            $('#statusFilterBtn').addClass('filter-active');
+        } else {
+            $('#statusFilterBtn').removeClass('filter-active');
+        }
+    }
+
+    // Search filter
+    $(document).on('keyup', '#productSearch', function() {
+        currentFilters.search = $(this).val().toLowerCase();
+        applyFilters();
+    });
+
+    // Category filter
+    $(document).on('click', '.category-filter', function(e) {
+        e.preventDefault();
+        currentFilters.category = $(this).data('category');
+        const categoryText = $(this).text();
+        $('#categoryFilterText').text(categoryText);
+        applyFilters();
+    });
+
+    // Status filter
+    $(document).on('click', '.status-filter', function(e) {
+        e.preventDefault();
+        currentFilters.status = $(this).data('status');
+        const statusText = $(this).text();
+        $('#statusFilterText').text(statusText);
+        applyFilters();
+    });
+
+    // Clear all filters
+    $(document).on('click', '#clearFiltersBtn', function() {
+        currentFilters = {
+            search: '',
+            category: 'all',
+            status: 'all'
+        };
+        $('#productSearch').val('');
+        $('#categoryFilterText').text('All Categories');
+        $('#statusFilterText').text('All Statuses');
+        applyFilters();
+    });
+
+    // Checkbox functions
+    function getSelectedIds() {
+        return $('.product-checkbox:checked').map(function() {
+            return $(this).data('id');
+        }).get();
+    }
+    
+    function getSelectedProductsInfo() {
+        return $('.product-checkbox:checked').map(function() {
+            return { id: $(this).data('id'), name: $(this).data('name') };
+        }).get();
+    }
+    
+    function updateButtonStates() {
+        const selectedCount = getSelectedIds().length;
+        $('#soft-delete-selected-btn').prop('disabled', selectedCount === 0);
+        const total = $('.product-checkbox').length;
+        $('#select-all-checkbox').prop('indeterminate', selectedCount > 0 && selectedCount < total);
+    }
+
+    function showDeleteModal(products) {
+        const modalEl = document.getElementById('deleteConfirmModal');
+        if (!modalEl) {
+            console.error('deleteConfirmModal not found in DOM.');
+            return;
+        }
+        productsToDelete = products.map(p => p.id);
+        const message = products.length === 1
+            ? `Are you sure you want to archive "${products[0].name}"?`
+            : `You are about to archive ${products.length} product(s). Continue?`;
+        $('#deleteConfirmMessage').text(message);
+        const productList = $('#deleteProductList');
+        productList.empty();
+        if (products.length > 1) {
+            products.forEach(product => productList.append(`<li>${product.name}</li>`));
+            productList.show();
+        } else {
+            productList.hide();
+        }
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+
+    function performDelete() {
+        if (!productsToDelete || productsToDelete.length === 0) return;
+        const modalEl = document.getElementById('deleteConfirmModal');
+        const modalInstance = modalEl ? bootstrap.Modal.getInstance(modalEl) : null;
+        if (modalInstance) modalInstance.hide();
+
+        $.ajax({
+            url: "{% url 'inventory:delete_products' %}",
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ ids: productsToDelete }),
+            success: function(response) {
+                const names = response.product_names || [];
+                const display = names.join(', ') || productsToDelete.join(', ');
+                if (typeof showToast === 'function') showToast(`Successfully archived: ${display}`, 'success');
+                productsToDelete.forEach(id => {
+                    $(`#product-row-${id}`).fadeOut(250, function(){ 
+                        $(this).remove();
+                        applyFilters(); // Recount after removal
+                    });
+                });
+                productsToDelete = [];
+                updateButtonStates();
+            },
+            error: function(xhr) {
+                console.error('Archive error:', xhr.status, xhr.responseText);
+                let msg = 'An unknown error occurred.';
+                try {
+                    const data = xhr.responseJSON || JSON.parse(xhr.responseText || '{}');
+                    msg = data.message || msg;
+                } catch(e) {}
+                if (typeof showToast === 'function') showToast('Error during archive: ' + msg, 'danger');
+            }
+        });
+    }
+
+    // Event handlers
+    $(document).on('change', '#select-all-checkbox', function() {
+        $('.product-checkbox:visible').prop('checked', this.checked);
+        updateButtonStates();
+    });
+    
+    $(document).on('change', '.product-checkbox', function() {
+        const total = $('.product-checkbox:visible').length;
+        const checked = $('.product-checkbox:visible:checked').length;
+        $('#select-all-checkbox').prop('checked', checked === total && total > 0);
+        updateButtonStates();
+    });
+    
+    $(document).on('click', '#soft-delete-selected-btn', function() {
+        const products = getSelectedProductsInfo();
+        if (products.length) showDeleteModal(products);
+    });
+    
+    $(document).on('click', '.soft-delete-single-btn', function() {
+        showDeleteModal([{ id: $(this).data('id'), name: $(this).data('name') }]);
+    });
+    
+    $(document).on('click', '#confirmDeleteBtn', function() {
+        performDelete();
+    });
+
+    // Initialize
+    populateCategoryDropdown();
+    updateButtonStates();
+    applyFilters();
+    // Add this to your existing jQuery script section
+$(document).on('click', '#refreshForecastsBtn', function() {
+    const $btn = $(this);
+    const originalHtml = $btn.html();
+    
+    // Show loading state
+    $btn.prop('disabled', true);
+    $btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Updating Forecasts...');
+    
+    $.ajax({
+        url: '/inventory/api/product-forecast/',
+        method: 'POST',
+        dataType: 'json',
+        success: function(response) {
+            $btn.html(originalHtml);
+            $btn.prop('disabled', false);
+            
+            if (typeof showToast === 'function') {
+                showToast(
+                    `✅ ${response.message || 'Forecasts updated successfully!'}`,
+                    'success'
+                );
+            } else {
+                alert(response.message || 'Forecasts updated successfully!');
+            }
+            
+            // Reload the page to show updated forecasts
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        },
+        error: function(xhr) {
+            $btn.html(originalHtml);
+            $btn.prop('disabled', false);
+            
+            console.error('Error updating forecasts:', xhr);
+            let errorMsg = 'Failed to update forecasts. Please try again.';
+            
+            try {
+                const data = xhr.responseJSON || JSON.parse(xhr.responseText || '{}');
+                errorMsg = data.error || data.message || errorMsg;
+            } catch(e) {}
+            
+            if (typeof showToast === 'function') {
+                showToast('❌ ' + errorMsg, 'danger');
+            } else {
+                alert('Error: ' + errorMsg);
+            }
+        }
+    });
+});
+$(document).ready(function() {
+    // Auto-refresh forecasts if they're outdated (optional)
+    checkAndRefreshForecasts();
+});
+
+function checkAndRefreshForecasts() {
+    // Check if forecasts need updating (you can add localStorage to prevent too frequent calls)
+    const lastRefresh = localStorage.getItem('lastForecastRefresh');
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+    
+    // Only refresh if last refresh was more than 1 hour ago
+    if (!lastRefresh || (now - parseInt(lastRefresh)) > oneHour) {
+        $.ajax({
+            url: '/inventory/api/product-forecast/',
+            method: 'POST',
+            dataType: 'json',
+            success: function(response) {
+                console.log('Forecasts updated:', response);
+                localStorage.setItem('lastForecastRefresh', now.toString());
+                
+                // Reload page to show updated forecasts
+                if (response.updated_count > 0) {
+                    window.location.reload();
+                }
+            },
+            error: function(xhr) {
+                console.error('Auto-forecast update failed:', xhr);
+            }
+        });
+    }
+}
+});
+</script>
+{% endblock %}

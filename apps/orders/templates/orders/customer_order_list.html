@@ -1,0 +1,339 @@
+<!-- {% extends 'base_admin.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/orders/orders.css' %}">
+<style>
+    /* Basic styles for the tabbed interface */
+    .category-tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+        gap: 10px; /* Space between buttons */
+    }
+
+    .category-tabs button {
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-weight: bold;
+        border-radius: 5px 5px 0 0;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .category-tabs button.active {
+        background-color: #007bff; /* Primary color for active tab */
+        color: white;
+        border-color: #007bff;
+        border-bottom: none; /* Make active tab appear connected to content */
+    }
+
+    .category-tabs button:hover:not(.active) {
+        background-color: #e2e6ea;
+    }
+
+    .order-category-content {
+        display: none; /* Hidden by default */
+        padding: 15px 0;
+        border-top: 1px solid #eee; /* Separator if needed */
+    }
+
+    .order-category-content.active {
+        display: block; /* Show active content */
+    }
+
+    /* General table styling (if not already in orders.css) */
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+    .orders-table th, .orders-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    .orders-table th {
+        background-color: #f2f2f2;
+    }
+    .orders-table tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    .orders-table tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* Basic button styling */
+    .button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-right: 5px;
+    }
+    .button.primary {
+        background-color: #007bff;
+        color: white;
+    }
+    .button.small {
+        padding: 5px 8px;
+        font-size: 12px;
+    }
+    .button.status-update {
+        background-color: #28a745; /* Green for update */
+        color: white;
+    }
+    .button.view-details {
+        background-color: #6c757d; /* Gray for view */
+        color: white;
+    }
+
+    /* Styling for messages */
+    .messages {
+        list-style: none;
+        padding: 10px;
+        margin: 15px 0;
+        border-radius: 5px;
+    }
+
+    .messages li {
+        padding: 8px 12px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+    .messages .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .messages .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .messages .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+    .messages .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+    <h1 class="section-title">Customer Order List</h1>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {# --- Category Tabs --- #}
+    <div class="category-tabs">
+        <button class="tab-button active" data-status="all">All Orders</button>
+        {% for status_key, status_display in order_statuses %}
+            <button class="tab-button" data-status="{{ status_key }}">{{ status_display }}</button>
+        {% endfor %}
+    </div>
+
+    {# --- Order Category Content Containers --- #}
+    {# Each div will contain its own table, populated by JS #}
+    <div id="all" class="order-category-content active">
+        <h3>All Orders</h3>
+        <div class="table-wrapper">
+            <table class="orders-table" id="all-orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Order Date</th>
+                        <th>Product Details</th>
+                        <th>Order Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# Orders will be populated here by JavaScript #}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% for status_key, status_display in order_statuses %}
+    <div id="{{ status_key|lower }}" class="order-category-content">
+        <h3>{{ status_display }} Orders</h3>
+        <div class="table-wrapper">
+            <table class="orders-table" id="{{ status_key|lower }}-orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Order Date</th>
+                        <th>Product Details</th>
+                        <th>Order Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# Orders will be populated here by JavaScript #}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const orderCategoryContents = document.querySelectorAll('.order-category-content');
+
+    // Store all orders data globally (fetched from the Django context)
+    const allOrdersData = JSON.parse('{{ orders_json|escapejs }}');
+
+    // --- Tab Functionality ---
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Deactivate all tabs and hide all content
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            orderCategoryContents.forEach(content => content.classList.remove('active'));
+
+            // Activate clicked tab and show corresponding content
+            this.classList.add('active');
+            const targetStatus = this.dataset.status;
+            document.getElementById(targetStatus.toLowerCase()).classList.add('active');
+
+            // Render orders for the active tab
+            renderOrders(targetStatus);
+        });
+    });
+
+    // --- Helper to render orders into tables ---
+    function renderOrders(statusFilter) {
+        // Find the correct tbody for the current active tab based on its ID
+        const targetTbody = document.querySelector(`#${statusFilter.toLowerCase()}-orders-table tbody`);
+
+        // Clear the tbody before rendering new content
+        targetTbody.innerHTML = '';
+
+        const filteredOrders = statusFilter === 'all'
+            ? allOrdersData
+            : allOrdersData.filter(order => order.status === statusFilter);
+
+        if (filteredOrders.length === 0) {
+            targetTbody.innerHTML = `<tr><td colspan="7">No ${statusFilter === 'all' ? 'orders' : statusFilter} found.</td></tr>`;
+            return;
+        }
+
+        filteredOrders.forEach(order => {
+            let productDetailsHtml = '<ul class="list-unstyled mb-0 small">';
+            if (order.items && order.items.length > 0) {
+                order.items.forEach(item => {
+                    const productVariant = item.product_variant;
+                    const productName = productVariant.product ? productVariant.product.name : 'N/A';
+                    const size = productVariant.size ? `(${productVariant.size})` : '';
+                    const color = productVariant.color ? `(${productVariant.color})` : '';
+                    const itemTotal = item.item_total != null ? `₱${item.item_total.toFixed(2)}` : 'N/A';
+                    productDetailsHtml += `
+                        <li>
+                            <strong>${productName}</strong> ${size} ${color}<br>
+                            Qty: ${item.quantity} @ ₱${item.price_at_order.toFixed(2)} = ${itemTotal}
+                        </li>
+                    `;
+                });
+            } else {
+                productDetailsHtml += `<li>No items found for this order.</li>`;
+            }
+            productDetailsHtml += '</ul>';
+
+            const orderDate = new Date(order.order_date).toLocaleString();
+            const customerUsername = order.customer ? order.customer.username : '—';
+            const orderTotal = order.total_cost != null ? `₱${order.total_cost.toFixed(2)}` : 'N/A';
+            const orderStatus = order.status; // Directly use the status string
+
+            const row = `
+                <tr data-id="${order.id}">
+                    <td>${order.order_id}</td>
+                    <td>${customerUsername}</td>
+                    <td>${orderDate}</td>
+                    <td>${productDetailsHtml}</td>
+                    <td>${orderTotal}</td>
+                    <td>${orderStatus}</td>
+                    <td>
+                        <button class="button small view-details-btn" data-order-id="${order.id}">View Details</button>
+                        <button class="button small status-update-btn" data-order-id="${order.id}" data-current-status="${order.status}">Update Status</button>
+                    </td>
+                </tr>
+            `;
+            targetTbody.innerHTML += row;
+        });
+
+        // Re-attach update status button listeners after rendering
+        attachUpdateStatusListeners();
+        // You can also attach view details listeners here if you have a detail page
+    }
+
+    // --- Attach listeners for update status buttons dynamically ---
+    function attachUpdateStatusListeners() {
+        const updateButtons = document.querySelectorAll('.order-category-content.active .status-update-btn');
+        updateButtons.forEach(button => {
+            // Remove existing listeners to prevent duplicates
+            button.removeEventListener('click', handleUpdateStatusClick);
+            // Add new listener
+            button.addEventListener('click', handleUpdateStatusClick);
+        });
+    }
+
+    function handleUpdateStatusClick(event) {
+        const orderId = event.target.dataset.orderId;
+        const currentStatus = event.target.dataset.currentStatus;
+
+        // Populate prompt options from your ORDER_STATUS_CHOICES in Django
+        const validStatuses = [
+            {% for status_key, status_display in order_statuses %}
+                "{{ status_key }}",
+            {% endfor %}
+        ];
+        
+        let newStatus = prompt(`Enter new order status for Order ID ${orderId} (Current: ${currentStatus}). Options: ${validStatuses.join(', ')}`);
+        
+        if (newStatus === null || newStatus.trim() === "") {
+            return; // User cancelled or entered empty
+        }
+        newStatus = newStatus.trim();
+
+        if (!validStatuses.includes(newStatus)) {
+            alert("Invalid status. Please choose from: " + validStatuses.join(', '));
+            return;
+        }
+
+        fetch(`/orders/update_status/${orderId}/`, { // Adjust URL based on your urls.py (e.g., /orders/update_status/)
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Order status updated successfully!");
+                // Reload data and re-render the current tab to reflect changes
+                // A full page reload is often simplest if data changes might affect multiple tabs
+                location.reload();
+            } else {
+                alert("Error updating status: " + (data.error || "Unknown error."));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("An error occurred while updating the order status.");
+        });
+    }
+
+    // Initial render when the page loads, showing the 'All Orders' tab
+    renderOrders('all');
+});
+</script>
+
+{% endblock %} -->

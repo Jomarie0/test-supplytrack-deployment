@@ -1,0 +1,453 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/inventory/inventory.css' %}">
+<style>
+/* Archive-specific styles */
+.archive-module {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.archive-header {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    padding: 24px 32px;
+    border-bottom: none;
+}
+
+.archive-header h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.archive-header .subtitle {
+    margin-top: 8px;
+    opacity: 0.9;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.archive-actions {
+    padding: 24px 32px;
+    background: #fef2f2;
+    border-bottom: 1px solid #fecaca;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.action-group {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn-archive {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-back {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-back:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+}
+
+.btn-restore {
+    background: #10b981;
+    color: white;
+}
+
+.btn-restore:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+.btn-permanent-delete {
+    background: #dc2626;
+    color: white;
+}
+
+.btn-permanent-delete:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+}
+
+.archive-stats {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #dc2626;
+}
+
+.archive-table-container {
+    overflow-x: auto;
+    background: white;
+}
+
+.archive-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.archive-table thead {
+    background: #fef2f2;
+    border-bottom: 2px solid #fecaca;
+}
+
+.archive-table th {
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 600;
+    color: #991b1b;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.archive-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #fee2e2;
+    vertical-align: middle;
+}
+
+.archive-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.archive-table tbody tr:hover {
+    background: #fef2f2;
+}
+
+.deleted-badge {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 32px;
+    color: #6b7280;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.search-container {
+    position: relative;
+    max-width: 400px;
+    flex: 1;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    border: 2px solid #fecaca;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #dc2626;
+    font-size: 16px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="archive-module">
+    <!-- Header Section -->
+    <div class="archive-header">
+        <h1>🗑️ Archived Products</h1>
+        <div class="subtitle">Products that have been soft-deleted and can be restored</div>
+    </div>
+
+    <!-- Actions Section -->
+    <div class="archive-actions">
+        <div class="action-group">
+            <a href="{% url 'inventory:inventory_list' %}" class="btn-archive btn-back">
+                ← Back to Inventory
+            </a>
+            <button class="btn-archive btn-restore" onclick="restoreSelected()">
+                ↺ Restore Selected
+            </button>
+            <button class="btn-archive btn-permanent-delete" onclick="permanentlyDeleteSelected()">
+                💀 Permanently Delete
+            </button>
+        </div>
+        
+        <div class="archive-stats">
+            <div class="stat-item">
+                <span class="stat-label">Archived Items</span>
+                <span class="stat-value">{{ products|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div style="padding: 16px 32px; background: white; border-bottom: 1px solid #e5e7eb;">
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search archived products..." />
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="archive-table-container">
+        <table class="archive-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">
+                        <input type="checkbox" id="select-all" class="custom-checkbox">
+                    </th>
+                    <th>Product ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Supplier</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Deleted At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr data-product-id="{{ product.id }}">
+                    <td>
+                        <input type="checkbox" class="product-checkbox custom-checkbox" data-id="{{ product.id }}">
+                    </td>
+                    <td>
+                        <span class="product-id">{{ product.product_id }}</span>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600; color: #374151;">{{ product.name }}</div>
+                        {% if product.description %}
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">{{ product.description|truncatewords:10 }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="product-category">{{ product.category.name|default:"Uncategorized" }}</span>
+                    </td>
+                    <td>{{ product.supplier.name|default:"No supplier" }}</td>
+                    <td style="font-weight: 600;">${{ product.price }}</td>
+                    <td>{{ product.stock_quantity }} {{ product.unit }}</td>
+                    <td>
+                        <span class="deleted-badge">
+                            {{ product.deleted_at|date:"M d, Y H:i" }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        <div class="empty-state-icon">✨</div>
+                        <h3>No archived products</h3>
+                        <p>All products are currently active in your inventory.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select All functionality
+    const selectAllCheckbox = document.getElementById('select-all');
+    const productCheckboxes = document.querySelectorAll('.product-checkbox');
+    
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            productCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+    
+    // Update select-all state when individual checkboxes change
+    productCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const allChecked = Array.from(productCheckboxes).every(cb => cb.checked);
+            const someChecked = Array.from(productCheckboxes).some(cb => cb.checked);
+            
+            if (allChecked) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else if (someChecked) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+        });
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.archive-table tbody tr[data-product-id]');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    }
+});
+
+// Get selected checkbox IDs
+function getSelectedProductIds() {
+    const checkboxes = document.querySelectorAll('.product-checkbox:checked');
+    return Array.from(checkboxes).map(cb => cb.getAttribute('data-id'));
+}
+
+// Get CSRF token from cookies
+function getCSRFToken() {
+    const name = 'csrftoken';
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        let cookie = cookies[i].trim();
+        if (cookie.startsWith(name + '=')) {
+            return decodeURIComponent(cookie.substring(name.length + 1));
+        }
+    }
+    return null;
+}
+
+function restoreSelected() {
+    const ids = getSelectedProductIds();
+    if (!ids.length) {
+        alert("Please select at least one product to restore.");
+        return;
+    }
+    
+    if (!confirm(`Restore ${ids.length} product(s)? They will be moved back to active inventory.`)) {
+        return;
+    }
+    
+    fetch("{% url 'inventory:restore_products' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ids })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert(`Successfully restored ${ids.length} product(s)!`);
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while restoring products.');
+    });
+}
+
+function permanentlyDeleteSelected() {
+    const ids = getSelectedProductIds();
+    if (!ids.length) {
+        alert("Please select at least one product to delete.");
+        return;
+    }
+    
+    if (!confirm(`⚠️ WARNING: This will PERMANENTLY delete ${ids.length} product(s).\n\nThis action CANNOT be undone!\n\nAre you absolutely sure?`)) {
+        return;
+    }
+    
+    // Double confirmation for permanent deletion
+    if (!confirm("Final confirmation: Delete these products forever?")) {
+        return;
+    }
+    
+    fetch("{% url 'inventory:permanently_delete_products' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ids })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert(`Successfully deleted ${ids.length} product(s) permanently.`);
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while deleting products.');
+    });
+}
+</script>
+{% endblock %}

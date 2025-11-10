@@ -1,0 +1,477 @@
+/* Register Container */
+.register-container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+/* Register Card */
+.register-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    animation: slideUp 0.4s ease-out;
+}
+
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header */
+.register-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.register-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    margin-bottom: 16px;
+}
+
+.register-icon i {
+    font-size: 32px;
+    color: white;
+}
+
+.register-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 8px;
+}
+
+.register-header p {
+    font-size: 15px;
+    color: #718096;
+}
+
+/* Messages */
+.messages {
+    margin-bottom: 24px;
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert i {
+    font-size: 16px;
+}
+
+.alert-error {
+    background: #fed7d7;
+    color: #c53030;
+    border: 1px solid #fc8181;
+}
+
+.alert-success {
+    background: #c6f6d5;
+    color: #2f855a;
+    border: 1px solid #68d391;
+}
+
+.alert-info {
+    background: #bee3f8;
+    color: #2c5282;
+    border: 1px solid #63b3ed;
+}
+
+/* Form Sections */
+.form-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title i {
+    color: #667eea;
+    font-size: 20px;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.required {
+    color: #e53e3e;
+}
+
+/* Form Inputs */
+.register-form input[type="text"],
+.register-form input[type="email"],
+.register-form input[type="password"],
+.register-form input[type="tel"],
+.register-form textarea,
+.register-form select {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    border: 2px solid #cbd5e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: #f7fafc;
+}
+
+.register-form input:focus,
+.register-form textarea:focus,
+.register-form select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.register-form input::placeholder,
+.register-form textarea::placeholder {
+    color: #a0aec0;
+}
+
+/* Form Row (for side-by-side fields) */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 576px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Field Errors */
+.field-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #e53e3e;
+    font-size: 13px;
+    margin-top: 6px;
+}
+
+.field-error i {
+    font-size: 12px;
+}
+
+/* Form Help Text */
+.form-help {
+    display: block;
+    font-size: 12px;
+    color: #718096;
+    margin-top: 6px;
+}
+
+/* Terms Section */
+.terms-section {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.terms-section p {
+    font-size: 13px;
+    color: #4a5568;
+    margin: 0;
+}
+
+.terms-section .link {
+    color: #667eea;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.terms-section .link:hover {
+    color: #764ba2;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: #667eea;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 0;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-link:hover {
+    color: #764ba2;
+}
+
+/* Login Link Section */
+.login-link-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.login-link-section p {
+    font-size: 14px;
+    color: #4a5568;
+    margin-bottom: 10px;
+}
+
+/* Back Link */
+.back-link {
+    text-align: center;
+    margin-top: 24px;
+}
+
+.back-link a {
+    color: #4a5568;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s ease;
+}
+
+.back-link a:hover {
+    color: #2d3748;
+}
+
+.back-link i {
+    font-size: 12px;
+}
+
+/* Enhanced States */
+.form-group.filled input,
+.form-group.filled textarea,
+.form-group.filled select {
+    border-color: #48bb78;
+    background: #f0fff4;
+}
+
+/* Loading State */
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+/* Add these to your existing static/css/users/register.css */
+
+/* Section description for optional fields */
+.section-description {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    color: #0369a1;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-description i {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* Field error styling */
+.field-error {
+    display: block;
+    color: #ef4444;
+    font-size: 0.8125rem;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+.field-error i {
+    margin-right: 4px;
+}
+
+/* Form help text styling */
+.form-help {
+    display: block;
+    color: #64748b;
+    font-size: 0.8125rem;
+    margin-top: 4px;
+}
+
+/* Required indicator */
+.required {
+    color: #ef4444;
+    font-weight: 700;
+}
+
+/* Input focus states */
+.register-form input:focus,
+.register-form select:focus,
+.register-form textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Error state for inputs */
+.register-form input.error,
+.register-form select.error {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+
+/* Success state for inputs (password match) */
+.register-form input.success {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+}
+
+/* Filled state for form groups */
+.form-group.filled label {
+    color: #4f46e5;
+}
+
+/* Password strength indicator is now in the inline styles */
+
+/* Form section spacing */
+.form-section + .form-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .section-description {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .register-container {
+        padding: 15px;
+        margin: 20px auto;
+    }
+
+    .register-card {
+        padding: 30px 20px;
+    }
+
+    .register-header h1 {
+        font-size: 24px;
+    }
+
+    .section-title {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .register-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .register-icon i {
+        font-size: 28px;
+    }
+}

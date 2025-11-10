@@ -1,0 +1,10 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<h2>{{ title }}</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primary">Save</button>
+  <a href="{% url 'inventory:category_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,300 @@
+{% extends 'base_store.html' %}
+{% load static %}
+
+{% block title %}Supplier Registration - SupplyTrack{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/users/register.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-card">
+        <!-- Header -->
+        <div class="register-header">
+            <div class="register-icon supplier">
+                <i class="fas fa-store"></i>
+            </div>
+            <h1>Register Your Business</h1>
+            <p>Join SupplyTrack as a supplier and reach more customers</p>
+            <div class="approval-notice">
+                <i class="fas fa-info-circle"></i>
+                Your account will be reviewed by our team before activation
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Non-field errors -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!-- Registration Form -->
+        <form method="post" action="{% url 'users:supplier_register' %}" class="register-form">
+            {% csrf_token %}
+            
+            <!-- Business Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-building"></i> Business Information
+                </h3>
+                
+                <div class="form-group">
+                    <label for="{{ form.company_name.id_for_label }}" class="form-label">
+                        Company Name <span class="required">*</span>
+                    </label>
+                    {{ form.company_name }}
+                    {% if form.company_name.errors %}
+                        <span class="field-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {{ form.company_name.errors.0 }}
+                        </span>
+                    {% endif %}
+                    <small class="form-help">Registered business name</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.business_registration.id_for_label }}" class="form-label">
+                        Business Registration Number
+                    </label>
+                    {{ form.business_registration }}
+                    {% if form.business_registration.errors %}
+                        <span class="field-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {{ form.business_registration.errors.0 }}
+                        </span>
+                    {% endif %}
+                    <small class="form-help">DTI/SEC Registration (Optional but recommended)</small>
+                </div>
+            </div>
+
+            <!-- Account Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-user-circle"></i> Account Information
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            Username <span class="required">*</span>
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.username.errors.0 }}
+                            </span>
+                        {% endif %}
+                        <small class="form-help">Choose a unique username</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            Business Email <span class="required">*</span>
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.email.errors.0 }}
+                            </span>
+                        {% endif %}
+                        <small class="form-help">Official business email address</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-phone"></i> Contact Information
+                </h3>
+                
+                <div class="form-group">
+                    <label for="{{ form.phone.id_for_label }}" class="form-label">
+                        Contact Number <span class="required">*</span>
+                    </label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                        <span class="field-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {{ form.phone.errors.0 }}
+                        </span>
+                    {% endif %}
+                    <small class="form-help">Primary contact number for orders</small>
+                </div>
+            </div>
+
+            <!-- Business Address Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-map-marker-alt"></i> Business Address
+                </h3>
+                
+                <div class="form-group">
+                    <label for="{{ form.street_address.id_for_label }}" class="form-label">
+                        Street Address <span class="required">*</span>
+                    </label>
+                    {{ form.street_address }}
+                    {% if form.street_address.errors %}
+                        <span class="field-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {{ form.street_address.errors.0 }}
+                        </span>
+                    {% endif %}
+                    <small class="form-help">Complete business address</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.city.id_for_label }}" class="form-label">
+                            City <span class="required">*</span>
+                        </label>
+                        {{ form.city }}
+                        {% if form.city.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.city.errors.0 }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.province.id_for_label }}" class="form-label">
+                            Province <span class="required">*</span>
+                        </label>
+                        {{ form.province }}
+                        {% if form.province.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.province.errors.0 }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.zip_code.id_for_label }}" class="form-label">
+                        Zip/Postal Code <span class="required">*</span>
+                    </label>
+                    {{ form.zip_code }}
+                    {% if form.zip_code.errors %}
+                        <span class="field-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {{ form.zip_code.errors.0 }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Password Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-lock"></i> Create Password
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">
+                            Password <span class="required">*</span>
+                        </label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.password1.errors.0 }}
+                            </span>
+                        {% endif %}
+                        <small class="form-help">At least 8 characters</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">
+                            Confirm Password <span class="required">*</span>
+                        </label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <span class="field-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                {{ form.password2.errors.0 }}
+                            </span>
+                        {% endif %}
+                        <small class="form-help">Re-enter your password</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="terms-section">
+                <p>
+                    By registering as a supplier, you agree to our 
+                    <a href="#" class="link">Supplier Terms</a>, 
+                    <a href="#" class="link">Terms of Service</a>, and 
+                    <a href="#" class="link">Privacy Policy</a>
+                </p>
+            </div>
+
+            <!-- Important Notice -->
+            <div class="notice-box">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>Important:</strong> Your account will be reviewed by our admin team within 1-3 business days. 
+                    You'll receive an email notification once your account is approved.
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-paper-plane"></i> Submit Application
+            </button>
+        </form>
+
+        <!-- Login Link -->
+        <div class="login-link-section">
+            <p>Already have a supplier account?</p>
+            <a href="{% url 'users:supplier_login' %}" class="btn-link">
+                <i class="fas fa-sign-in-alt"></i> Login Here
+            </a>
+        </div>
+    </div>
+
+    <!-- Back to Home -->
+    <div class="back-link">
+        <a href="{% url 'users:login_landing' %}">
+            <i class="fas fa-arrow-left"></i> Back to Login Options
+        </a>
+    </div>
+</div>
+
+<script>
+    // Add 'filled' class to form groups when input has value
+    document.querySelectorAll('.register-form input, .register-form select, .register-form textarea').forEach(input => {
+        if (input.value) {
+            input.closest('.form-group').classList.add('filled');
+        }
+        
+        input.addEventListener('input', function() {
+            if (this.value) {
+                this.closest('.form-group').classList.add('filled');
+            } else {
+                this.closest('.form-group').classList.remove('filled');
+            }
+        });
+    });
+</script>
+{% endblock %}

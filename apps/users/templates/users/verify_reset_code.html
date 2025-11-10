@@ -1,0 +1,119 @@
+{% extends 'base_store.html' %}
+{% load static %}
+
+{% block title %}Verify Reset Code - SupplyTrack{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/users/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <!-- Header -->
+        <div class="auth-header">
+            <div class="auth-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h1>Enter Reset Code</h1>
+            <p>Please check your email for the verification code</p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Countdown Timer -->
+        <div class="countdown-box">
+            <i class="fas fa-clock"></i>
+            <span id="countdown">Loading...</span>
+        </div>
+
+        <!-- Form -->
+        <form method="post" action="{% url 'users:verify_reset_code' %}" id="verifyForm" class="auth-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="code" class="form-label">Verification Code</label>
+                <input 
+                    type="text" 
+                    name="code" 
+                    id="code"
+                    maxlength="6"
+                    pattern="[0-9]{6}"
+                    class="code-input"
+                    placeholder="000000"
+                    required
+                    autofocus
+                >
+                <small class="form-help">Enter the 6-digit code sent to your email</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-check-circle"></i> Verify Code
+            </button>
+        </form>
+
+        <!-- Resend Code -->
+        <div class="auth-footer">
+            <p>Didn't receive the code?</p>
+            <form method="post" action="{% url 'users:resend_reset_code' %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="btn-link">
+                    <i class="fas fa-redo"></i> Resend Reset Code
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="back-link">
+        <a href="{% url 'users:forgot_password' %}">
+            <i class="fas fa-arrow-left"></i> Try a different email
+        </a>
+    </div>
+</div>
+
+<!-- Store expiration timestamp safely -->
+{{ expiration_timestamp|json_script:"expiration-data" }}
+
+<script>
+    // Countdown Timer
+    const countdownElement = document.getElementById("countdown");
+    const expiration = JSON.parse(document.getElementById("expiration-data").textContent);
+
+    const interval = setInterval(() => {
+        const now = new Date().getTime();
+        const distance = expiration - now;
+        
+        if (distance <= 0) {
+            clearInterval(interval);
+            countdownElement.innerHTML = '<span class="expired">Code expired. Please resend.</span>';
+            countdownElement.parentElement.classList.add('expired');
+        } else {
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            countdownElement.textContent = `Code expires in ${minutes}m ${seconds}s`;
+        }
+    }, 1000);
+
+    // Auto-submit on 6 digits
+    const codeInput = document.getElementById('code');
+    const form = document.getElementById('verifyForm');
+    
+    codeInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        if (this.value.length === 6) {
+            form.submit();
+        }
+    });
+</script>
+{% endblock %}

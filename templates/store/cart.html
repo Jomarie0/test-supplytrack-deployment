@@ -1,0 +1,168 @@
+{% extends "base_store.html" %}
+{% load static %}
+
+{% block title %}Shopping Cart - SupplyTrack Store{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/store/cart.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cart-container">
+    <!-- Cart Header -->
+    <div class="cart-header">
+        <h1><i class="fas fa-shopping-cart"></i> Shopping Cart</h1>
+        <a href="{% url 'store:product_list' %}" class="continue-shopping">
+            <i class="fas fa-arrow-left"></i> Continue Shopping
+        </a>
+    </div>
+
+    {% if cart.items.all %}
+        <div class="cart-content">
+            <!-- Cart Items -->
+            <div class="cart-items">
+                {% for item in cart.items.all %}
+                    <div class="cart-item">
+                        <div class="item-image">
+                            {% if item.product_variant.product.image %}
+                                <img src="{{ item.product_variant.product.image.url }}" alt="{{ item.product_variant.product.name }}">
+                            {% else %}
+                                <img src="{% static 'images/placeholder.png' %}" alt="No image available">
+                            {% endif %}
+                        </div>
+                        <div class="item-details">
+                            <div class="item-info">
+                                <a href="{% url 'store:product_detail' slug=item.product_variant.product.slug %}" class="item-name">
+                                    {{ item.product_variant.product.name }}
+                                </a>
+                                {% if item.product_variant.product.category %}
+                                    <span class="item-category">
+                                        <i class="fas fa-tag"></i> {{ item.product_variant.product.category.name }}
+                                    </span>
+                                {% endif %}
+                                <div class="item-variant">
+                                    {% if item.product_variant.size or item.product_variant.color %}
+                                        <span class="variant-details">
+                                            {% if item.product_variant.size %}Size: {{ item.product_variant.size }}{% endif %}
+                                            {% if item.product_variant.color %}
+                                                {% if item.product_variant.size %} | {% endif %}
+                                                Color: {{ item.product_variant.color }}
+                                            {% endif %}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                <div class="quantity-price">
+                                    <div class="item-price">
+                                        <span class="price-label">Price:</span>
+                                        <span class="price-amount">₱{{ item.product_variant.price|floatformat:2 }}</span>
+                                    </div>
+                                    <form action="{% url 'store:update_cart_item' item_id=item.id %}" method="post" class="quantity-form">
+                                        {% csrf_token %}
+                                        <div class="quantity-controls">
+                                            <button type="button" class="quantity-btn minus" onclick="updateQuantity(this, -1)">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input type="number" name="quantity" value="{{ item.quantity }}" 
+                                                   min="1" max="{{ item.product_variant.product.stock_quantity }}"
+                                                   data-item-id="{{ item.id }}"
+                                                   onchange="this.form.submit()">
+                                            <button type="button" class="quantity-btn plus" onclick="updateQuantity(this, 1)">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="item-subtotal">
+                                    <span class="subtotal-label">Subtotal:</span>
+                                    <span class="subtotal-amount">₱{{ item.item_total|floatformat:2 }}</span>
+                                </div>
+                                <form action="{% url 'store:remove_from_cart' item_id=item.id %}" method="post" class="remove-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="remove-item">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="cart-summary">
+                <h2>Order Summary</h2>
+                <div class="summary-details">
+                    <div class="summary-row">
+                        <span>Items ({{ cart.items.count }})</span>
+                        <span>₱{{ cart_total|floatformat:2 }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span>Calculated at checkout</span>
+                    </div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span>₱{{ cart_total|floatformat:2 }}</span>
+                    </div>
+                </div>
+                <form action="{% url 'orders:checkout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="checkout-btn">
+                        <i class="fas fa-lock"></i> Proceed to Checkout
+                    </button>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-cart">
+            <div class="empty-cart-content">
+                <i class="fas fa-shopping-cart"></i>
+                <h2>Your cart is empty</h2>
+                <p>Looks like you haven't added any items to your cart yet.</p>
+                <a href="{% url 'store:product_list' %}" class="start-shopping-btn">
+                    <i class="fas fa-store"></i> Start Shopping
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateQuantity(button, change) {
+        const form = button.closest('form');
+        const input = form.querySelector('input[type="number"]');
+        const currentValue = parseInt(input.value) || 0;
+        const maxValue = parseInt(input.max);
+        const newValue = currentValue + change;
+        
+        if (newValue >= 1 && newValue <= maxValue) {
+            input.value = newValue;
+            form.submit();
+        }
+    }
+
+    // Prevent form submission on Enter key
+    document.querySelectorAll('.quantity-form input').forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+        });
+
+        // Validate input when manually typed
+        input.addEventListener('input', function(e) {
+            const value = parseInt(this.value) || 0;
+            const maxValue = parseInt(this.max);
+            
+            if (value < 1) this.value = 1;
+            if (value > maxValue) this.value = maxValue;
+        });
+    });
+</script>
+{% endblock %}
+

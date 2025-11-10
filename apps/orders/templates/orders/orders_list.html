@@ -1,0 +1,1313 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+{% comment %} ordrers_list.html {% endcomment %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/orders/orders.css' %}">
+<style>
+/* Customer Order Management - Unique Visual Identity */
+.customer-orders-module {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    min-height: 100vh;
+}
+
+/* Header with distinct gradient */
+.orders-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+    color: white;
+    padding: 32px;
+    border-bottom: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.orders-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.orders-header h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.orders-header .subtitle {
+    margin-top: 12px;
+    opacity: 0.9;
+    font-size: 16px;
+    font-weight: 400;
+    position: relative;
+    z-index: 1;
+}
+
+/* KPI Cards with unique styling */
+.kpi-section {
+    padding: 24px 32px;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-bottom: 1px solid #cbd5e1;
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.kpi-card {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--kpi-color);
+}
+
+.kpi-card.total-orders { --kpi-color: #3b82f6; }
+.kpi-card.pending { --kpi-color: #f59e0b; }
+.kpi-card.completed { --kpi-color: #10b981; }
+.kpi-card.canceled { --kpi-color: #ef4444; }
+.kpi-card.revenue { --kpi-color: #8b5cf6; }
+
+.kpi-icon {
+    font-size: 24px;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
+    line-height: 1;
+}
+
+.kpi-label {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-change {
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.kpi-change.positive { color: #10b981; }
+.kpi-change.negative { color: #ef4444; }
+
+/* Controls Section */
+.controls-section {
+    padding: 24px 32px;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.controls-left {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.controls-right {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Status Tabs */
+.status-tabs {
+    display: flex;
+    gap: 8px;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.status-tab {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    background: transparent;
+    color: #64748b;
+}
+
+.status-tab.active {
+    background: white;
+    color: #1e293b;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.status-tab:hover:not(.active) {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+/* Search and Filter */
+.search-container {
+    position: relative;
+    min-width: 300px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 16px;
+}
+
+.filter-btn {
+    padding: 12px 20px;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-btn:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+/* Main Content Area */
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 0;
+    min-height: 600px;
+}
+
+/* Orders Table */
+.orders-table-container {
+    background: white;
+    overflow-x: auto;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.orders-table thead {
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.orders-table th {
+    padding: 16px 24px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.orders-table td {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    border: none;
+}
+
+.orders-table tbody tr {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.orders-table tbody tr:hover {
+    background: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.orders-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Order ID Styling */
+.order-id {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Customer Info */
+.customer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.customer-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.customer-details h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.customer-details p {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-processing {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-shipped {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.status-completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-canceled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-returned {
+    background: #f3e8ff;
+    color: #6b21a8;
+}
+
+/* Amount Styling */
+.order-amount {
+    font-weight: 700;
+    font-size: 16px;
+    color: #1e293b;
+}
+
+/* Actions */
+.actions-cell {
+    text-align: right;
+    padding-right: 32px;
+}
+
+.btn-view-details {
+    background: #4f46e5;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-view-details:hover {
+    background: #4338ca;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
+}
+
+/* Status Update Buttons */
+.status-update-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.status-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.status-btn.processing {
+    background: #3b82f6;
+    color: white;
+}
+
+.status-btn.shipped {
+    background: #8b5cf6;
+    color: white;
+}
+
+.status-btn.completed {
+    background: #10b981;
+    color: white;
+}
+
+.status-btn.canceled {
+    background: #ef4444;
+    color: white;
+}
+
+.status-btn.returned {
+    background: #f59e0b;
+    color: white;
+}
+
+.status-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Side Panel */
+.side-panel {
+    background: #f8fafc;
+    border-left: 1px solid #e2e8f0;
+    padding: 24px;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.panel-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.panel-section h3 {
+    margin: 0 0 16px 0;
+    color: #374151;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.notes-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.notes-textarea:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.notes-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.note-item {
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border-left: 3px solid #4f46e5;
+}
+
+.note-content {
+    font-size: 14px;
+    color: #374151;
+    margin-bottom: 4px;
+}
+
+.note-timestamp {
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 2% auto;
+    padding: 0;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 1000px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+    color: white;
+    padding: 24px 32px;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 32px;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.detail-section {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.detail-section h3 {
+    margin: 0 0 16px 0;
+    color: #374151;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 32px;
+    color: #6b7280;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    margin: 0 0 8px 0;
+    color: #374151;
+    font-weight: 600;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .side-panel {
+        border-left: none;
+        border-top: 1px solid #e2e8f0;
+    }
+}
+
+@media (max-width: 768px) {
+    .controls-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .controls-left,
+    .controls-right {
+        justify-content: center;
+    }
+    
+    .search-container {
+        min-width: auto;
+    }
+    
+    .orders-table th,
+    .orders-table td {
+        padding: 12px 16px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 5% auto;
+    }
+    
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Utility Classes */
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.font-mono { font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="customer-orders-module">
+    <!-- Header Section -->
+    <div class="orders-header">
+        <h1>
+            🛒 Customer Order Management
+        </h1>
+        <div class="subtitle">Comprehensive order tracking and customer service management</div>
+    </div>
+
+    <!-- KPI Section -->
+    <div class="kpi-section">
+        <div class="kpi-grid">
+            <div class="kpi-card total-orders">
+                <span class="kpi-icon">📦</span>
+                <div class="kpi-value">{{ total_orders|default:"0" }}</div>
+                <div class="kpi-label">Total Orders</div>
+                <div class="kpi-change positive">+12% from last month</div>
+            </div>
+            <div class="kpi-card pending">
+                <span class="kpi-icon">⏳</span>
+                <div class="kpi-value">{{ pending_orders|default:"0" }}</div>
+                <div class="kpi-label">Pending</div>
+                <div class="kpi-change negative">+3 from yesterday</div>
+            </div>
+            <div class="kpi-card completed">
+                <span class="kpi-icon">✅</span>
+                <div class="kpi-value">{{ completed_orders|default:"0" }}</div>
+                <div class="kpi-label">Completed</div>
+                <div class="kpi-change positive">+8% completion rate</div>
+            </div>
+            <div class="kpi-card canceled">
+                <span class="kpi-icon">❌</span>
+                <div class="kpi-value">{{ canceled_orders|default:"0" }}</div>
+                <div class="kpi-label">Canceled</div>
+                <div class="kpi-change negative">+2% cancellation rate</div>
+            </div>
+            <div class="kpi-card revenue">
+                <span class="kpi-icon">💰</span>
+                <div class="kpi-value">₱{{ total_revenue|default:"0" }}</div>
+                <div class="kpi-label">Revenue</div>
+                <div class="kpi-change positive">+15% from last month</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls Section -->
+    <div class="controls-section">
+        <div class="controls-left">
+            <div class="status-tabs">
+                <button class="status-tab active" data-status="all">All Orders</button>
+                <button class="status-tab" data-status="pending">Pending</button>
+                <button class="status-tab" data-status="processing">Processing</button>
+                <button class="status-tab" data-status="shipped">Shipped</button>
+                <button class="status-tab" data-status="completed">Completed</button>
+                <button class="status-tab" data-status="canceled">Canceled</button>
+            </div>
+        </div>
+        
+        <div class="controls-right">
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" placeholder="Search orders by ID, customer, or status..." />
+            </div>
+            <button class="filter-btn">
+                🔧 Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Orders Table -->
+        <div class="orders-table-container">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Total Amount</th>
+                        <th class="actions-cell">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr onclick="viewOrderDetails('{{ order.id }}')" data-order-id="{{ order.id }}">
+                        <td>
+                            <span class="order-id">{{ order.order_id }}</span>
+                        </td>
+                        <td>
+                            <div class="customer-info">
+                                <div class="customer-avatar">
+                                    {{ order.customer.first_name|first|default:order.customer.username|first|upper }}
+                                </div>
+                                <div class="customer-details">
+                                    <h4>{{ order.customer.get_full_name|default:order.customer.username }}</h4>
+                                    <p>{{ order.customer.email|default:"No email" }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 500; color: #1e293b;">{{ order.order_date|date:"M d, Y" }}</div>
+                            <div style="font-size: 12px; color: #64748b;">{{ order.order_date|time:"H:i" }}</div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
+                            <!-- Status Update Buttons -->
+                            <div class="status-update-buttons">
+                                {% if order.status == 'Pending' %}
+                                    <button class="status-btn processing" onclick="updateOrderStatus('{{ order.id }}', 'Processing', event)">
+                                        ⚙️ Processing
+                                    </button>
+                                    <button class="status-btn canceled" onclick="updateOrderStatus('{{ order.id }}', 'Canceled', event)">
+                                        ❌ Cancel
+                                    </button>
+                                {% elif order.status == 'Processing' %}
+                                    <button class="status-btn shipped" onclick="updateOrderStatus('{{ order.id }}', 'Shipped', event)">
+                                        🚚 Shipped
+                                    </button>
+                                    <button class="status-btn canceled" onclick="updateOrderStatus('{{ order.id }}', 'Canceled', event)">
+                                        ❌ Cancel
+                                    </button>
+                                {% elif order.status == 'Shipped' %}
+                                    <button class="status-btn completed" onclick="updateOrderStatus('{{ order.id }}', 'Completed', event)">
+                                        ✅ Complete
+                                    </button>
+                                    <button class="status-btn returned" onclick="updateOrderStatus('{{ order.id }}', 'Returned', event)">
+                                        🔄 Return
+                                    </button>
+                                {% elif order.status == 'Completed' %}
+                                    <button class="status-btn returned" onclick="updateOrderStatus('{{ order.id }}', 'Returned', event)">
+                                        🔄 Return
+                                    </button>
+                                {% elif order.status == 'Canceled' %}
+                                    <button class="status-btn processing" onclick="updateOrderStatus('{{ order.id }}', 'Processing', event)">
+                                        ⚙️ Reactivate
+                                    </button>
+                                {% elif order.status == 'Returned' %}
+                                    <button class="status-btn processing" onclick="updateOrderStatus('{{ order.id }}', 'Processing', event)">
+                                        ⚙️ Reprocess
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="order-amount">₱{{ order.get_total_cost|floatformat:2 }}</div>
+                        </td>
+                        <td class="actions-cell" onclick="event.stopPropagation()">
+                            <button class="btn-view-details" onclick="viewOrderDetails('{{ order.id }}')">
+                                👁️ View Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-state-icon">🛒</div>
+                            <h3>No orders found</h3>
+                            <p>No orders match your current filters or search criteria.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Side Panel -->
+        <div class="side-panel">
+            <div class="panel-section">
+                <h3>📝 Quick Notes</h3>
+                <textarea class="notes-textarea" placeholder="Add notes about customer interactions, order updates, or important reminders..."></textarea>
+                <button style="margin-top: 12px; padding: 8px 16px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    Save Note
+                </button>
+            </div>
+            
+            <div class="panel-section">
+                <h3>📋 Recent Activity</h3>
+                <div class="notes-list">
+                    <div class="note-item">
+                        <div class="note-content">Order ORD123456 status changed to Processing</div>
+                        <div class="note-timestamp">2 hours ago</div>
+                    </div>
+                    <div class="note-item">
+                        <div class="note-content">Customer called about delivery delay</div>
+                        <div class="note-timestamp">4 hours ago</div>
+                    </div>
+                    <div class="note-item">
+                        <div class="note-content">Payment received for ORD123456</div>
+                        <div class="note-timestamp">6 hours ago</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Details Modal -->
+<div id="orderDetailsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalOrderTitle">Order Details</h2>
+            <button class="close-btn" onclick="closeOrderDetailsModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="detail-grid" id="orderDetailsContent">
+                <!-- Order details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Status tab functionality
+    const statusTabs = document.querySelectorAll('.status-tab');
+    statusTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            statusTabs.forEach(t => t.classList.remove('active'));
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Filter orders based on status
+            const status = this.dataset.status;
+            filterOrdersByStatus(status);
+        });
+    });
+
+    // Search functionality
+    const searchInput = document.querySelector('.search-input');
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.orders-table tbody tr');
+        
+        rows.forEach(row => {
+            const cells = Array.from(row.children);
+            const rowText = cells.slice(0, -1).map(cell => cell.textContent.toLowerCase()).join(' ');
+            
+            if (rowText.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Order details modal functions
+    window.viewOrderDetails = function(orderId) {
+        document.getElementById('orderDetailsModal').style.display = 'block';
+        document.getElementById('modalOrderTitle').textContent = `Order ${orderId} Details`;
+        loadOrderDetails(orderId);
+    };
+
+    window.closeOrderDetailsModal = function() {
+        document.getElementById('orderDetailsModal').style.display = 'none';
+    };
+
+    // Status update function
+    window.updateOrderStatus = async function(orderId, newStatus, event) {
+        event.stopPropagation(); // Prevent row click
+        
+        if (!confirm(`Are you sure you want to change this order status to "${newStatus}"?`)) {
+            return;
+        }
+
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = 'Updating...';
+        button.disabled = true;
+
+        try {
+            const response = await fetch(`/orders/api/update-status/${orderId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Update the status badge
+                const row = button.closest('tr');
+                const statusBadge = row.querySelector('.status-badge');
+                statusBadge.textContent = newStatus;
+                statusBadge.className = `status-badge status-${newStatus.toLowerCase()}`;
+                
+                // Update the status buttons
+                updateStatusButtons(row, newStatus);
+                
+                // Show success message
+                showNotification(`Order status updated to ${newStatus}`, 'success');
+                
+                // Refresh the page after a short delay to update counts
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                throw new Error(data.error || 'Failed to update status');
+            }
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            showNotification(`Error updating status: ${error.message}`, 'error');
+        } finally {
+            button.textContent = originalText;
+            button.disabled = false;
+        }
+    };
+
+    function updateStatusButtons(row, currentStatus) {
+        const buttonContainer = row.querySelector('.status-update-buttons');
+        
+        // Clear existing buttons
+        buttonContainer.innerHTML = '';
+        
+        // Add appropriate buttons based on current status
+        let buttons = '';
+        
+        if (currentStatus === 'Pending') {
+            buttons = `
+                <button class="status-btn processing" onclick="updateOrderStatus('${row.dataset.orderId}', 'Processing', event)">
+                    ⚙️ Processing
+                </button>
+                <button class="status-btn canceled" onclick="updateOrderStatus('${row.dataset.orderId}', 'Canceled', event)">
+                    ❌ Cancel
+                </button>
+            `;
+        } else if (currentStatus === 'Processing') {
+            buttons = `
+                <button class="status-btn shipped" onclick="updateOrderStatus('${row.dataset.orderId}', 'Shipped', event)">
+                    🚚 Shipped
+                </button>
+                <button class="status-btn canceled" onclick="updateOrderStatus('${row.dataset.orderId}', 'Canceled', event)">
+                    ❌ Cancel
+                </button>
+            `;
+        } else if (currentStatus === 'Shipped') {
+            buttons = `
+                <button class="status-btn completed" onclick="updateOrderStatus('${row.dataset.orderId}', 'Completed', event)">
+                    ✅ Complete
+                </button>
+                <button class="status-btn returned" onclick="updateOrderStatus('${row.dataset.orderId}', 'Returned', event)">
+                    🔄 Return
+                </button>
+            `;
+        } else if (currentStatus === 'Completed') {
+            buttons = `
+                <button class="status-btn returned" onclick="updateOrderStatus('${row.dataset.orderId}', 'Returned', event)">
+                    🔄 Return
+                </button>
+            `;
+        } else if (currentStatus === 'Canceled') {
+            buttons = `
+                <button class="status-btn processing" onclick="updateOrderStatus('${row.dataset.orderId}', 'Processing', event)">
+                    ⚙️ Reactivate
+                </button>
+            `;
+        } else if (currentStatus === 'Returned') {
+            buttons = `
+                <button class="status-btn processing" onclick="updateOrderStatus('${row.dataset.orderId}', 'Processing', event)">
+                    ⚙️ Reprocess
+                </button>
+            `;
+        }
+        
+        buttonContainer.innerHTML = buttons;
+    }
+
+    function showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+            ${type === 'success' ? 'background: #10b981;' : 'background: #ef4444;'}
+        `;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+
+    async function loadOrderDetails(orderId) {
+        const content = document.getElementById('orderDetailsContent');
+        content.innerHTML = '<div style="text-align: center; padding: 40px;">Loading order details...</div>';
+
+        try {
+            const response = await fetch(`/orders/api/order-details/${orderId}/`);
+            if (response.ok) {
+                const order = await response.json();
+                displayOrderDetails(order);
+            } else {
+                throw new Error('Failed to fetch order details');
+            }
+        } catch (error) {
+            console.error('Error loading order details:', error);
+            content.innerHTML = '<div style="text-align: center; padding: 40px; color: #ef4444;">Error loading order details</div>';
+        }
+    }
+
+    function displayOrderDetails(order) {
+        const content = document.getElementById('orderDetailsContent');
+
+        // Logic for Payment Method and GCASH Proof of Payment
+        let paymentMethodHtml = `<span class="detail-value">${order.payment_method}</span>`;
+
+        if (order.payment_method && order.payment_method.toUpperCase() === 'GCASH') {
+            if (order.gcash_reference_image_url) {
+                paymentMethodHtml = `
+                    <span class="detail-value">${order.payment_method}</span>
+                    <div class="mt-2 text-end">
+                        <a href="${order.gcash_reference_image_url}" target="_blank" class="btn-view-details" style="background: #10b981; color: white; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 4px; font-size: 13px; text-decoration: none;">
+                            📸 View GCash Proof
+                        </a>
+                    </div>
+                `;
+            } else {
+                paymentMethodHtml = `
+                    <span class="detail-value">${order.payment_method}</span>
+                    <span class="detail-value text-danger" style="color: #ef4444; font-weight: 600;">(Proof Pending/Missing)</span>
+                `;
+            }
+        }
+        
+        // --- End of GCash Logic ---
+
+        content.innerHTML = `
+            <div class="detail-section">
+                <h3>📋 Order Information</h3>
+                <div class="detail-item">
+                    <span class="detail-label">Order ID</span>
+                    <span class="detail-value font-mono">${order.order_id}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value">${order.status}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Order Date</span>
+                    <span class="detail-value">${new Date(order.order_date).toLocaleString()}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Expected Delivery</span>
+                    <span class="detail-value">${order.expected_delivery_date ? new Date(order.expected_delivery_date).toLocaleDateString() : 'Not set'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Total Amount</span>
+                    <span class="detail-value">₱${order.total_amount.toFixed(2)}</span>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3>👤 Customer Information</h3>
+                <div class="detail-item">
+                    <span class="detail-label">Customer Name</span>
+                    <span class="detail-value">${order.customer.name}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Username</span>
+                    <span class="detail-value">${order.customer.username}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Email</span>
+                    <span class="detail-value">${order.customer.email}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Shipping Address</span>
+                    <span class="detail-value">${order.shipping_address}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Billing Address</span>
+                    <span class="detail-value">${order.billing_address || 'Same as shipping'}</span>
+                </div>
+                <div class="detail-item" style="display: block; border-bottom: none;">
+                    <span class="detail-label">Payment Method</span>
+                    ${paymentMethodHtml} 
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3>📦 Order Items</h3>
+                ${order.items.map(item => `
+                    <div class="detail-item">
+                        <span class="detail-label">${item.name} (x${item.quantity})</span>
+                        <span class="detail-value">₱${item.total.toFixed(2)}</span>
+                    </div>
+                `).join('')}
+                <div class="detail-item" style="border-top: 2px solid #e2e8f0; margin-top: 8px; padding-top: 12px; font-weight: 700;">
+                    <span class="detail-label">Total</span>
+                    <span class="detail-value">₱${order.total_amount.toFixed(2)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function filterOrdersByStatus(status) {
+        const rows = document.querySelectorAll('.orders-table tbody tr');
+        
+        rows.forEach(row => {
+            if (status === 'all') {
+                row.style.display = '';
+            } else {
+                const statusCell = row.querySelector('.status-badge');
+                if (statusCell && statusCell.textContent.toLowerCase() === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('orderDetailsModal');
+        if (event.target === modal) {
+            closeOrderDetailsModal();
+        }
+    };
+});
+
+// Add CSS animations for notifications
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+<!-- templates/orders/manual_order_management/manual_order_management.html -->
+{% extends 'base_admin.html' %}
+{% load static %}
+
+
+{% block content %}
+<h1>Manual Order Management</h1>
+
+<!-- Create / Edit Form -->
+{% include 'orders/manual_order_management/partials/_manual_order_form.html' %}
+
+<hr>
+
+<!-- List of Orders -->
+{% include 'orders/manual_order_management/partials/_manual_order_list.html' %}
+
+{% endblock %}

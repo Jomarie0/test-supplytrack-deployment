@@ -1,0 +1,434 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/orders/orders.css' %}">
+<style>
+  /* Modal styles */
+  .modal {
+    display: none; 
+    position: fixed; 
+    z-index: 9999;
+    padding-top: 100px; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.4);
+  }
+  .modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 700px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  .close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .close-btn:hover {
+    color: black;
+  }
+  /* Readonly styles */
+  .readonly-field {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    white-space: pre-wrap;
+    font-family: monospace;
+  }
+  /* Buttons */
+  .action-buttons button {
+    margin-right: 10px;
+    padding: 8px 14px;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid #007bff;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.3s ease;
+  }
+  .action-buttons button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .action-buttons button:hover:not(:disabled) {
+    background-color: #0056b3;
+  }
+  .back-button {
+    text-decoration: none;
+    font-size: 1rem;
+    margin-left: 20px;
+    color: #555;
+  }
+  .back-button:hover {
+    text-decoration: underline;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="section-title">Purchase Orders</h1>
+
+<div class="orders-layout">
+  <div class="orders-panel">
+
+    <div class="action-buttons">
+      <button id="add-order-btn" onclick="openAddModal()">Add Purchase Order</button>
+      <button id="update-btn" disabled onclick="populateFormForUpdate()">Update Selected PO</button>
+      <button id="delete-btn" disabled>Soft Delete</button>
+      <a href="{% url 'PO:archived_purchase_orders' %}" class="back-button">🗂 View Archived Orders</a>
+    </div>
+
+    <input type="text" class="search-input" placeholder="Search purchase orders..." style="margin: 15px 0; padding: 8px; width: 300px;">
+
+    <div class="table-wrapper">
+      <table class="orders-table" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="border: 1px solid #ddd; padding: 8px;">
+              <input type="checkbox" id="select-all">
+            </th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Purchase Order ID</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Supplier</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Order Date</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Expected Delivery</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Total Cost</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Details</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for purchase_order in purchase_orders %}
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              <input type="checkbox" class="order-checkbox" data-id="{{ purchase_order.purchase_order_id }}">
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ purchase_order.purchase_order_id }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ purchase_order.supplier.name }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ purchase_order.order_date|date:"Y-m-d H:i" }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ purchase_order.expected_delivery_date|default:"—" }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ purchase_order.total_cost|floatformat:2 }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+              <button class="view-details-btn" data-po-id="{{ purchase_order.purchase_order_id }}">
+                View Details
+              </button>
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ purchase_order.get_status_display }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" style="text-align:center; padding: 15px;">No purchase orders found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal for Purchase Order Details -->
+    <div id="detailsModal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" id="modalCloseBtn">&times;</span>
+        <h2>Purchase Order Details</h2>
+        <div id="modalContent">
+          <p><strong>PO ID:</strong> <span id="modalPoId"></span></p>
+          <p><strong>Supplier:</strong> <span id="modalSupplier"></span></p>
+          <p><strong>Order Date:</strong> <span id="modalOrderDate"></span></p>
+          <p><strong>Expected Delivery:</strong> <span id="modalExpectedDelivery"></span></p>
+          <p><strong>Notes:</strong></p>
+          <pre id="modalNotes" class="readonly-field"></pre>
+
+          <h3>Order Items</h3>
+          <table id="modalItemsTable" style="width:100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="border:1px solid #ddd; padding:8px;">Product Name</th>
+                <th style="border:1px solid #ddd; padding:8px;">Description</th>
+                <th style="border:1px solid #ddd; padding:8px;">Quantity</th>
+                <th style="border:1px solid #ddd; padding:8px;">Unit Cost</th>
+                <th style="border:1px solid #ddd; padding:8px;">Total Cost</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <p style="text-align:right; font-weight:bold; margin-top:10px;">Total Cost: <span id="modalTotalCost"></span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for Add/Update PO -->
+    <div id="formModal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" id="formModalCloseBtn">&times;</span>
+        <h2 id="formModalTitle">Add / Update Purchase Order</h2>
+        <form method="POST" id="purchase-order-form">
+          {% csrf_token %}
+          <input type="hidden" name="purchase_order_id" id="hidden-purchase-order-id">
+
+          <div id="formErrors" class="error-messages" style="display:none;"></div>
+
+          {{ form.as_p }}
+
+          <button type="submit" class="submit-btn">Save</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('detailsModal');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+  const modalPoId = document.getElementById('modalPoId');
+  const modalSupplier = document.getElementById('modalSupplier');
+  const modalOrderDate = document.getElementById('modalOrderDate');
+  const modalExpectedDelivery = document.getElementById('modalExpectedDelivery');
+  const modalNotes = document.getElementById('modalNotes');
+  const modalItemsTableBody = document.querySelector('#modalItemsTable tbody');
+  const modalTotalCost = document.getElementById('modalTotalCost');
+
+  const formModal = document.getElementById('formModal');
+  const formModalCloseBtn = document.getElementById('formModalCloseBtn');
+  const formModalTitle = document.getElementById('formModalTitle');
+  const purchaseOrderForm = document.getElementById('purchase-order-form');
+  const hiddenPurchaseOrderId = document.getElementById('hidden-purchase-order-id');
+  const formErrorsDiv = document.getElementById('formErrors');
+
+  const selectAllCheckbox = document.getElementById('select-all');
+  const orderCheckboxes = document.querySelectorAll('.order-checkbox');
+  const updateBtn = document.getElementById('update-btn');
+  const deleteBtn = document.getElementById('delete-btn');
+
+  // Open details modal and load PO details via API
+  function openDetailsModal(poId) {
+    fetch(`/purchase_orders/api/details/${poId}/`)
+      .then(response => response.json())
+      .then(data => {
+        modalPoId.textContent = data.purchase_order_id;
+        modalSupplier.textContent = data.supplier_name;
+        modalOrderDate.textContent = data.order_date;
+        modalExpectedDelivery.textContent = data.expected_delivery_date || '—';
+        modalNotes.textContent = data.notes || '—';
+
+        modalItemsTableBody.innerHTML = '';
+        data.items.forEach(item => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td style="border:1px solid #ddd; padding:8px;">${item.product_name}</td>
+            <td style="border:1px solid #ddd; padding:8px;">${item.description || '-'}</td>
+            <td style="border:1px solid #ddd; padding:8px;">${item.quantity_ordered}</td>
+            <td style="border:1px solid #ddd; padding:8px;">${parseFloat(item.unit_cost).toFixed(2)}</td>
+            <td style="border:1px solid #ddd; padding:8px;">${parseFloat(item.total_price).toFixed(2)}</td>
+          `;
+          modalItemsTableBody.appendChild(row);
+        });
+
+        modalTotalCost.textContent = parseFloat(data.total_cost).toFixed(2);
+
+        modal.style.display = "block";
+      })
+      .catch(err => {
+        alert('Error fetching purchase order details.');
+        console.error(err);
+      });
+  }
+
+  // Close modals handlers
+  modalCloseBtn.addEventListener('click', () => {
+    modal.style.display = "none";
+  });
+  formModalCloseBtn.addEventListener('click', () => {
+    formModal.style.display = "none";
+    resetFormModal();
+  });
+
+  window.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+    if (event.target === formModal) {
+      formModal.style.display = "none";
+      resetFormModal();
+    }
+  });
+
+  // Attach view details buttons event listeners
+  document.querySelectorAll('.view-details-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const poId = btn.getAttribute('data-po-id');
+      openDetailsModal(poId);
+    });
+  });
+
+  // Select All checkbox behavior
+  selectAllCheckbox.addEventListener('change', () => {
+    const checked = selectAllCheckbox.checked;
+    document.querySelectorAll('.order-checkbox').forEach(cb => {
+      cb.checked = checked;
+    });
+    toggleActionButtons();
+  });
+
+  // Individual checkbox change behavior
+  document.querySelectorAll('.order-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => {
+      // Update Select All checkbox state
+      const allChecked = Array.from(document.querySelectorAll('.order-checkbox')).every(cb => cb.checked);
+      selectAllCheckbox.checked = allChecked;
+
+      toggleActionButtons();
+    });
+  });
+
+  // Enable/disable Update and Delete buttons
+  function toggleActionButtons() {
+    const checkedBoxes = Array.from(document.querySelectorAll('.order-checkbox:checked'));
+    updateBtn.disabled = checkedBoxes.length !== 1;
+    deleteBtn.disabled = checkedBoxes.length === 0;
+  }
+
+  // Populate form modal for update
+  window.populateFormForUpdate = function() {
+    const checkedBoxes = Array.from(document.querySelectorAll('.order-checkbox:checked'));
+    if (checkedBoxes.length !== 1) {
+      alert('Please select exactly one purchase order to update.');
+      return;
+    }
+
+    const row = checkedBoxes[0].closest('tr');
+    const poId = row.querySelector('td:nth-child(2)').textContent.trim();
+
+    // Fill hidden input
+    hiddenPurchaseOrderId.value = poId;
+
+    // Fetch purchase order details to pre-fill the form (optional: or fill from table if you have all data)
+    fetch(`/purchase_orders/api/details/${poId}/`)
+      .then(response => response.json())
+      .then(data => {
+        formModalTitle.textContent = 'Update Purchase Order';
+
+        // Fill form fields (assuming your form has fields with IDs)
+        if (document.getElementById('id_supplier')) {
+          // Set supplier select by matching text
+          const supplierSelect = document.getElementById('id_supplier');
+          for (let option of supplierSelect.options) {
+            if (option.text.trim() === data.supplier_name) {
+              supplierSelect.value = option.value;
+              break;
+            }
+          }
+        }
+
+        if (document.getElementById('id_expected_delivery_date')) {
+          document.getElementById('id_expected_delivery_date').value = data.expected_delivery_date || '';
+        }
+
+        if (document.getElementById('id_status')) {
+          const statusSelect = document.getElementById('id_status');
+          for (let option of statusSelect.options) {
+            if (option.text.trim() === data.status_display) {
+              statusSelect.value = option.value;
+              break;
+            }
+          }
+        }
+
+        if (document.getElementById('id_notes')) {
+          document.getElementById('id_notes').value = data.notes || '';
+        }
+
+        formModal.style.display = 'block';
+      })
+      .catch(err => {
+        alert('Error fetching purchase order details for update.');
+        console.error(err);
+      });
+  };
+
+  // Reset form modal
+  function resetFormModal() {
+    purchaseOrderForm.reset();
+    hiddenPurchaseOrderId.value = '';
+    formModalTitle.textContent = 'Add Purchase Order';
+    formErrorsDiv.style.display = 'none';
+    formErrorsDiv.innerHTML = '';
+  }
+
+  // Handle form submission with fetch + show errors inline (optional enhancement)
+  purchaseOrderForm.addEventListener('submit', function(e) {
+    // Let it submit normally for now, or preventDefault and do AJAX here if preferred.
+  });
+
+  // Delete button click event
+  deleteBtn.addEventListener('click', () => {
+    const checkedBoxes = Array.from(document.querySelectorAll('.order-checkbox:checked'));
+    if (checkedBoxes.length === 0) {
+      alert('Please select at least one purchase order to delete.');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to soft delete ${checkedBoxes.length} selected purchase order(s)?`)) {
+      return;
+    }
+
+    const idsToDelete = checkedBoxes.map(cb => cb.dataset.id);
+
+    fetch("{% url 'PO:delete_purchase_orders' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      },
+      body: JSON.stringify({ ids: idsToDelete }),
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => { throw new Error(err.error || 'Server error'); });
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        alert(data.message || 'Purchase orders soft-deleted successfully!');
+        location.reload();
+      } else {
+        alert('Error: ' + (data.error || 'Unknown error occurred.'));
+      }
+    })
+    .catch(error => {
+      console.error('Fetch Error:', error);
+      alert('An error occurred during deletion: ' + error.message);
+    });
+  });
+
+  // Search filter
+  document.querySelector('.search-input').addEventListener('input', e => {
+    const kw = e.target.value.toLowerCase();
+    document.querySelectorAll('.orders-table tbody tr').forEach(row => {
+      const poId = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+      const supplierName = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+      const status = row.querySelector('td:nth-child(8)').textContent.toLowerCase();
+
+      row.style.display = (poId.includes(kw) || supplierName.includes(kw) || status.includes(kw)) ? '' : 'none';
+    });
+  });
+
+  // Add order button: open form modal for add
+  window.openAddModal = function() {
+    resetFormModal();
+    formModal.style.display = 'block';
+  };
+
+});
+</script>
+{% endblock %}

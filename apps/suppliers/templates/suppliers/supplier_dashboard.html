@@ -1,0 +1,150 @@
+{% extends "base_supplier.html" %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-6 space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-semibold text-gray-900">
+                Welcome back, {{ supplier.contact_name|default:supplier.company_name }}
+            </h1>
+            <p class="text-gray-500 mt-1">
+                Track your current purchase orders and take action quickly.
+            </p>
+        </div>
+        <a href="{% url 'suppliers:supplier_order_list' %}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition">
+            <i class="fas fa-box-open"></i>
+            View All Orders
+        </a>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-500">Total Orders</span>
+                <span class="inline-flex items-center justify-center rounded-full bg-blue-100 text-blue-600 w-9 h-9">
+                    <i class="fas fa-receipt"></i>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-semibold text-gray-900">
+                {{ total_orders }}
+            </p>
+            <p class="mt-1 text-xs text-gray-400">Across every status</p>
+        </div>
+
+        <div class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-500">Pending Pricing</span>
+                <span class="inline-flex items-center justify-center rounded-full bg-amber-100 text-amber-600 w-9 h-9">
+                    <i class="fas fa-hourglass-half"></i>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-semibold text-gray-900">
+                {{ pending_pricing_count }}
+            </p>
+            <p class="mt-1 text-xs text-gray-400">Waiting for your unit prices</p>
+        </div>
+
+        <div class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-500">Awaiting Confirmation</span>
+                <span class="inline-flex items-center justify-center rounded-full bg-purple-100 text-purple-600 w-9 h-9">
+                    <i class="fas fa-clipboard-check"></i>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-semibold text-gray-900">
+                {{ awaiting_confirmation_count }}
+            </p>
+            <p class="mt-1 text-xs text-gray-400">Staff reviewing your submitted prices</p>
+        </div>
+
+        <div class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-500">On The Way / Completed</span>
+                <span class="inline-flex items-center justify-center rounded-full bg-emerald-100 text-emerald-600 w-9 h-9">
+                    <i class="fas fa-truck"></i>
+                </span>
+            </div>
+            <p class="mt-4 text-3xl font-semibold text-gray-900">
+                {{ in_transit_count|add:completed_count }}
+            </p>
+            <p class="mt-1 text-xs text-gray-400">Including confirmed, shipped, and received POs</p>
+        </div>
+    </div>
+
+    {% if recent_orders %}
+    <div class="rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">Recent Purchase Orders</h2>
+                <p class="text-sm text-gray-500">Latest activity with quick status at-a-glance.</p>
+            </div>
+            <a href="{% url 'suppliers:supplier_order_list' %}"
+               class="text-sm font-medium text-blue-600 hover:text-blue-700 transition">
+                View history →
+            </a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-100">
+                <thead class="bg-gray-50">
+                    <tr class="text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                        <th class="px-6 py-3">PO Number</th>
+                        <th class="px-6 py-3">Status</th>
+                        <th class="px-6 py-3">Order Date</th>
+                        <th class="px-6 py-3 text-right">Total Cost</th>
+                        <th class="px-6 py-3 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 bg-white text-sm text-gray-700">
+                    {% for po in recent_orders %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 font-medium text-gray-900">
+                            {{ po.purchase_order_id }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
+                                         {% if po.status == po.STATUS_REQUEST_PENDING %}
+                                            bg-amber-100 text-amber-600
+                                        {% elif po.status == po.STATUS_SUPPLIER_PRICED %}
+                                            bg-purple-100 text-purple-600
+                                        {% elif po.status == po.STATUS_CONFIRMED %}
+                                            bg-green-100 text-green-600
+                                        {% elif po.status == po.STATUS_IN_TRANSIT %}
+                                            bg-blue-100 text-blue-600  <!-- NEW -->
+                                        {% elif po.status == po.STATUS_PARTIALLY_RECEIVED %}
+                                            bg-yellow-100 text-yellow-600  <!-- NEW -->
+                                        {% elif po.status == po.STATUS_RECEIVED %}
+                                            bg-emerald-100 text-emerald-600
+                                        {% elif po.status == po.STATUS_REFUND %}
+                                            bg-red-100 text-red-600  <!-- NEW -->
+                                        {% else %}
+                                            bg-gray-100 text-gray-600
+                                        {% endif %}">
+                                {{ po.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            {{ po.order_date|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            ₱{{ po.total_cost|default_if_none:"0.00" }}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            
+                            <a href="{% url 'suppliers:view_order' po.purchase_order_id %}"
+                               class="inline-flex items-center gap-2 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-blue-400 hover:text-blue-600 transition">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="rounded-xl border border-dashed border-gray-200 bg-white p-10 text-center text-sm text-gray-500">
+        No purchase orders yet. Once requests arrive, they’ll appear here.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

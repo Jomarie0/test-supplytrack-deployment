@@ -1,0 +1,791 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/inventory/inventory.css' %}">
+<style>
+/* ===== PROFESSIONAL MANUAL ORDER MANAGEMENT DESIGN SYSTEM ===== */
+
+/* Core Design Variables - Consistent with Customer Orders */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    --neutral-50: #f8fafc;
+    --neutral-100: #f1f5f9;
+    --neutral-200: #e2e8f0;
+    --neutral-300: #cbd5e1;
+    --neutral-400: #94a3b8;
+    --neutral-500: #64748b;
+    --neutral-600: #475569;
+    --neutral-700: #334155;
+    --neutral-800: #1e293b;
+    --neutral-900: #0f172a;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --border-radius: 12px;
+    --border-radius-sm: 8px;
+    --border-radius-lg: 16px;
+}
+
+/* Base Module Container */
+.manual-order-module {
+    background: #ffffff;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--neutral-200);
+    overflow: hidden;
+    min-height: 100vh;
+}
+
+/* Professional Header */
+.manual-order-header {
+    background: var(--secondary-gradient);
+    color: white;
+    padding: 2rem 2.5rem;
+    border-bottom: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.manual-order-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.manual-order-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.manual-order-header .subtitle {
+    margin-top: 0.75rem;
+    opacity: 0.9;
+    font-size: 1.125rem;
+    font-weight: 400;
+    position: relative;
+    z-index: 1;
+}
+
+/* Professional Stats Section */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem 2.5rem;
+    background: linear-gradient(135deg, var(--neutral-50) 0%, var(--neutral-100) 100%);
+    border-bottom: 1px solid var(--neutral-200);
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--neutral-200);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--secondary-gradient);
+}
+
+.stat-label {
+    color: var(--neutral-500);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--neutral-800);
+    line-height: 1;
+}
+
+/* Professional Actions Section */
+.manual-order-actions {
+    padding: 2rem 2.5rem;
+    background: white;
+    border-bottom: 1px solid var(--neutral-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.action-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* Professional Buttons */
+.btn-manual {
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    font-size: 0.875rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary-manual {
+    background: var(--secondary-gradient);
+    color: white;
+}
+
+.btn-primary-manual:hover {
+    background: linear-gradient(135deg, #0e7490 0%, #155e75 100%);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-back-to-customer {
+    background: var(--primary-gradient);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-back-to-customer:hover {
+    background: var(--primary-gradient);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-danger-manual {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-danger-manual:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Professional Search */
+.search-container {
+    position: relative;
+    max-width: 400px;
+    flex: 1;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    border: 2px solid var(--neutral-200);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #0891b2;
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--neutral-400);
+    font-size: 1rem;
+}
+
+/* Professional Table */
+.manual-order-table-container {
+    background: white;
+    overflow-x: auto;
+    height: 500px;
+    max-height: 100vh; /* adjust as needed */
+    overflow-y: auto; 
+}
+
+.manual-order-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    max-height: 420px; /* adjust as needed */
+    overflow-y: auto;    /* scroll the whole table inside this container */
+}
+
+.manual-order-table thead {
+    background: var(--neutral-50);
+    border-bottom: 2px solid var(--neutral-200);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.manual-order-table th {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--neutral-700);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: none;
+}
+
+.manual-order-table td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--neutral-100);
+    vertical-align: middle;
+    border: none;
+}
+
+.manual-order-table tbody tr {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.manual-order-table tbody tr:hover {
+    background: var(--neutral-50);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.manual-order-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Professional Order ID */
+.order-id-badge {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    background: var(--neutral-100);
+    color: var(--neutral-600);
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Professional Status Badges */
+.status-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-block;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-processing {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-shipped {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.status-completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-canceled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-returned {
+    background: #f3e8ff;
+    color: #6b21a8;
+}
+
+/* Professional Source Badge */
+.source-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-block;
+    background: var(--secondary-gradient);
+    color: white;
+}
+
+/* Professional Actions */
+.btn-view {
+    background: var(--info-color);
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.btn-view:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-edit {
+    background: var(--warning-color);
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.btn-edit:hover {
+    background: #d97706;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-delete {
+    background: var(--danger-color);
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.btn-delete:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Professional Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 2% auto;
+    padding: 0;
+    border-radius: var(--border-radius-lg);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    background: var(--secondary-gradient);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.75rem;
+    cursor: pointer;
+    padding: 0;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+/* Professional Form Styles */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--neutral-700);
+    font-size: 0.875rem;
+}
+
+.form-control {
+    padding: 0.75rem;
+    border: 2px solid var(--neutral-200);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #0891b2;
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+/* Professional Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3.75rem 2rem;
+    color: var(--neutral-500);
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--neutral-700);
+    font-weight: 600;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+/* Professional Responsive Design */
+@media (max-width: 768px) {
+    .manual-order-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .action-group {
+        justify-content: center;
+    }
+    
+    .search-container {
+        max-width: none;
+    }
+    
+    .manual-order-table th,
+    .manual-order-table td {
+        padding: 0.75rem 1rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 5% auto;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Utility Classes */
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.font-mono { font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; }
+</style>
+{% endblock %}
+
+{% block content %}
+<title>
+    {% block title %}
+        {% if request.user.role == 'admin' %}
+                Admin | Manual Order Management
+            {% elif request.user.role == 'manager' %}
+                Manager | Manual Order Management
+            {% elif request.user.role == 'staff' %}
+                Staff | Manual Order Management
+            {% elif request.user.role == 'customer' %}
+                Customer | Manual Order Management
+            {% elif request.user.role == 'supplier' %}
+                Supplier | Manual Order Management
+            {% elif request.user.role == 'delivery' %}
+                Delivery | Manual Order Management
+            {% else %}
+                empty
+            {% endif %}
+    {% endblock %}
+    </title>
+<div class="manual-order-module">
+    <!-- Header -->
+    <div class="manual-order-header">
+        <h1>📝 Manual Order Management</h1>
+        <div class="subtitle">Create and manage orders for B2B clients, phone orders, and walk-ins</div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value">{{ total_orders }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Pending</div>
+            <div class="stat-value">{{ pending_orders }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Completed</div>
+            <div class="stat-value">{{ completed_orders }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value">₱{{ total_revenue|floatformat:2 }}</div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="manual-order-actions">
+        <div class="action-group">
+            {% comment %} <a href="{% url 'orders:customer_orders_management' %}" class="btn-manual btn-back-to-customer">
+                🛒 Customer Orders
+            </a> {% endcomment %}
+            <button id="openManualOrderBtn" class="btn-manual btn-primary-manual">
+                ➕ Create Manual Order
+            </button>
+            <button class="btn-manual btn-danger-manual" onclick="deleteSelected()">
+                🗑️ Delete Selected
+            </button>
+        </div>
+        
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search orders..." />
+        </div>
+    </div>
+    <!-- Modals -->
+{% include 'orders/manual_order_management/partials/_form.html' %}
+{% include 'orders/manual_order_management/partials/_details.html' %}
+{% include 'orders/manual_order_management/partials/_delete.html' %}
+    <!-- Order List -->
+    {% include 'orders/manual_order_management/partials/_list.html' %}
+</div>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('.manual-order-table tbody tr[data-order-id]');
+                
+                rows.forEach(row => {
+                    const cells = Array.from(row.children);
+                    const rowText = cells.slice(0, -1).map(cell => cell.textContent.toLowerCase()).join(' ');
+                    
+                    if (rowText.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+    
+        // Select all functionality
+        const selectAllCheckbox = document.getElementById('select-all');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.manual-order-table tbody .order-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+            });
+        }
+    
+        // Individual checkbox functionality
+        const orderCheckboxes = document.querySelectorAll('.manual-order-table tbody .order-checkbox');
+        if (orderCheckboxes.length) {
+            orderCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const checkedBoxes = document.querySelectorAll('.manual-order-table tbody .order-checkbox:checked');
+                    const selectAllCheckbox = document.getElementById('select-all');
+                    if (selectAllCheckbox) {
+                        selectAllCheckbox.checked = checkedBoxes.length === orderCheckboxes.length;
+                        selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < orderCheckboxes.length;
+                    }
+                });
+            });
+        }
+    });
+    
+    // Modal functions
+    function openCreateModal() {
+        const modal = document.getElementById('createOrderModal');
+        if (modal) modal.classList.remove('hidden');
+    }
+    
+    function closeCreateModal() {
+        const modal = document.getElementById('createOrderModal');
+        if (modal) modal.classList.add('hidden');
+    }
+    
+    function openDetailsModal(orderId) {
+        const modal = document.getElementById('orderDetailsModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            if (typeof loadOrderDetails === 'function') {
+                loadOrderDetails(orderId);
+            }
+        }
+    }
+    
+    function closeDetailsModal() {
+        const modal = document.getElementById('orderDetailsModal');
+        if (modal) modal.classList.add('hidden');
+    }
+    
+    function openDeleteModal(orderId) {
+        const modal = document.getElementById('deleteOrderModal');
+        const input = document.getElementById('deleteOrderId');
+        if (modal && input) {
+            modal.classList.remove('hidden');
+            input.value = orderId;
+        }
+    }
+    
+    {% comment %} function closeDeleteModal() {
+        const modal = document.getElementById('deleteOrderModal');
+        if (modal) modal.classList.add('hidden');
+    }
+    
+    // Order management functions
+    function deleteSelected() {
+        const checkedBoxes = document.querySelectorAll('.manual-order-table tbody .order-checkbox:checked');
+        if (checkedBoxes.length === 0) {
+            alert('Please select at least one order to delete.');
+            return;
+        }
+        
+        if (confirm(`Are you sure you want to delete ${checkedBoxes.length} order(s)?`)) {
+            const orderIds = Array.from(checkedBoxes).map(cb => cb.value);
+            console.log('Deleting orders:', orderIds);
+            // Implement bulk delete functionality here
+        }
+    } {% endcomment %}
+    
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    };
+    </script>
+    
+{% endblock %}

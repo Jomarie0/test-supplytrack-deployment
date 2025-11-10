@@ -1,0 +1,422 @@
+<!-- templates/orders/manual_order_management/partials/_form.html -->
+
+<!-- Open Modal Button -->
+{% comment %} <button id="openManualOrderBtn" class="btn-manual btn-primary-manual">
+    ➕ Create Manual Order
+</button> {% endcomment %}
+<style>
+    /* Basic Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: none; /* Controlled by JS to be 'flex' when open */
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 800px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    overflow-y: auto; /* Allow scrolling for long forms */
+    max-height: 90vh; 
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.close-btn {
+    font-size: 24px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: #888;
+}
+
+/* Form Layout Styles */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive 2-column layout */
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+/* Order Items Section */
+.order-items-section h3 {
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.order-item-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto; /* Product, Qty, Price, Remove button */
+    gap: 10px;
+    align-items: flex-end; /* Align items to the bottom of the row */
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+}
+
+/* Buttons and Actions */
+.modal-actions {
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    text-align: right;
+}
+
+.btn-cancel, .btn-submit, .btn-add-item, .btn-remove-item {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.btn-submit {
+    background-color: #007bff; /* Example primary color */
+    color: white;
+}
+
+.btn-cancel {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-add-item {
+    background-color: #28a745;
+    color: white;
+    display: block;
+    margin-top: 10px;
+}
+
+.btn-remove-item {
+    background-color: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    white-space: nowrap; /* Prevent button text from wrapping */
+}
+
+/* Total Section */
+.total-section {
+    text-align: right;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 15px;
+}
+</style>
+<!-- Modal -->
+<div id="createOrderModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Create Manual Order</h2>
+            <button type="button" class="close-btn">&times;</button>
+        </div>
+        
+        <form id="manualOrderForm" method="POST" action="{% url 'orders:create_manual_order' %}">
+            {% csrf_token %}
+            
+            <div class="modal-body">
+                <!-- Customer Information -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="id_customer">Linked Customer Account (Optional)</label>
+                        <select name="customer" id="id_customer" class="form-control">
+                            <option value="">No linked account (B2B/Guest)</option>
+                            {% for customer in customers %}
+                                <option value="{{ customer.id }}">{{ customer.username }} - {{ customer.email }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_customer_name">Customer Name *</label>
+                        <input type="text" name="customer_name" id="id_customer_name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_customer_email">Email</label>
+                        <input type="email" name="customer_email" id="id_customer_email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_customer_phone">Phone</label>
+                        <input type="text" name="customer_phone" id="id_customer_phone">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_order_source">Order Source *</label>
+                        <select name="order_source" id="id_order_source" required>
+                            {% for value, label in order_source_choices %}
+                                <option value="{{ value }}" {% if value == "walk_in" %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_payment_method">Payment Method *</label>
+                        <select name="payment_method" id="id_payment_method" required>
+                            {% for value, label in payment_methods %}
+                                <option value="{{ value }}" {% if value == "COD" %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_status">Status *</label>
+                        <select name="status" id="id_status" required>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if value == "Pending" %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="id_shipping_address">Shipping Address *</label>
+                        <textarea name="shipping_address" id="id_shipping_address" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_billing_address">Billing Address (Optional)</label>
+                        <textarea name="billing_address" id="id_billing_address" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="id_expected_delivery_date">Expected Delivery Date</label>
+                        <input type="date" name="expected_delivery_date" id="id_expected_delivery_date">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_notes">Internal Notes</label>
+                    <textarea name="notes" id="id_notes" rows="2"></textarea>
+                </div>
+                
+                <!-- Order Items Section -->
+                <div class="order-items-section">
+                    <h3>Order Items</h3>
+                    
+                    <div id="orderItemsContainer"></div>
+                    
+                    <button type="button" class="btn-add-item" onclick="addItem()">
+                        ➕ Add Another Item
+                    </button>
+                    
+                    <div class="total-section">
+                        <span class="total-label">Total:</span>
+                        <span class="total-value" id="orderTotal">₱0.00</span>
+                    </div>
+                </div>
+                
+                <!-- Hidden field for items JSON -->
+                <input type="hidden" name="items_json" id="items_json">
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel">Cancel</button>
+                <button type="submit" class="btn-submit">Create Order</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('createOrderModal');
+        const openBtn = document.getElementById('openManualOrderBtn');
+        const closeBtns = modal ? modal.querySelectorAll('.close-btn, .btn-cancel') : [];
+        let itemIndex = 0;
+    
+        // Open modal
+        if (openBtn) openBtn.addEventListener('click', openCreateModal);
+        closeBtns.forEach(btn => btn.addEventListener('click', closeCreateModal));
+    
+        function openCreateModal() {
+            if (!modal) return;
+            modal.style.display = 'flex';
+            modal.classList.remove('hidden');
+            resetForm();
+        }
+    
+        function closeCreateModal() {
+            if (!modal) return;
+            modal.style.display = 'none';
+            modal.classList.add('hidden');
+        }
+    
+        function resetForm() {
+            const form = document.getElementById('manualOrderForm');
+            if (!form) return;
+    
+            form.reset();
+    
+            const container = document.getElementById('orderItemsContainer');
+            if (!container) return;
+    
+            container.innerHTML = '';
+            itemIndex = 0;
+            addItem();
+        }
+    
+        function attachItemListeners(index) {
+            const variantSelect = document.querySelector(`[name="item_variant_${index}"]`);
+            const quantityInput = document.querySelector(`[name="item_quantity_${index}"]`);
+            const priceInput = document.querySelector(`[name="item_price_${index}"]`);
+    
+            if (variantSelect && priceInput) {
+                variantSelect.addEventListener('change', () => {
+                    const selectedOption = variantSelect.options[variantSelect.selectedIndex];
+                    priceInput.value = selectedOption?.dataset.price || 0;
+                    updateTotal();
+                });
+            }
+    
+            if (quantityInput) quantityInput.addEventListener('input', updateTotal);
+        }
+    
+        window.addItem = function() {
+            const container = document.getElementById('orderItemsContainer');
+            if (!container) return;
+    
+            const currentIndex = itemIndex;
+    
+            const row = document.createElement('div');
+            row.className = 'order-item-row';
+            row.dataset.itemIndex = currentIndex;
+    
+            row.innerHTML = `
+                <div class="form-group">
+                    <label>Product</label>
+                    <select name="item_variant_${currentIndex}" class="item-variant" data-index="${currentIndex}" required autocomplete="off">
+                        <option value="">Select Product</option>
+                        {% for variant in product_variants %}
+                        <option value="{{ variant.id }}" 
+                                data-price="{{ variant.price|default:variant.product.price }}"
+                                data-stock="{{ variant.product.stock_quantity }}">
+                            {{ variant.product.name }} {% if variant.sku %}({{ variant.sku }}){% endif %}
+                            - ₱{{ variant.price|default:variant.product.price }} (Stock: {{ variant.product.stock_quantity }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" name="item_quantity_${currentIndex}" class="item-quantity" data-index="${currentIndex}" min="1" value="1" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Price</label>
+                    <input type="number" name="item_price_${currentIndex}" class="item-price" data-index="${currentIndex}" step="0.01" min="0" required autocomplete="off" readonly>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn-remove-item">Remove</button>
+                </div>
+            `;
+    
+            container.appendChild(row);
+    
+            // Attach listeners for this row
+            attachItemListeners(currentIndex);
+    
+            // Remove button
+            const removeBtn = row.querySelector('.btn-remove-item');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => removeItem(currentIndex));
+            }
+    
+            itemIndex++;
+            updateTotal();
+        };
+    
+        window.removeItem = function(index) {
+            const row = document.querySelector(`[data-item-index="${index}"]`);
+            if (row) row.remove();
+            updateTotal();
+        };
+    
+        function updateTotal() {
+            let total = 0;
+            document.querySelectorAll('.order-item-row').forEach(row => {
+                const index = row.dataset.itemIndex;
+                const price = parseFloat(row.querySelector(`[name="item_price_${index}"]`)?.value) || 0;
+                const quantity = parseInt(row.querySelector(`[name="item_quantity_${index}"]`)?.value) || 0;
+                total += price * quantity;
+            });
+            const totalEl = document.getElementById('orderTotal');
+            if (totalEl) totalEl.textContent = '₱' + total.toFixed(2);
+        }
+    
+        // Form submission
+        const form = document.getElementById('manualOrderForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const items = [];
+                document.querySelectorAll('.order-item-row').forEach(row => {
+                    const index = row.dataset.itemIndex;
+                    const variant = row.querySelector(`[name="item_variant_${index}"]`);
+                    const qty = row.querySelector(`[name="item_quantity_${index}"]`);
+                    const price = row.querySelector(`[name="item_price_${index}"]`);
+                    if (variant && variant.value) {
+                        items.push({
+                            product_variant_id: parseInt(variant.value),
+                            quantity: parseInt(qty.value),
+                            price_at_order: parseFloat(price.value)
+                        });
+                    }
+                });
+    
+                if (items.length === 0) {
+                    alert('Please add at least one item.');
+                    e.preventDefault();
+                    return;
+                }
+    
+                const hiddenInput = document.getElementById('items_json');
+                if (hiddenInput) hiddenInput.value = JSON.stringify(items);
+            });
+        }
+    
+        // Initialize first item
+        addItem();
+    });
+    </script>
+    

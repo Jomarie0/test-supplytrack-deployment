@@ -1,0 +1,731 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+    {% block title %}User Management{% endblock %}
+
+{% block content %}
+<style>
+    /* --- Table container with sticky header --- */
+    .table-container {
+      max-height: 420px;
+      overflow: auto;
+    }
+
+    #dataTable {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
+
+    #dataTable thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #f8f9fa;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    #dataTable tbody tr { }
+    #dataTable tbody td,
+    #dataTable thead th {
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .table-responsive { overflow: visible; }
+
+    /* Custom Header Container Style */
+    .user-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 24px 32px;
+        border-bottom: none;
+        border-radius: 12px !important;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        margin-bottom: 30px;
+    }
+
+    .user-header h1 {
+        margin: 0 !important;
+        font-size: 2.5rem !important;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-header .subtitle {
+        margin-top: 8px !important;
+        opacity: 0.9;
+        font-size: 14px;
+        font-weight: 400;
+        color: white !important;
+        line-height: 1.5;
+    }
+    
+    /* Highlight active filter buttons */
+    .filter-active {
+        background-color: #0d6efd !important;
+        color: white !important;
+        border-color: #0d6efd !important;
+    }
+    
+    /* Fix dropdown visibility */
+    .d-flex.p-3.mb-4 {
+        overflow: visible !important;
+    }
+    
+    /* Global Dropdown Menu Enhancements */
+    .dropdown-menu {
+        z-index: 1050 !important;
+        max-height: 300px;
+        overflow-y: auto;
+        background-color: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+        border-radius: 0.5rem; 
+        border: 1px solid rgba(0,0,0,.15);
+    }
+    
+    .dropdown-item {
+        color: #343a40;
+        padding: 0.5rem 1rem;
+        transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item:focus {
+        background-color: #e9ecef !important;
+        color: #000;
+    }
+    
+    .dropdown-item.active,
+    .dropdown-item:active {
+        background-color: #0d6efd !important;
+        color: #fff !important;
+    }
+
+    .btn-outline-secondary {
+        background-color: white !important;
+        border-color: #ced4da !important;
+        color: #495057 !important;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #e9ecef !important;
+        border-color: #adb5bd !important;
+        color: #212529 !important;
+    }
+    
+    .btn-outline-secondary:focus {
+        box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25) !important;
+    }
+
+    .card-header .header-actions { white-space: nowrap; }
+
+    @media (max-width: 576px) {
+      .card-header .header-actions .btn { padding-left: .5rem; padding-right: .5rem; font-size: .85rem; }
+    }
+
+    /* Status badge styling */
+    .status-btn {
+        border-radius: 20px;
+        font-size: 12px;
+        padding: 6px 12px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Role Tab Buttons */
+    .role-tab-btn {
+        border: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+        color: #495057;
+        padding: 6px 16px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+
+    .role-tab-btn:hover {
+        background-color: #e9ecef;
+        border-color: #adb5bd;
+        color: #212529;
+    }
+
+    .role-tab-btn.active {
+        background-color: #667eea;
+        color: white;
+        border-color: #667eea;
+        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    }
+</style>
+
+<div class="user-management-container">
+
+    <div class="mb-4 user-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1>
+                    👥 User Management
+                </h1>
+                <p class="subtitle">Manage user accounts, roles, and permissions across your system.</p>
+            </div>
+            <a href="{% url 'users:admin_create_staff' %}" class="btn btn-warning fw-semibold shadow-lg text-dark d-flex align-items-center gap-2">
+                <i class="fas fa-user-plus fa-lg"></i>
+                <span>Create Staff Account</span>
+            </a>
+        </div>
+    </div>
+    
+    <div class="d-flex p-3 mb-4 bg-white border rounded-3 shadow-sm align-items-center">
+        
+        <div class="input-group input-group-lg flex-grow-1 border-0 me-3">
+            <span class="input-group-text bg-white border-0 text-muted ps-0">
+                <i class="fas fa-search"></i>
+            </span>
+            <input list="userList" id="userSearch" class="form-control border-0 px-0" 
+                placeholder="Search Users, Email, or Role..." style="box-shadow: none;">
+            <datalist id="userList">
+                {% for user in users %}
+                <option value="{{ user.username }}">
+                <option value="{{ user.email }}">
+                {% endfor %}
+            </datalist>
+        </div>
+        
+        <span class="text-muted border-end pe-3 py-1 me-3">
+            <i class="fas fa-filter"></i> 
+        </span>
+
+        <div class="dropdown me-2">
+            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center btn-sm px-3" 
+                    type="button" id="roleFilterBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                <span id="roleFilterText">All Roles</span>
+            </button>
+            <ul class="dropdown-menu" id="roleDropdown">
+                <li><a class="dropdown-item role-filter" href="#" data-role="all">All Roles</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item role-filter" href="#" data-role="admin">Admin</a></li>
+                <li><a class="dropdown-item role-filter" href="#" data-role="manager">Manager</a></li>
+                <li><a class="dropdown-item role-filter" href="#" data-role="staff">Staff</a></li>
+                <li><a class="dropdown-item role-filter" href="#" data-role="supplier">Supplier</a></li>
+                <li><a class="dropdown-item role-filter" href="#" data-role="customer">Customer</a></li>
+                <li><a class="dropdown-item role-filter" href="#" data-role="delivery">Delivery</a></li>
+            </ul>
+        </div>
+        
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center btn-sm px-3" 
+                    type="button" id="statusFilterBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                <span id="statusFilterText">All Statuses</span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item status-filter" href="#" data-status="all">All Statuses</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item status-filter" href="#" data-status="approved">Approved</a></li>
+                <li><a class="dropdown-item status-filter" href="#" data-status="pending">Pending</a></li>
+            </ul>
+        </div>
+        
+        <button class="btn btn-outline-danger btn-sm ms-2" id="clearFiltersBtn" style="display: none;">
+            <i class="fas fa-times"></i> Clear
+        </button>
+        
+    </div>
+    
+
+    <div class="card d-flex shadow-lg border-0 rounded-4">
+      <div class="card-header bg-white border-bottom p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="m-0 fw-bold text-dark">
+              <span id="currentTabTitle">All Users</span>
+              <small class="text-muted">(<span id="displayedCount">{{ users|length }}</span> of <span id="totalCount">{{ users|length }}</span> Users)</small>
+            </h5>
+          </div>
+
+          <div class="header-actions d-flex align-items-center gap-2">
+            <a href="{% url 'users:user_archive_list' %}" class="btn btn-outline-secondary btn-sm fw-semibold d-flex align-items-center gap-2">
+              <i class="fas fa-archive fa-sm"></i>
+              <span>Archive List</span>
+            </a>
+            <button class="btn btn-danger btn-sm fw-semibold d-flex align-items-center gap-2" id="delete-selected-btn" disabled>
+              <i class="fas fa-archive fa-sm"></i>
+              <span>Archive Selected</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Role Tab Buttons -->
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-sm role-tab-btn active" data-role="all" data-count="{{ users|length }}">
+            All ({{ users|length }})
+          </button>
+          <button class="btn btn-sm role-tab-btn" data-role="admin" data-count="{{ admins|length }}">
+            Admin ({{ admins|length }})
+          </button>
+          <button class="btn btn-sm role-tab-btn" data-role="manager" data-count="{{ managers|length }}">
+            Manager ({{ managers|length }})
+          </button>
+          <button class="btn btn-sm role-tab-btn" data-role="staff" data-count="{{ staffs|length }}">
+            Staff ({{ staffs|length }})
+          </button>
+          <button class="btn btn-sm role-tab-btn" data-role="supplier" data-count="{{ suppliers|length }}">
+            Supplier ({{ suppliers|length }})
+          </button>
+          <button class="btn btn-sm role-tab-btn" data-role="customer" data-count="{{ customers|length }}">
+            Customer ({{ customers|length }})
+          </button>
+          <button class="btn btn-sm role-tab-btn" data-role="delivery" data-count="{{ deliverys|length }}">
+            Delivery ({{ deliverys|length }})
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="dataTable">
+                    <thead class="bg-light text-muted small text-uppercase">
+                        <tr>
+                            <th class="ps-4">
+                                <input type="checkbox" id="select-all-checkbox" class="form-check-input">
+                            </th>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Company/Phone</th>
+                            <th>Date Joined</th>
+                            <th class="text-center">Approval Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr id="user-row-{{ user.id }}" 
+                            data-role="{{ user.role }}"
+                            data-approval-status="{% if user.role == 'supplier' %}{% if user.is_approved %}approved{% else %}pending{% endif %}{% else %}n/a{% endif %}">
+                            <td class="ps-4">
+                                <input type="checkbox" class="user-checkbox form-check-input"
+                                    data-id="{{ user.id }}" data-name="{{ user.username }}">
+                            </td> 
+                            <td class="fw-bold text-muted">{{ user.id }}</td>
+                            <td class="fw-semibold text-dark">{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge bg-primary">{{ user.role|capfirst }}</span>
+                            </td>
+                            <td>
+                                {% if user.role == "supplier" and user.supplier_profile %}
+                                    <span class="text-dark">{{ user.supplier_profile.company_name|default:"N/A" }}</span>
+                                    {% if user.supplier_profile.phone %}
+                                        <br><small class="text-muted"><i class="fas fa-phone"></i> {{ user.supplier_profile.phone }}</small>
+                                    {% endif %}
+                                {% elif user.role == "customer" and user.customer_profile %}
+                                    {% if user.customer_profile.phone %}
+                                        <small class="text-muted"><i class="fas fa-phone"></i> {{ user.customer_profile.phone }}</small>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ user.date_joined|date:"M d, Y" }}</small>
+                            </td>
+                            <td class="text-center">
+                                {% if user.role == "supplier" %}
+                                    {% if user.is_approved %}
+                                        <a href="{% url 'users:toggle_supplier_approval' user.id %}"
+                                            class="btn btn-sm btn-success status-btn">
+                                            <i class="fas fa-check-circle me-1"></i> Approved
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'users:toggle_supplier_approval' user.id %}"
+                                            class="btn btn-sm btn-secondary status-btn">
+                                            <i class="fas fa-hourglass-half me-1"></i> Pending
+                                        </a>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            
+                            <td class="actions-column text-center">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary edit-user-btn"
+                                        data-user-id="{{ user.id }}" 
+                                        data-username="{{ user.username }}" 
+                                        data-email="{{ user.email }}" 
+                                        data-role="{{ user.role }}"
+                                        data-is-approved="{% if user.role == 'supplier' %}{{ user.is_approved|yesno:'true,false' }}{% else %}false{% endif %}"
+                                        title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-5">
+                                <i class="fas fa-user-slash fa-2x mb-2"></i><br>
+                                No users found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id="editUserForm" action="{% url 'users:user_management' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="user_id" id="modalUserId">
+                    <div class="form-group mb-3">
+                        <label for="modalUsername" class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" id="modalUsername" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="modalEmail" class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" id="modalEmail" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="modalRole" class="form-label">Role</label>
+                        <select name="role" id="modalRole" class="form-select" required>
+                            <option value="admin">Admin</option>
+                            <option value="manager">Manager</option>
+                            <option value="staff">Staff</option>
+                            <option value="delivery">Delivery</option>
+                            <option value="supplier">Supplier</option>
+                            <option value="customer">Customer</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3" id="approvalCheckboxGroup" style="display: none;">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="is_approved" id="modalIsApproved" value="true">
+                            <label class="form-check-label" for="modalIsApproved">
+                                Approved Supplier
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+$(function() {
+    // CSRF helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken') || '{{ csrf_token }}';
+    $.ajaxSetup({
+        headers: { 'X-CSRFToken': csrftoken }
+    });
+
+    let usersToDelete = [];
+    
+    // Filter state
+    let currentFilters = {
+        search: '',
+        role: 'all',
+        status: 'all'
+    };
+
+    // Role tab functionality
+    $(document).on('click', '.role-tab-btn', function() {
+        const role = $(this).data('role');
+        const count = $(this).data('count');
+        
+        // Update active tab
+        $('.role-tab-btn').removeClass('active');
+        $(this).addClass('active');
+        
+        // Update filter
+        currentFilters.role = role;
+        
+        // Update title and counts
+        if (role === 'all') {
+            $('#currentTabTitle').text('All Users');
+            $('#totalCount').text('{{ users|length }}');
+        } else {
+            const roleNames = {
+                'admin': 'Admins',
+                'manager': 'Managers',
+                'staff': 'Staff',
+                'supplier': 'Suppliers',
+                'customer': 'Customers',
+                'delivery': 'Delivery Personnel'
+            };
+            $('#currentTabTitle').text(roleNames[role] || role.charAt(0).toUpperCase() + role.slice(1) + 's');
+            $('#totalCount').text(count);
+        }
+        
+        // Apply filters
+        applyFilters();
+    });
+
+    // Apply all filters
+    function applyFilters() {
+        let visibleCount = 0;
+        
+        $('#dataTable tbody tr').each(function() {
+            const $row = $(this);
+            const rowText = $row.text().toLowerCase();
+            const role = $row.data('role');
+            const approvalStatus = $row.data('approval-status');
+            
+            // Check search filter
+            const searchMatch = currentFilters.search === '' || 
+                                rowText.indexOf(currentFilters.search) > -1;
+            
+            // Check role filter
+            const roleMatch = currentFilters.role === 'all' || 
+                             role === currentFilters.role;
+            
+            // Check status filter
+            let statusMatch = true;
+            if (currentFilters.status !== 'all') {
+                if (currentFilters.status === 'approved') {
+                    statusMatch = approvalStatus === 'approved';
+                } else if (currentFilters.status === 'pending') {
+                    statusMatch = approvalStatus === 'pending';
+                }
+            }
+            
+            // Show row only if all filters match
+            const shouldShow = searchMatch && roleMatch && statusMatch;
+            $row.toggle(shouldShow);
+            
+            if (shouldShow) visibleCount++;
+        });
+        
+        // Update count display
+        $('#displayedCount').text(visibleCount);
+        
+        // Show/hide clear button
+        const hasActiveFilters = currentFilters.search !== '' || 
+                                currentFilters.role !== 'all' || 
+                                currentFilters.status !== 'all';
+        $('#clearFiltersBtn').toggle(hasActiveFilters);
+        
+        // Update button styles
+        if (currentFilters.role !== 'all') {
+            $('#roleFilterBtn').addClass('filter-active');
+        } else {
+            $('#roleFilterBtn').removeClass('filter-active');
+        }
+        
+        if (currentFilters.status !== 'all') {
+            $('#statusFilterBtn').addClass('filter-active');
+        } else {
+            $('#statusFilterBtn').removeClass('filter-active');
+        }
+    }
+
+    // Search filter
+    $(document).on('keyup', '#userSearch', function() {
+        currentFilters.search = $(this).val().toLowerCase();
+        applyFilters();
+    });
+
+    // Role filter
+    $(document).on('click', '.role-filter', function(e) {
+        e.preventDefault();
+        currentFilters.role = $(this).data('role');
+        const roleText = $(this).text();
+        $('#roleFilterText').text(roleText);
+        applyFilters();
+    });
+
+    // Status filter
+    $(document).on('click', '.status-filter', function(e) {
+        e.preventDefault();
+        currentFilters.status = $(this).data('status');
+        const statusText = $(this).text();
+        $('#statusFilterText').text(statusText);
+        applyFilters();
+    });
+
+    // Clear all filters
+    $(document).on('click', '#clearFiltersBtn', function() {
+        currentFilters = {
+            search: '',
+            role: 'all',
+            status: 'all'
+        };
+        $('#userSearch').val('');
+        $('#roleFilterText').text('All Roles');
+        $('#statusFilterText').text('All Statuses');
+        applyFilters();
+    });
+
+    // Checkbox functions
+    function getSelectedIds() {
+        return $('.user-checkbox:checked').map(function() {
+            return $(this).data('id');
+        }).get();
+    }
+    
+    function getSelectedUsersInfo() {
+        return $('.user-checkbox:checked').map(function() {
+            return { id: $(this).data('id'), name: $(this).data('name') };
+        }).get();
+    }
+    
+    function updateButtonStates() {
+        const selectedCount = getSelectedIds().length;
+        $('#delete-selected-btn').prop('disabled', selectedCount === 0);
+        const total = $('.user-checkbox:visible').length;
+        $('#select-all-checkbox').prop('indeterminate', selectedCount > 0 && selectedCount < total);
+    }
+
+    // Event handlers
+    $(document).on('change', '#select-all-checkbox', function() {
+        $('.user-checkbox:visible').prop('checked', this.checked);
+        updateButtonStates();
+    });
+    
+    $(document).on('change', '.user-checkbox', function() {
+        const total = $('.user-checkbox:visible').length;
+        const checked = $('.user-checkbox:visible:checked').length;
+        $('#select-all-checkbox').prop('checked', checked === total && total > 0);
+        updateButtonStates();
+    });
+    
+    // Edit user functionality
+    $(document).on('click', '.edit-user-btn', function() {
+        const userId = $(this).data('user-id');
+        const username = $(this).data('username');
+        const email = $(this).data('email');
+        const role = $(this).data('role');
+        const isApproved = $(this).data('is-approved') === true;
+
+        $('#modalUserId').val(userId);
+        $('#modalUsername').val(username);
+        $('#modalEmail').val(email);
+        $('#modalRole').val(role);
+        
+        // Show/hide approval checkbox based on role
+        if (role === 'supplier') {
+            $('#approvalCheckboxGroup').show();
+            $('#modalIsApproved').prop('checked', isApproved);
+        } else {
+            $('#approvalCheckboxGroup').hide();
+            $('#modalIsApproved').prop('checked', false);
+        }
+        
+        // Show approval checkbox when role changes to supplier
+        $('#modalRole').off('change').on('change', function() {
+            if ($(this).val() === 'supplier') {
+                $('#approvalCheckboxGroup').show();
+            } else {
+                $('#approvalCheckboxGroup').hide();
+                $('#modalIsApproved').prop('checked', false);
+            }
+        });
+        
+        const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        modal.show();
+    });
+    
+    // Archive selected users
+    $(document).on('click', '#delete-selected-btn', function() {
+        const users = getSelectedUsersInfo();
+        if (users.length === 0) {
+            alert("Please select at least one user to archive.");
+            return;
+        }
+
+        const message = users.length === 1
+            ? `Are you sure you want to archive "${users[0].name}"?`
+            : `You are about to archive ${users.length} user(s). Continue?`;
+
+        if (!confirm(message)) {
+            return;
+        }
+
+        usersToDelete = users.map(u => u.id);
+
+        $.ajax({
+            url: "{% url 'users:delete_users' %}",
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ ids: usersToDelete }),
+            success: function(response) {
+                if (response.success) {
+                    const names = response.user_names || [];
+                    const display = names.join(', ') || usersToDelete.join(', ');
+                    if (typeof showToast === 'function') {
+                        showToast(`Successfully archived: ${display}`, 'success');
+                    } else {
+                        alert(`Successfully archived: ${display}`);
+                    }
+                    usersToDelete.forEach(id => {
+                        $(`#user-row-${id}`).fadeOut(250, function(){ 
+                            $(this).remove();
+                            applyFilters(); // Recount after removal
+                        });
+                    });
+                    usersToDelete = [];
+                    updateButtonStates();
+                } else {
+                    alert("Error archiving users: " + (response.error || "Unknown error"));
+                }
+            },
+            error: function(xhr) {
+                console.error('Archive error:', xhr.status, xhr.responseText);
+                let msg = 'An unknown error occurred.';
+                try {
+                    const data = xhr.responseJSON || JSON.parse(xhr.responseText || '{}');
+                    msg = data.error || data.message || msg;
+                } catch(e) {}
+                if (typeof showToast === 'function') {
+                    showToast('Error during archive: ' + msg, 'danger');
+                } else {
+                    alert('Error: ' + msg);
+                }
+            }
+        });
+    });
+
+    // Initialize
+    updateButtonStates();
+    applyFilters();
+});
+</script>
+{% endblock %}

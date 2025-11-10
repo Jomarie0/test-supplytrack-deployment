@@ -1,0 +1,172 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+
+
+{% block content %}
+<style>
+/* Reuse styles from orders billing */
+.table-container { max-height: 500px; overflow: auto; }
+#billingTable { width: 100%; table-layout: fixed; border-collapse: collapse; }
+#billingTable thead th { position: sticky; top: 0; z-index: 10; background: #f8f9fa; border-bottom: 1px solid rgba(0,0,0,0.06); box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); }
+#billingTable tbody td, #billingTable thead th { vertical-align: middle; white-space: nowrap; overflow: hidden; }
+#billingTable thead th:nth-child(1), #billingTable tbody td:nth-child(1) { width: 140px; }
+#billingTable thead th:nth-child(2), #billingTable tbody td:nth-child(2) { width: 180px; }
+#billingTable thead th:nth-child(3), #billingTable tbody td:nth-child(3) { width: 100px; }
+#billingTable thead th:nth-child(4), #billingTable tbody td:nth-child(4) { width: 160px; }
+#billingTable thead th:nth-child(5), #billingTable tbody td:nth-child(5) { width: 240px; }
+#billingTable thead th:nth-child(6), #billingTable tbody td:nth-child(6) { width: 160px; }
+#billingTable thead th:nth-child(7), #billingTable tbody td:nth-child(7) { width: 120px; }
+.payment-method-badge { display:inline-block; padding:0.25rem 0.6rem; border-radius:0.4rem; font-size:0.75rem; font-weight:600; background:#f1f5f9; color:#475569; }
+.status-badge { display:inline-block; padding:0.3rem 0.75rem; border-radius:0.5rem; font-size:0.75rem; font-weight:600; }
+.status-received { background:#dcfce7; color:#166534; }
+.status-confirmed, .status-in_transit { background:#e0f2fe; color:#075985; }
+.status-draft { background:#fef3c7; color:#92400e; }
+.status-cancelled { background:#fee2e2; color:#991b1b; }
+.order-id { font-weight:700; color:#667eea; font-family:'Courier New', monospace; }
+.amount { font-weight:700; color:#16a34a; }
+.billing-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:white; padding:24px 32px; border-radius:12px !important; box-shadow:0 0.5rem 1rem rgba(0,0,0,0.15)!important; }
+</style>
+<title>
+  {% block title %}
+      {% if request.user.role == 'admin' %}
+              Admin | Purchase Order Billing
+          {% elif request.user.role == 'manager' %}
+              Manager | Purchase Order Billing
+          {% elif request.user.role == 'staff' %}
+              Staff | Purchase Order Billing
+          {% elif request.user.role == 'customer' %}
+              Customer | Purchase Order Billing
+          {% elif request.user.role == 'supplier' %}
+              Supplier | Purchase Order Billing
+          {% elif request.user.role == 'delivery' %}
+              Delivery | Purchase Order Billing
+          {% else %}
+              empty
+          {% endif %}
+  {% endblock %}
+  </title>
+<div class="billing-module">
+  <div class="mb-4 billing-header">
+    <h1>📦 PO Billing Dashboard</h1>
+    <p class="subtitle">Track confirmed, in-transit, and received purchase orders.</p>
+  </div>
+
+    <div class="card-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem;margin-bottom:2rem;">
+      <div class="kpi-card revenue" style="background:#fff;border-radius:1rem;padding:1.5rem;border-top:4px solid #16a34a;">
+        <h2 style="font-size:1rem;margin:0 0 .5rem;color:#475569;font-weight:600;">Total Paid</h2>
+        <p style="font-size:1.5rem;margin:0;font-weight:700;color:#1e293b;">₱{{ paid_total_revenue|floatformat:2 }}</p>
+      </div>
+      <div class="kpi-card unpaid" style="background:#fff;border-radius:1rem;padding:1.5rem;border-top:4px solid #f59e0b;">
+        <h2 style="font-size:1rem;margin:0 0 .5rem;color:#475569;font-weight:600;">Unpaid</h2>
+        <p style="font-size:1.5rem;margin:0;font-weight:700;color:#1e293b;">₱{{ unpaid_total_amount|floatformat:2 }}</p>
+      </div>
+      <div class="kpi-card overdue" style="background:#fff;border-radius:1rem;padding:1.5rem;border-top:4px solid #dc2626;">
+        <h2 style="font-size:1rem;margin:0 0 .5rem;color:#475569;font-weight:600;">Overdue ({{ overdue_count }})</h2>
+        <p style="font-size:1.5rem;margin:0;font-weight:700;color:#dc2626;">₱{{ overdue_total_amount|floatformat:2 }}</p>
+      </div>
+      <div class="kpi-card today" style="background:#fff;border-radius:1rem;padding:1.5rem;border-top:4px solid #8b5cf6;">
+        <h2 style="font-size:1rem;margin:0 0 .5rem;color:#475569;font-weight:600;">Received Today</h2>
+        <p style="font-size:1.5rem;margin:0;font-weight:700;color:#1e293b;">{{ paid_today_count }}</p>
+      </div>
+      <div class="kpi-card due-soon" style="background:#fff;border-radius:1rem;padding:1.5rem;border-top:4px solid #f59e0b;">
+        <h2 style="font-size:1rem;margin:0 0 .5rem;color:#475569;font-weight:600;">Due Soon (7 days)</h2>
+        <p style="font-size:1.5rem;margin:0;font-weight:700;color:#1e293b;">{{ due_soon_count }}</p>
+      </div>
+  </div>
+
+  <div class="card d-flex shadow-lg border-0 rounded-4">
+    <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+      <h5 class="m-0 fw-bold text-dark">PO Overview <small class="text-muted">(<span id="displayedCount">0</span> of <span id="totalCount">0</span> POs)</small></h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-container">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" id="billingTable">
+            <thead class="bg-light text-muted small text-uppercase">
+              <tr>
+                <th>PO ID</th>
+                <th>Supplier</th>
+                <th>Amount</th>
+                <th>Payment Method</th>
+                <th>Payment Status</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for po in all_orders %}
+              <tr data-payment-status="{{ po.payment_status }}" data-payment-method="{{ po.payment_method|upper }}">
+                <td class="order-id">#{{ po.purchase_order_id }}</td>
+                <td class="fw-semibold text-dark">{{ po.supplier_profile.company_name|default:"N/A" }}</td>
+                <td class="amount">₱{{ po.total_cost|floatformat:2 }}</td>
+                <td><span class="payment-method-badge">{{ po.get_payment_method_display }}</span></td>
+                <td>
+                  {% if po.payment_status == 'paid' %}
+                    <span class="status-badge status-paid" style="background:#dcfce7;color:#166534;">Paid</span>
+                  {% elif po.payment_status == 'unpaid' %}
+                    <span class="status-badge status-unpaid" style="background:#fef3c7;color:#92400e;">Unpaid</span>
+                    {% if po.is_due_soon %}
+                        <span class="status-badge status-due-soon" style="background:#fed7aa;color:#ea580c;font-weight:600;">
+                            ⏰ Due in {{ po.payment_due_date|timeuntil }}
+                        </span>
+                    {% endif %}
+                  {% elif po.payment_status == 'overdue' %}
+                    <span class="status-badge status-overdue" style="background:#fee2e2;color:#991b1b;">Overdue</span>
+                  {% elif po.payment_status == 'refunded' %}
+                    <span class="status-badge status-refunded" style="background:#fee2e2;color:#991b1b;">Refunded</span>
+                  {% elif po.payment_status == 'partially_refunded' %}
+                    <span class="status-badge status-partially-refunded" style="background:#fef3c7;color:#92400e;">Partially Refunded</span>
+                  {% else %}
+                    <span class="status-badge bg-secondary text-white">N/A</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% with s=po.status %}
+                    {% if s == 'received' %}<span class="status-badge status-received"><strong>Received</strong></strong></span>
+                    {% elif s == 'confirmed' %}<span class="status-badge status-confirmed"><strong>Confirmed</strong></span>
+                    {% elif s == 'in_transit' %}<span class="status-badge status-in_transit"><strong>In Transit</strong></span>
+                    {% elif s == 'draft' %}<span class="status-badge bg-secondary text-white"><strong>Draft</strong></span>
+                    {% elif s == 'supplier_priced' %}<span class="status-badge status-draft"><strong>Supplier Priced</strong></span>
+                    {% elif s == 'request_pending' %}<span class="status-badge status-draft"><strong>Request Pending Price</strong></span>
+                    {% elif s == 'cancelled' %}<span class="status-badge status-cancelled"><strong>Canceled</strong></span>
+                    {% elif s == 'refund' %}<span class="status-badge status-cancelled"><strong>refunded</strong></span>
+
+                    {% else %}<span class="status-badge bg-secondary text-white">{{ po.get_status_display }}</span>{% endif %}
+                  {% endwith %}
+                </td>
+                <td class="text-muted">{{ po.received_date|default:po.order_date|date:"M d, Y" }}</td>
+                <td class="text-center">
+                  <div class="btn-group" role="group">
+                    <a class="btn btn-sm btn-outline-primary" href="{% url 'PO:po_billing_order_detail' po.id %}" title="View Details"><i class="fas fa-eye"></i></a>
+                    <a class="btn btn-sm btn-outline-success" href="{% url 'PO:purchase_order_print' po.purchase_order_id %}" title="Print"><i class="fas fa-print"></i></a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'PO:purchase_order_pdf' po.purchase_order_id %}" title="PDF"><i class="fas fa-file-pdf"></i></a>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="8" class="text-center text-muted py-5">
+                  <i class="fas fa-receipt fa-2x mb-2"></i><br>No purchase orders found.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(function(){
+  const total = $('#billingTable tbody tr').not(':has(.fa-receipt)').length; $('#totalCount').text(total);
+  let shown = 0; $('#billingTable tbody tr').each(function(){ if(!$(this).find('.fa-receipt').length){ shown++; } }); $('#displayedCount').text(shown);
+});
+</script>
+{% endblock %}
+
+

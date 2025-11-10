@@ -1,0 +1,57 @@
+#restock-logs {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 20px;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+#restock-logs h2 {
+  color: #111827;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+#logs-count {
+  font-weight: bold;
+  color: #2563eb; /* Blue tone for highlight */
+}
+
+#logs-list ul {
+  list-style-type: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+#logs-list li {
+  background-color: #ffffff;
+  padding: 15px 18px;
+  margin-bottom: 12px;
+  border-left: 5px solid #f59e0b; /* Amber for alert */
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: background 0.3s ease;
+}
+
+#logs-list li:hover {
+  background-color: #fef3c7; /* subtle yellow tint on hover */
+}
+
+#logs-list li br {
+  line-height: 2;
+}
+
+#logs-list p {
+  color: #6b7280;
+}
+#notif-badge {
+    background-color: red;
+    color: white;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 9999px;
+    margin-left: 8px;
+  }

@@ -1,0 +1,20 @@
+{% extends 'base_admin.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Purchase Order {{ form.instance.purchase_order_id }}</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <hr>
+        <h4>Edit Items</h4>
+        {{ formset.management_form }}
+        {% for item in formset %}
+            <div class="border p-3 mb-2">
+                {{ item.as_p }}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a href="{% url 'po:purchase_order_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

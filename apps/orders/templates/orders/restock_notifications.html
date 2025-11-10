@@ -1,0 +1,21 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<h1>Restock Notifications</h1>
+
+{% if logs %}
+  <ul>
+  {% for log in logs %}
+    <li>
+      <strong>{{ log.product.name }}</strong> needs restocking.<br>
+      Forecasted Quantity: {{ log.forecasted_quantity }}<br>
+      Current Stock: {{ log.current_stock }}<br>
+      Logged at: {{ log.created_at|date:"M d, Y H:i" }}
+    </li>
+  {% endfor %}
+  </ul>
+{% else %}
+  <p>No restock notifications at the moment.</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,111 @@
+{% load static %}
+<div id="permanentDeleteModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
+            <h2>💀 Permanent Delete</h2>
+            <button class="close-btn" onclick="closePermanentDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="permanent-delete-confirmation">
+                <div class="danger-icon">💀</div>
+                <h3>⚠️ WARNING: Permanent Deletion</h3>
+                <p id="permanent-delete-message">Are you absolutely sure you want to permanently delete the selected products?</p>
+                <div class="danger-warning">
+                    <h4>🚨 This action cannot be undone!</h4>
+                    <ul>
+                        <li>Products will be completely removed from the database</li>
+                        <li>All associated data will be lost forever</li>
+                        <li>This action cannot be reversed</li>
+                    </ul>
+                </div>
+                
+                <div class="selected-products" id="permanent-selected-products-list"></div>
+                
+                <div class="confirmation-checkbox">
+                    <input type="checkbox" id="confirm-permanent-delete">
+                    <label for="confirm-permanent-delete">I understand this action is irreversible and I want to proceed</label>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-danger-inv" id="confirm-permanent-delete-btn" onclick="confirmPermanentDelete()" disabled>💀 Permanently Delete</button>
+                    <button type="button" class="btn-cancel" onclick="closePermanentDeleteModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let permanentSelectedProductIds = [];
+
+function openPermanentDeleteModal() {
+    const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+    if (!selectedCheckboxes.length) return alert('Please select products to permanently delete.');
+
+    permanentSelectedProductIds = Array.from(selectedCheckboxes).map(cb => cb.getAttribute('data-id'));
+    
+    const modal = document.getElementById('permanentDeleteModal');
+    const message = document.getElementById('permanent-delete-message');
+    const productsList = document.getElementById('permanent-selected-products-list');
+    const confirmBtn = document.getElementById('confirm-permanent-delete-btn');
+    const confirmCheckbox = document.getElementById('confirm-permanent-delete');
+
+    if (modal) {
+        modal.style.display = 'block';
+        modal.classList.remove('hidden');
+
+        if (message) message.textContent = `Are you absolutely sure you want to permanently delete ${permanentSelectedProductIds.length} product(s)?`;
+        
+        if (productsList) {
+            productsList.innerHTML = '';
+            selectedCheckboxes.forEach(cb => {
+                const productRow = cb.closest('tr');
+                const productName = productRow?.querySelector('.product-name')?.textContent || 'N/A';
+                const productId = productRow?.querySelector('.product-id')?.textContent || 'N/A';
+                const productItem = document.createElement('div');
+                productItem.className = 'selected-product-item';
+                productItem.innerHTML = `<span class="product-name">${productName}</span><span class="product-id">${productId}</span>`;
+                productsList.appendChild(productItem);
+            });
+        }
+
+        // Reset checkbox state and prevent stacking listeners
+        if (confirmCheckbox && confirmBtn) {
+            confirmCheckbox.checked = false;
+            confirmCheckbox.onchange = () => confirmBtn.disabled = !confirmCheckbox.checked;
+            confirmBtn.disabled = true;
+        }
+    }
+}
+
+function closePermanentDeleteModal() {
+    const modal = document.getElementById('permanentDeleteModal');
+    if (modal) modal.style.display = 'none';
+    permanentSelectedProductIds = [];
+    const productsList = document.getElementById('permanent-selected-products-list');
+    if (productsList) productsList.innerHTML = '';
+}
+
+function confirmPermanentDelete() {
+    if (!permanentSelectedProductIds.length) return alert('No products selected for permanent deletion.');
+    const confirmCheckbox = document.getElementById('confirm-permanent-delete');
+    if (!confirmCheckbox?.checked) return alert('Please confirm that you understand this action is irreversible.');
+
+    fetch('/inventory/permanently-delete-products/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value
+        },
+        body: JSON.stringify({ ids: permanentSelectedProductIds })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            closePermanentDeleteModal();
+            location.reload();
+        } else alert('Error permanently deleting products: ' + data.status);
+    })
+    .catch(err => alert('Error permanently deleting products. Please try again.'));
+}
+</script>

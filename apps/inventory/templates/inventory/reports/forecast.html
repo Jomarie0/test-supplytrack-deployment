@@ -1,0 +1,7 @@
+<h2>Stock Demand Forecast for {{ product_id }}</h2>
+
+{% if error %}
+  <p style="color: red;">{{ error }}</p>
+{% else %}
+  <img src="data:image/png;base64,{{ graph }}" alt="Forecast Graph" />
+{% endif %}

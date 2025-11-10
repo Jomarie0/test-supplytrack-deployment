@@ -1,0 +1,67 @@
+{% extends 'base_store.html' %}
+{% load static %}
+
+{% block title %}Login - SupplyTrack{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/users/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-landing">
+    <div class="login-header">
+        <h1>Welcome to SupplyTrack</h1>
+        <p>Choose your login portal</p>
+    </div>
+
+    <div class="login-options">
+        <a href="{% url 'users:customer_login' %}" class="login-option customer">
+            <div class="option-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="option-content">
+                <h2>Customer Login</h2>
+                <p>Shop products and manage your orders</p>
+            </div>
+            <div class="option-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+
+        <a href="{% url 'users:supplier_login' %}" class="login-option supplier">
+            <div class="option-icon">
+                <i class="fas fa-box"></i>
+            </div>
+            <div class="option-content">
+                <h2>Supplier Portal</h2>
+                <p>Manage your products and inventory</p>
+            </div>
+            <div class="option-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a>
+
+        {% comment %} <a href="{% url 'users:staff_login' %}" class="login-option staff">
+            <div class="option-icon">
+                <i class="fas fa-id-card"></i>
+            </div>
+            <div class="option-content">
+                <h2>Staff Portal</h2>
+                <p>Access administrative functions</p>
+            </div>
+            <div class="option-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </a> {% endcomment %}
+    </div>
+
+    <div class="login-footer">
+        <p>Don't have an account?</p>
+        <div class="register-options">
+            <a href="{% url 'users:customer_register' %}" class="register-link">Register as Customer</a>
+            <a href="{% url 'users:supplier_register' %}" class="register-link">Apply as Supplier</a>
+        </div>
+    </div>
+    
+</div>
+{% endblock %} 

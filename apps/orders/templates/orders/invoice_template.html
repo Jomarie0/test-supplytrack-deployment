@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice {{ order.order_id|default:order.manual_order_id }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .container { padding: 20px; max-width: 900px; margin: auto; }
+        .header, .section { margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header .date { float: right; text-align: right; }
+        .bill-pay { display: flex; justify-content: space-between; }
+        .bill, .pay { width: 48%; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table, th, td { border: 1px solid #000; }
+        th, td { padding: 8px; text-align: left; }
+        .right { text-align: right; }
+        .total-table { margin-top: 20px; width: 300px; float: right; }
+        .total-table td { border: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- HEADER -->
+    <div class="header">
+        <h1>Business Name</h1>
+        <p>Street, Address, City, Country</p>
+        <p class="date">Issue Date: {{ invoice.invoice_date|date:"m/d/Y" }}</p>
+        <p>Zip Code: <!-- Add zip code if needed --></p>
+    </div>
+
+    <!-- CUSTOMER MESSAGE -->
+    <div class="section">
+        <p><strong>Message for your customer:</strong> Add message here for your customer</p>
+    </div>
+
+    <!-- BILL TO AND PAYMENT DETAILS -->
+    <div class="bill-pay">
+        <div class="bill">
+            <h3>BILL TO</h3>
+            <p>{{ order.get_customer_name|default:order.customer_name }}</p>
+            <p>{{ order.get_customer_email|default:order.customer_email }}</p>
+            <p>{{ order.get_customer_phone|default:order.customer_phone }}</p>
+            <p>{{ order.get_shipping_address|default:order.shipping_address }}</p>
+        </div>
+        <div class="pay">
+            <h3>DETAILS / PAYMENT</h3>
+            <p>Enter a brief description about your job or project</p>
+            <p>Due Date: {{ invoice.due_date|date:"m/d/Y" }}</p>
+            <p>Amount: ${{ invoice.total_amount }}</p>
+        </div>
+    </div>
+
+    <!-- ITEMS TABLE -->
+    <div class="section">
+        <table>
+            <thead>
+                <tr>
+                    <th>ITEM</th>
+                    <th>QTY</th>
+                    <th>RATE</th>
+                    <th>AMOUNT</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td>
+                        {{ item.product_variant.product.name }}
+                        <br>
+                        Describe your item
+                    </td>
+                    <td class="right">{{ item.quantity }}</td>
+                    <td class="right">${{ item.price_at_order }}</td>
+                    <td class="right">${{ item.item_total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TOTALS -->
+    <div class="section">
+        <table class="total-table">
+            <tr>
+                <td>Subtotal:</td>
+                <td class="right">${{ invoice.subtotal }}</td>
+            </tr>
+            <tr>
+                <td>Tax:</td>
+                <td class="right">${{ invoice.tax_amount }}</td>
+            </tr>
+            <tr>
+                <td><strong>Total Due:</strong></td>
+                <td class="right"><strong>${{ invoice.total_amount }}</strong></td>
+            </tr>
+        </table>
+    </div>
+</div>
+</body>
+</html>

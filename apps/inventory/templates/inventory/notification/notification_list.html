@@ -1,0 +1,273 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">
+                <i class="fas fa-bell text-warning me-2"></i>
+                Restock Notifications
+            </h4>
+            <div class="d-flex gap-2">
+                <button id="refresh-btn" class="btn btn-sm btn-primary">
+                    <i class="fas fa-sync-alt me-1"></i> Refresh
+                </button>
+                <a href="{% url 'inventory:deleted_notifications_view' %}" class="btn btn-sm btn-info">
+                    <i class="fas fa-archive me-1"></i> View Deleted
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
+                <div>
+                    <span class="text-muted">Active notifications: </span>
+                    <strong id="logs-count" class="text-primary">{{ logs|length }}</strong>
+                </div>
+                <div class="btn-group">
+                    <button id="select-all-btn" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-check-square me-1"></i> Select All
+                    </button>
+                    <button id="delete-selected-btn" class="btn btn-sm btn-outline-danger">
+                        <i class="fas fa-trash me-1"></i> Delete Selected
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="notificationsTable">
+                    <thead class="bg-light text-muted small text-uppercase">
+                        <tr>
+                            <th class="ps-4" style="width: 40px;">
+                                <input type="checkbox" id="select-all-checkbox" class="form-check-input">
+                            </th>
+                            <th>Product ID</th>
+                            <th>Product Name</th>
+                            <th>Forecasted Qty</th>
+                            <th>Current Stock</th>
+                            <th class="text-danger fw-bold">Quantity Needed</th>
+                            <th>Supplier</th>
+                            <th>Checked At</th>
+                            <th class="text-center" style="width: 140px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-list">
+                        {% if logs %}
+                            {% for log in logs %}
+                            <tr id="notification-row-{{ log.id }}" class="align-middle">
+                                <td class="ps-4">
+                                    <input type="checkbox" class="notification-checkbox form-check-input" value="{{ log.id }}">
+                                </td>
+                                <td class="fw-bold text-muted">{{ log.product.product_id }}</td>
+                                <td class="fw-semibold text-dark">{{ log.product.name }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ log.forecasted_quantity }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ log.current_stock }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-danger fs-6">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        {{ log.quantity_needed }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-muted">
+                                        <i class="fas fa-truck me-1"></i>
+                                        {{ log.product.supplier_profile.company_name|default:"None" }}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">
+                                    {{ log.checked_at|date:"M d, Y H:i" }}
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'PO:purchase_order_list' %}" 
+                                           class="btn btn-sm btn-primary" 
+                                           title="Create Purchase Order">
+                                            <i class="fas fa-shopping-cart me-1"></i>
+                                            Order
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="deleteNotification('{{ log.id }}')" 
+                                                title="Delete Notification">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-5">
+                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                    <p class="mb-0">No active restock notifications.</p>
+                                    <small>All products have sufficient stock.</small>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function(){
+    // Auto-refresh every 30 seconds
+    setInterval(updateRestockDisplay, 30000);
+
+    // Select all checkbox
+    $('#select-all-checkbox').change(function() {
+        $('.notification-checkbox').prop('checked', this.checked);
+    });
+
+    // Select all button
+    $('#select-all-btn').click(function() {
+        $('.notification-checkbox').prop('checked', true);
+        $('#select-all-checkbox').prop('checked', true);
+    });
+
+    // Delete selected
+    $('#delete-selected-btn').click(function() {
+        const selectedIds = [];
+        $('.notification-checkbox:checked').each(function() {
+            selectedIds.push($(this).val());
+        });
+        if (selectedIds.length > 0) {
+            if (confirm(`Delete ${selectedIds.length} selected notification(s)?`)) {
+                deleteMultipleNotifications(selectedIds);
+            }
+        } else {
+            alert('Please select notifications to delete.');
+        }
+    });
+
+    // Manual refresh
+    $('#refresh-btn').click(function() {
+        updateRestockDisplay();
+    });
+});
+
+// Fetch active notifications from DemandCheckLog API
+function updateRestockDisplay() {
+    fetch("{% url 'inventory:restock_notifications_api' %}")
+        .then(response => response.json())
+        .then(data => {
+            console.log('Updating notifications:', data.length);
+            document.getElementById('logs-count').textContent = data.length;
+
+            let logsList = document.getElementById('logs-list');
+            if (data.length > 0) {
+                let html = '';
+                data.forEach(log => {
+                    const checkedDate = new Date(log.checked_at);
+                    const formattedDate = checkedDate.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    html += `
+                        <tr id="notification-row-${log.id}" class="align-middle">
+                            <td class="ps-4">
+                                <input type="checkbox" class="notification-checkbox form-check-input" value="${log.id}">
+                            </td>
+                            <td class="fw-bold text-muted">${log.product_id}</td>
+                            <td class="fw-semibold text-dark">${log.product_name}</td>
+                            <td>
+                                <span class="badge bg-info">${log.forecasted_quantity}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">${log.current_stock}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-danger fs-6">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    ${log.quantity_needed}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-muted">
+                                    <i class="fas fa-truck me-1"></i>
+                                    ${log.supplier_name}
+                                </span>
+                            </td>
+                            <td class="text-muted small">${formattedDate}</td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'PO:purchase_order_list' %}" 
+                                       class="btn btn-sm btn-primary" 
+                                       title="Go to Purchase Orders">
+                                        <i class="fas fa-shopping-cart me-1"></i>
+                                        Order
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            onclick="deleteNotification('${log.id}')" 
+                                            title="Delete">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                logsList.innerHTML = html;
+            } else {
+                logsList.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-5">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <p class="mb-0">No active restock notifications.</p>
+                            <small>All products have sufficient stock.</small>
+                        </td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(err => {
+            console.error('Error updating notifications:', err);
+        });
+}
+
+// Delete a single notification
+function deleteNotification(id) {
+    if (confirm('Delete this notification?')) {
+        fetch("{% url 'inventory:deleted_notifications' %}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+            body: JSON.stringify({ids: [id]})
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                updateRestockDisplay();
+            }
+        })
+        .catch(err => console.error('Error deleting notification:', err));
+    }
+}
+
+// Delete multiple notifications
+function deleteMultipleNotifications(ids) {
+    fetch("{% url 'inventory:deleted_notifications' %}", {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+        body: JSON.stringify({ids: ids})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            updateRestockDisplay();
+            alert(`${data.deleted_count} notification(s) deleted.`);
+        }
+    })
+    .catch(err => console.error('Error deleting notifications:', err));
+}
+</script>
+{% endblock %}

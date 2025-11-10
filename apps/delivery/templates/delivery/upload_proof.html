@@ -1,0 +1,583 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block styles %}
+<style>
+    * { box-sizing: border-box; }
+    
+    body {
+        background: #f8fafc;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    
+    .upload-container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+    
+    .upload-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 32px;
+    }
+    
+    .card-header h2 {
+        margin: 0 0 8px 0;
+        font-size: 28px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .card-header p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 16px;
+    }
+    
+    .order-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: inline-block;
+        margin-top: 12px;
+        font-weight: 600;
+    }
+    
+    .card-body {
+        padding: 40px;
+    }
+    
+    .existing-proof {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 32px;
+        border: 2px dashed #e2e8f0;
+    }
+    
+    .existing-proof h3 {
+        margin: 0 0 16px 0;
+        color: #1e293b;
+        font-size: 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .existing-proof img {
+        width: 100%;
+        max-width: 400px;
+        height: auto;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+    }
+    
+    .form-group {
+        margin-bottom: 28px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 15px;
+    }
+    
+    .form-label.required::after {
+        content: ' *';
+        color: #ef4444;
+    }
+    
+    .form-input,
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+    
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .file-input-wrapper {
+        position: relative;
+    }
+    
+    .file-input {
+        display: none;
+    }
+    
+    .file-input-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 48px 24px;
+        border: 3px dashed #cbd5e1;
+        border-radius: 16px;
+        background: #f8fafc;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+    }
+    
+    .file-input-label:hover {
+        border-color: #667eea;
+        background: #f1f5f9;
+    }
+    
+    .file-input-label.has-file {
+        border-color: #10b981;
+        background: #d1fae5;
+    }
+    
+    .file-icon {
+        font-size: 48px;
+    }
+    
+    .file-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .file-text strong {
+        font-size: 16px;
+        color: #1e293b;
+    }
+    
+    .file-text span {
+        font-size: 14px;
+        color: #64748b;
+    }
+    
+    .image-preview {
+        margin-top: 16px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid #e2e8f0;
+        display: none;
+    }
+    
+    .image-preview img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    
+    .form-hint {
+        display: block;
+        margin-top: 8px;
+        color: #64748b;
+        font-size: 14px;
+    }
+    
+    .form-error {
+        display: block;
+        margin-top: 8px;
+        color: #ef4444;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .alert {
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border-left: 4px solid #ef4444;
+    }
+    
+    .alert-icon {
+        font-size: 20px;
+        margin-top: 2px;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 32px;
+        padding-top: 32px;
+        border-top: 2px solid #f1f5f9;
+    }
+    
+    .btn {
+        padding: 14px 28px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+    
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+    
+    .info-box {
+        background: #dbeafe;
+        border-left: 4px solid #3b82f6;
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+    }
+    
+    .info-box-title {
+        font-weight: 600;
+        color: #1e40af;
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .info-box-text {
+        color: #1e40af;
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    
+    @media (max-width: 768px) {
+        .upload-container {
+            margin: 20px auto;
+            padding: 10px;
+        }
+        
+        .card-header {
+            padding: 24px 20px;
+        }
+        
+        .card-body {
+            padding: 24px 20px;
+        }
+        
+        .button-group {
+            flex-direction: column-reverse;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <div class="upload-card">
+        <div class="card-header">
+            <h2>
+                <span>📸</span>
+                Upload Proof of Delivery
+            </h2>
+            <p>Provide photo evidence and update delivery status</p>
+            <span class="order-badge">Order: {{ delivery.order.order_id }}</span>
+        </div>
+        
+        <div class="card-body">
+            {% if delivery.proof_of_delivery_image %}
+            <div class="existing-proof">
+                <h3>
+                    <span>✅</span>
+                    Current Proof on File
+                </h3>
+                <img src="{{ delivery.proof_of_delivery_image.url }}" alt="Existing Proof">
+            </div>
+            {% endif %}
+            
+            <div class="info-box">
+                <p class="info-box-title">
+                    <span>ℹ️</span>
+                    Important Information
+                </p>
+                <p class="info-box-text">
+                    Photo proof is <strong>required</strong> to mark a delivery as "Delivered". 
+                    Please ensure the image clearly shows the delivered package and/or recipient signature.
+                </p>
+            </div>
+            
+            <form method="post" enctype="multipart/form-data" id="uploadForm" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    <span class="alert-icon">⚠️</span>
+                    <div>
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="id_proof_of_delivery_image" class="form-label required">
+                        Photo Proof
+                    </label>
+                    <div class="file-input-wrapper">
+                        <input 
+                            type="file" 
+                            name="proof_of_delivery_image" 
+                            id="id_proof_of_delivery_image" 
+                            class="file-input"
+                            accept="image/*"
+                            required
+                        >
+                        <label for="id_proof_of_delivery_image" class="file-input-label" id="fileLabel">
+                            <span class="file-icon">📷</span>
+                            <div class="file-text">
+                                <strong>Click to upload image</strong>
+                                <span>or drag and drop</span>
+                            </div>
+                        </label>
+                        <div id="imagePreview" class="image-preview"></div>
+                    </div>
+                    {% if form.proof_of_delivery_image.errors %}
+                        <span class="form-error">{{ form.proof_of_delivery_image.errors.0 }}</span>
+                    {% endif %}
+                    <span class="form-hint">
+                        Supported formats: JPG, PNG, GIF (Max 10MB)
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_delivery_note" class="form-label">
+                        Delivery Note (Optional)
+                    </label>
+                    <textarea 
+                        name="delivery_note" 
+                        id="id_delivery_note" 
+                        class="form-textarea"
+                        placeholder="E.g., Package left with building security, signed by John Doe..."
+                    >{{ form.delivery_note.value|default:'' }}</textarea>
+                    {% if form.delivery_note.errors %}
+                        <span class="form-error">{{ form.delivery_note.errors.0 }}</span>
+                    {% endif %}
+                    <span class="form-hint">
+                        Add any relevant details about the delivery
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_new_status" class="form-label required">
+                        Final Delivery Status
+                    </label>
+                    <select name="new_status" id="id_new_status" class="form-select">
+                        <option value="delivered">✅ Delivered</option>
+                        <option value="failed">❌ Failed</option>
+                    </select>
+                    {% if form.new_status.errors %}
+                        <span class="form-error">{{ form.new_status.errors.0 }}</span>
+                    {% endif %}
+                    <span class="form-hint">
+                        Select the appropriate status for this delivery
+                    </span>
+                </div>
+
+                <div class="button-group">
+                    <a href="{% url 'delivery:delivery_list' %}" class="btn btn-secondary">
+                        <span>←</span> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <span>💾</span> Save & Update Status
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('id_proof_of_delivery_image');
+    const fileLabel = document.getElementById('fileLabel');
+    const imagePreview = document.getElementById('imagePreview');
+    const form = document.getElementById('uploadForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusSelect = document.getElementById('id_new_status');
+    
+    // File input change handler
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select a valid image file (JPG, PNG, GIF)');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Validate file size (10MB max)
+            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            if (file.size > maxSize) {
+                alert('File size must be less than 10MB');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Update label
+            fileLabel.classList.add('has-file');
+            const fileText = fileLabel.querySelector('.file-text strong');
+            fileText.textContent = `Selected: ${file.name}`;
+            
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            resetFileInput();
+        }
+    });
+    
+    // Drag and drop support
+    fileLabel.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#667eea';
+        this.style.background = '#f1f5f9';
+    });
+    
+    fileLabel.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        if (!fileInput.files.length) {
+            this.style.borderColor = '#cbd5e1';
+            this.style.background = '#f8fafc';
+        }
+    });
+    
+    fileLabel.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#cbd5e1';
+        this.style.background = '#f8fafc';
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            fileInput.dispatchEvent(new Event('change'));
+        }
+    });
+    
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        const selectedStatus = statusSelect.value;
+        const hasFile = fileInput.files.length > 0;
+        const hasExistingProof = {% if delivery.proof_of_delivery_image %}true{% else %}false{% endif %};
+        
+        // If marking as delivered, ensure we have a photo
+        if (selectedStatus === 'delivered' && !hasFile && !hasExistingProof) {
+            e.preventDefault();
+            alert('⚠️ Photo proof is required to mark delivery as "Delivered".\n\nPlease upload an image before submitting.');
+            fileInput.focus();
+            return false;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>⏳</span> Uploading...';
+        
+        // Let form submit normally
+        return true;
+    });
+    
+    // Status change warning
+    statusSelect.addEventListener('change', function() {
+        const hasFile = fileInput.files.length > 0;
+        const hasExistingProof = {% if delivery.proof_of_delivery_image %}true{% else %}false{% endif %};
+        
+        if (this.value === 'delivered' && !hasFile && !hasExistingProof) {
+            alert('ℹ️ Remember: Photo proof is required to mark as "Delivered"');
+        }
+    });
+    
+    function resetFileInput() {
+        fileLabel.classList.remove('has-file');
+        const fileText = fileLabel.querySelector('.file-text strong');
+        fileText.textContent = 'Click to upload image';
+        imagePreview.style.display = 'none';
+        imagePreview.innerHTML = '';
+    }
+    
+    // Prevent accidental navigation
+    let formChanged = false;
+    
+    fileInput.addEventListener('change', () => formChanged = true);
+    document.getElementById('id_delivery_note').addEventListener('input', () => formChanged = true);
+    statusSelect.addEventListener('change', () => formChanged = true);
+    
+    form.addEventListener('submit', () => formChanged = false);
+    
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+        }
+    });
+});
+</script>
+{% endblock %}
