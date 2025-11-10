@@ -16,5 +16,6 @@ django-crispy-forms==2.4
 # xhtml2pdf
 xhtml2pdf==0.2.10
 reportlab==3.6.12
-
+# testing render
+gunicorn
 # optional to keep explicit since you import asgiref.sync; channels/Django would bring it anyway
