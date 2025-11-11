@@ -495,7 +495,7 @@ def customer_login_view(request):
 
             # ✅ Proceed to login
             login(request, user)
-            messages.success(request, f"Welcome back, {user.username}!")
+            # messages.success(request, f"Welcome back, {user.username}!")
 
             # ✅ Email notification
             send_login_notification_email(user)
@@ -616,7 +616,7 @@ def staff_login_view(request):
 
             # ✅ Login success
             login(request, user)
-            messages.success(request, f"Welcome back, {user.get_full_name() or user.username}!")
+            # messages.success(request, f"Welcome back, {user.get_full_name() or user.username}!")
 
             send_login_notification_email(user)
 

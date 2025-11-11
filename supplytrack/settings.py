@@ -82,12 +82,13 @@ INSTALLED_APPS = [
     "apps.orders.apps.OrdersConfig",
     "apps.store",
     "apps.transactions",
+    "apps.reports",
+    "apps.sales",
     # REST
     "rest_framework",
     "rest_framework_simplejwt",
     "crispy_forms",
-
-    # "django_unused_templates",
+    
 ]
 
 #  para sa JWT authentication para safe

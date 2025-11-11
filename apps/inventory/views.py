@@ -1990,34 +1990,58 @@ def market_trend_analysis(request):
             output_field=DecimalField(max_digits=15, decimal_places=2)
         )
 
-        # Customer Orders
+        # Customer Orders - get category objects to resolve root
         customer_sales = (
             OrderItem.objects.filter(
                 order__status="Completed",
                 order__is_deleted=False,
                 order__order_date__year=year,
             )
+            .select_related('product_variant__product__category')
             .annotate(month=TruncMonth("order__order_date"))
-            .values("month", "product_variant__product__category__name")
+            .values("month", "product_variant__product__category")
             .annotate(total_sales=Sum(sales_value))
         )
 
-        # Manual Orders
+        # Manual Orders - get category objects to resolve root
         manual_sales = (
             ManualOrderItem.objects.filter(
                 order__status="Completed",
                 order__is_deleted=False,
                 order__order_date__year=year,
             )
+            .select_related('product_variant__product__category')
             .annotate(month=TruncMonth("order__order_date"))
-            .values("month", "product_variant__product__category__name")
+            .values("month", "product_variant__product__category")
             .annotate(total_sales=Sum(sales_value))
         )
 
+        # Build a category ID to root name mapping
+        category_ids = set()
+        for entry in list(customer_sales) + list(manual_sales):
+            cat_id = entry.get("product_variant__product__category")
+            if cat_id:
+                category_ids.add(cat_id)
+        
+        # Fetch all categories and map to root names
+        categories = Category.objects.filter(id__in=category_ids)
+        cat_to_root = {}
+        for cat in categories:
+            root = cat.get_root()
+            cat_to_root[cat.id] = root.name if root else cat.name
+
+        # Aggregate by ROOT category name
         all_data = {}
         for entry in list(customer_sales) + list(manual_sales):
             month = entry["month"].strftime("%Y-%m")
-            category = entry["product_variant__product__category__name"] or "Uncategorized"
+            cat_id = entry["product_variant__product__category"]
+            
+            # Get root category name
+            if cat_id and cat_id in cat_to_root:
+                category = cat_to_root[cat_id]
+            else:
+                category = "Uncategorized"
+            
             total = float(entry["total_sales"] or 0)
             all_data.setdefault(month, {}).setdefault(category, 0)
             all_data[month][category] += total

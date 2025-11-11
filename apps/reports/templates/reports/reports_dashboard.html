@@ -1,0 +1,107 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Reports Dashboard{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/dashboard/dashboardv2.css' %}">
+<style>
+    .dashboard-container {
+        padding: 0;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .report-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .report-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border-left: 4px solid #667eea;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .report-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+
+    .report-card h5 {
+        color: #2d3748;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .report-card p {
+        color: #718096;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .report-card .btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: transform 0.2s;
+    }
+
+    .report-card .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-file-alt"></i> Reports Dashboard</h1>
+        <p>Comprehensive reports and analytics for your business</p>
+    </div>
+    
+    <div class="report-grid">
+        <div class="report-card">
+            <h5><i class="fas fa-warehouse"></i> Inventory Report</h5>
+            <p>View stock levels, reorder alerts, and inventory analytics.</p>
+            <a href="{% url 'reports:inventory_report' %}" class="btn">View Report</a>
+        </div>
+        
+        <div class="report-card">
+            <h5><i class="fas fa-file-alt"></i> Purchase Orders Report</h5>
+            <p>Analyze purchase orders, supplier performance, and costs.</p>
+            <a href="{% url 'reports:purchase_orders_report' %}" class="btn">View Report</a>
+        </div>
+        
+        <div class="report-card">
+            <h5><i class="fas fa-truck"></i> Delivery Report</h5>
+            <p>Track delivery performance and delivery rates.</p>
+            <a href="{% url 'reports:delivery_report' %}" class="btn">View Report</a>
+        </div>
+        
+        <div class="report-card">
+            <h5><i class="fas fa-history"></i> Audit Report</h5>
+            <p>View system activity logs and user actions.</p>
+            <a href="{% url 'reports:audit_report' %}" class="btn">View Report</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

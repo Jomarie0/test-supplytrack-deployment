@@ -1,0 +1,120 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Sales Trends{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/dashboard/dashboardv2.css' %}">
+<style>
+    .dashboard-container {
+        padding: 0;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .back-btn {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+        margin-bottom: 1rem;
+    }
+
+    .back-btn:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+    }
+
+    .filter-card, .table-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        background: #f7fafc;
+        color: #2d3748;
+        font-weight: 600;
+        border-bottom: 2px solid #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <a href="{% url 'sales:sales_dashboard' %}" class="btn btn-secondary btn-icon-split m-1">
+        <i class="fas fa-arrow-left"></i> Back to Reports
+    </a>
+    <div class="dashboard-header">
+        <h1><i class="fas fa-chart-area"></i> Sales Trends</h1>
+        <p>Track sales trends over time</p>
+    </div>
+    
+    <!-- Period Filter -->
+    <div class="filter-card">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Period</label>
+                <select name="period" class="form-select">
+                    <option value="day" {% if period == 'day' %}selected{% endif %}>Daily</option>
+                    <option value="week" {% if period == 'week' %}selected{% endif %}>Weekly</option>
+                    <option value="month" {% if period == 'month' %}selected{% endif %}>Monthly</option>
+                    <option value="year" {% if period == 'year' %}selected{% endif %}>Yearly</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">Update</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Trends Table -->
+    <div class="table-card">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Revenue</th>
+                    <th>Orders</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for period_key, data in trends %}
+                <tr>
+                    <td><strong>{{ period_key }}</strong></td>
+                    <td><strong>₱{{ data.revenue|floatformat:2 }}</strong></td>
+                    <td>{{ data.orders }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center py-4">No sales data available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

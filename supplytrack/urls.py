@@ -16,6 +16,8 @@ urlpatterns = [
     path("store/", include("apps.store.urls")),
     path("suppliers/", include("apps.suppliers.urls", namespace="suppliers")),
     path("transactions/", include("apps.transactions.urls", namespace="transactions")),
+    path("reports/", include("apps.reports.urls", namespace="reports")),
+    path("sales/", include("apps.sales.urls", namespace="sales")),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

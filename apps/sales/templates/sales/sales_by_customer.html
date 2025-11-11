@@ -1,0 +1,123 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% block title %}Sales by Customer{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/dashboard/dashboardv2.css' %}">
+<style>
+    .dashboard-container {
+        padding: 0;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .back-btn {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+        margin-bottom: 1rem;
+    }
+
+    .back-btn:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+    }
+
+    .filter-card, .table-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        background: #f7fafc;
+        color: #2d3748;
+        font-weight: 600;
+        border-bottom: 2px solid #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <a href="{% url 'sales:sales_dashboard' %}" class="btn btn-secondary btn-icon-split m-1">
+        <i class="fas fa-arrow-left"></i> Back to Reports
+    </a>
+    <div class="dashboard-header">
+        <h1><i class="fas fa-users"></i> Sales by Customer</h1>
+        <p>View top customers and their purchase history</p>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filter-card">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Date From</label>
+                <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Date To</label>
+                <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">Filter</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Customers Table -->
+    <div class="table-card">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Total Revenue</th>
+                    <th>Order Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customer_sales %}
+                <tr>
+                    <td><strong>#{{ forloop.counter }}</strong></td>
+                    <td>{{ customer.customer.get_full_name|default:customer.customer.username }}</td>
+                    <td>{{ customer.customer.email|default:"N/A" }}</td>
+                    <td><strong>₱{{ customer.total_revenue|floatformat:2 }}</strong></td>
+                    <td>{{ customer.order_count }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4">No sales data available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

@@ -190,7 +190,22 @@ class Category(models.Model):
             bool: True if has children, False otherwise
         """
         return self.children.filter(is_active=True).exists()
-
+    def get_root(self):
+        """
+        RECURSIVE: Traverse up the tree to find the root/top-level parent category.
+        
+        Returns:
+            Category: The root parent category (or self if already root)
+        
+        Example:
+            >>> sugars = Category.objects.get(name="Sugars and Sweeteners")
+            >>> sugars.get_root().name
+            'Groceries'
+        """
+        current = self
+        while current.parent is not None:
+            current = current.parent
+        return current
 
 # ==============================================================================
 # PRODUCT MODEL

@@ -157,6 +157,7 @@
             overflow-y: auto; /* Allows scrolling for many menu items */
             display: flex; /* Make it a flex container to align brand and menu */
             flex-direction: column; /* Stack brand and menu vertically */
+            overflow-x: hidden;
         }
         .menu {
             flex-grow: 1; /* Menu list fills the space before the footer */
@@ -200,6 +201,8 @@
                 </li>
                 <li><a href="{% url 'delivery:delivery_list' %}" class="menu-item {% if request.resolver_match.url_name == 'delivery_list' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-truck"></i> Delivery</a></li>
                 <li><a href="{% url 'transactions:auditlog_list' %}" class="menu-item {% if request.resolver_match.url_name == 'auditlog_list' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-history"></i> Audit Log</a></li>
+                <li><a href="{% url 'sales:sales_dashboard' %}" class="menu-item {% if request.resolver_match.namespace == 'sales' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-chart-line"></i> Sales</a></li>
+                <li><a href="{% url 'reports:reports_dashboard' %}" class="menu-item {% if request.resolver_match.namespace == 'reports' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-file-alt"></i> Reports</a></li>
             {% elif request.user.role == 'manager' %}
                 <li><a href="{% url 'inventory:dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li><a href="{% url 'inventory:product_list' %}" class="menu-item {% if request.resolver_match.url_name == 'product_list' %}active{% endif %} flex items-center gap-3 p-2 rounded hover:bg-gray-100"><i class="fas fa-warehouse"></i> Inventory</a></li>
@@ -296,7 +299,7 @@
 
     <script>
         // =========================
-        // PROFILE MODAL FUNCTIONS (Updated to use TailWind classes)
+        // PROFILE MODAL FUNCTIONS
         // =========================
         const profileModal = document.getElementById('profileModal');
         
@@ -304,18 +307,14 @@
             profileModal.classList.remove('hidden');
             profileModal.classList.add('flex');
         }
-
+    
         function closeProfileModal() {
             profileModal.classList.add('hidden');
             profileModal.classList.remove('flex');
         }
-
-        // Close modal when clicking outside content is already handled by the event listener on the modal div itself:
-        // document.getElementById('profileModal').addEventListener('click', function(e) { if (e.target === this) closeProfileModal(); });
-
-
+    
         // =========================
-        // GLOBAL TOAST FUNCTION (Kept as is)
+        // GLOBAL TOAST FUNCTION
         // =========================
         window.showToast = function(message, type = "success") {
             const container = document.getElementById("toast-container");
@@ -369,16 +368,19 @@
                 this.remove();
             });
         };
-
+    
+        // =========================
+        // DOM CONTENT LOADED
+        // =========================
         document.addEventListener("DOMContentLoaded", function () {
             // =========================
             // DJANGO MESSAGES TO TOASTS
             // =========================
-            {% if messages %}
+       {% if messages %}
                 {% for message in messages %}
                     showToast("{{ message|escapejs }}", "{{ message.tags }}");
                 {% endfor %}
-            {% endif %}
+            {% endif %} 
         
             // =========================
             // SIDEBAR TOGGLE
@@ -388,11 +390,9 @@
                 const content = document.getElementById('content');
                 
                 if (sidebar) {
-                    // You'll need to define the 'collapsed' class in your custom CSS
                     sidebar.classList.toggle('collapsed');
                 }
                 if (content) {
-                    // You'll need to define the 'expanded' class in your custom CSS
                     content.classList.toggle('expanded');
                 }
             };
@@ -402,8 +402,7 @@
             // =========================
             const notifBadge = document.getElementById('notif-badge');
             if (notifBadge) {
-                // ... (API call logic remains the same)
-                 fetch('/inventory/api/restock-notifications/')
+                fetch('/inventory/api/restock-notifications/')
                     .then(res => res.json())
                     .then(data => {
                         const count = Array.isArray(data) ? data.length : 0;
@@ -412,6 +411,7 @@
                     })
                     .catch(err => console.error('Error fetching notifications:', err));
             }
+    
             // =========================
             // LOGOUT CONFIRMATION MODAL
             // =========================
@@ -420,31 +420,63 @@
             const logoutModal = document.getElementById("logoutConfirmModal");
             const confirmLogoutBtn = document.getElementById("confirmLogoutBtn");
             const cancelLogoutBtn = document.getElementById("cancelLogoutBtn");
-
+    
             logoutLinks.forEach(link => {
-            link.addEventListener("click", function (event) {
-                event.preventDefault();
-                logoutModal.classList.remove("hidden");
-                logoutModal.classList.add("flex");
-
-                confirmLogoutBtn.onclick = () => {
-                logoutModal.classList.add("hidden");
-                overlay.classList.add("show");
-                setTimeout(() => {
-                    window.location.href = link.href;
-                }, 1500);
-                };
-
-                cancelLogoutBtn.onclick = () => {
-                logoutModal.classList.add("hidden");
-                };
+                link.addEventListener("click", function (event) {
+                    event.preventDefault();
+                    logoutModal.classList.remove("hidden");
+                    logoutModal.classList.add("flex");
+    
+                    confirmLogoutBtn.onclick = () => {
+                        logoutModal.classList.add("hidden");
+                        overlay.classList.add("show");
+                        setTimeout(() => {
+                            window.location.href = link.href;
+                        }, 1500);
+                    };
+    
+                    cancelLogoutBtn.onclick = () => {
+                        logoutModal.classList.add("hidden");
+                    };
+                });
             });
-            });
-
-        
+    
+            // =========================
+            // SIDEBAR SCROLL PERSISTENCE (FIXED - NO DUPLICATES)
+            // =========================
+            const sidebarScrollContainer = document.querySelector('.sidebar-nav');
+            const scrollKey = 'sidebarScrollPos';
+    
+            if (sidebarScrollContainer) {
+                // 1. Restore scroll position on page load
+                const savedScrollPos = sessionStorage.getItem(scrollKey);
+                if (savedScrollPos !== null) {
+                    // Use requestAnimationFrame to ensure DOM is fully rendered
+                    requestAnimationFrame(() => {
+                        sidebarScrollContainer.scrollTop = parseInt(savedScrollPos, 10);
+                    });
+                }
+    
+                // 2. Save scroll position continuously while scrolling
+                sidebarScrollContainer.addEventListener('scroll', () => {
+                    sessionStorage.setItem(scrollKey, sidebarScrollContainer.scrollTop);
+                });
+    
+                // 3. Save scroll position when ANY link inside sidebar is clicked
+                const sidebarLinks = sidebarScrollContainer.querySelectorAll('a');
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        sessionStorage.setItem(scrollKey, sidebarScrollContainer.scrollTop);
+                    });
+                });
+    
+                // 4. Save scroll position before page unload (backup safety)
+                window.addEventListener('beforeunload', () => {
+                    sessionStorage.setItem(scrollKey, sidebarScrollContainer.scrollTop);
+                });
+            }
         });
-    </script>
-        
+    </script>        
     {% block scripts %}{% endblock %}
     <!-- Logout Loading Overlay -->
     <div class="loading-overlay" id="logoutOverlay">
